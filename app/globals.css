@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+:root {
+  --background: #05010f;
+  --background-elevated: #0f0a1f;
+  --foreground: #f5f3ff;
+  --muted: #a1a1c2;
+  --neon-pink: #ff2e88;
+  --neon-purple: #a855f7;
+  --neon-cyan: #22d3ee;
+  --success: #2be6a4;
+  --danger: #ff3b5c;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-background-elevated: var(--background-elevated);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-neon-pink: var(--neon-pink);
+  --color-neon-purple: var(--neon-purple);
+  --color-neon-cyan: var(--neon-cyan);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-vazir);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
