@@ -3,23 +3,16 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { LANGS, translations, type Lang, type TranslationKey } from "@/lib/i18n/translations";
 
-type Dir = "rtl" | "ltr";
-
 interface LanguageContextValue {
   lang: Lang;
   setLang: (lang: Lang) => void;
-  dir: Dir;
   t: (key: TranslationKey) => string;
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
-function dirFor(lang: Lang): Dir {
-  return lang === "fa" ? "rtl" : "ltr";
-}
-
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("fa");
+  const [lang, setLangState] = useState<Lang>("en");
 
   useEffect(() => {
     const stored = localStorage.getItem("lang");
@@ -30,7 +23,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.setAttribute("lang", lang);
-    document.documentElement.setAttribute("dir", dirFor(lang));
   }, [lang]);
 
   function setLang(next: Lang) {
@@ -43,7 +35,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang, dir: dirFor(lang), t }}>
+    <LanguageContext.Provider value={{ lang, setLang, t }}>
       {children}
     </LanguageContext.Provider>
   );

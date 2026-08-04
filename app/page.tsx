@@ -3,13 +3,13 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useView } from "./context/ViewContext";
 import HomeView from "./components/views/HomeView";
-import ScheduleView from "./components/views/ScheduleView";
+import AboutView from "./components/views/AboutView";
 import EventsView from "./components/views/EventsView";
 import ContactView from "./components/views/ContactView";
 
 const viewComponents = {
   home: HomeView,
-  schedule: ScheduleView,
+  about: AboutView,
   events: EventsView,
   contact: ContactView,
 } as const;

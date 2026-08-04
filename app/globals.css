@@ -14,6 +14,9 @@
   --neon-blue: #3b82f6;
   --success: #2be6a4;
   --danger: #ff3b5c;
+  /* Dominant color sampled from the current cover art, "r g b" channels.
+     Falls back to brand neon-purple until a track's color is extracted. */
+  --ambient-rgb: 168 85 247;
 }
 
 :root[data-theme="light"] {
@@ -94,39 +97,10 @@ body {
   animation: text-shine 5s linear infinite;
 }
 
-@keyframes waveform-bounce {
-  0%,
-  100% {
-    transform: scaleY(0.25);
-  }
-  50% {
-    transform: scaleY(1);
-  }
-}
-
-.waveform-bar {
-  animation: waveform-bounce 1s ease-in-out infinite;
-  animation-play-state: paused;
-  transform: scaleY(0.25);
-}
-
-.waveform-bar[data-playing="true"] {
-  animation-play-state: running;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .text-shine {
     animation: none;
     background-position: 0% center;
-  }
-
-  .waveform-bar {
-    animation: none !important;
-    transform: scaleY(0.3);
-  }
-
-  .waveform-bar[data-playing="true"] {
-    transform: scaleY(0.85);
   }
 }
 

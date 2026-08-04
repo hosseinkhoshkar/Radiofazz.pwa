@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring } from "framer-motion";
-import type { PointerEvent } from "react";
+import { useEffect, useRef, type PointerEvent } from "react";
 import { usePlayer } from "../context/PlayerContext";
 import { useLanguage } from "../context/LanguageContext";
 import { useFinePointer } from "@/lib/useFinePointer";
@@ -16,6 +16,10 @@ export default function Player() {
     volume,
     setVolume,
     togglePlay,
+    analyserNode,
+    isAd,
+    adAdvertiser,
+    adLink,
   } = usePlayer();
   const { t } = useLanguage();
   const trackKey = `${artist}::${track}`;
@@ -45,9 +49,9 @@ export default function Player() {
   const fadeDuration = prefersReducedMotion ? 0 : 0.4;
 
   return (
-    <div className="flex w-full max-w-sm shrink flex-col items-center gap-[clamp(0.75rem,2vh,1.5rem)] rounded-3xl border border-foreground/10 bg-background-elevated/60 p-[clamp(1.25rem,3.5vh,2rem)] shadow-[0_0_60px_-15px_rgba(59,130,246,0.35)] backdrop-blur-xl">
+    <div className="flex w-full max-w-2xl shrink flex-col items-center gap-[clamp(0.375rem,1.2vh,1.25rem)] rounded-3xl border border-foreground/10 bg-background-elevated/60 p-[clamp(0.75rem,2vh,1.75rem)] shadow-[0_0_60px_-15px_rgba(59,130,246,0.35)] backdrop-blur-xl">
       <div
-        className="relative flex h-[clamp(6rem,22vh,11rem)] w-[clamp(6rem,22vh,11rem)] items-center justify-center [perspective:800px]"
+        className="relative flex h-[clamp(9rem,min(64vh,80vw),32rem)] w-[clamp(9rem,min(64vh,80vw),32rem)] items-center justify-center [perspective:800px]"
         onPointerMove={tiltEnabled ? handleDiscPointerMove : undefined}
         onPointerLeave={tiltEnabled ? handleDiscPointerLeave : undefined}
       >
@@ -68,7 +72,7 @@ export default function Player() {
                     ? { duration: 0 }
                     : { duration: 3, repeat: Infinity, ease: "easeInOut" }
                 }
-                className="absolute inset-0 rounded-full bg-gradient-to-br from-neon-cyan to-neon-blue blur-2xl"
+                className="absolute inset-0 rounded-full bg-gradient-to-br from-neon-cyan to-neon-blue blur-3xl"
               />
               <motion.span
                 key="glow-purple"
@@ -89,11 +93,34 @@ export default function Player() {
                         delay: 0.5,
                       }
                 }
-                className="absolute inset-0 rounded-full bg-gradient-to-br from-neon-purple to-neon-violet blur-2xl"
+                className="absolute inset-0 rounded-full bg-gradient-to-br from-neon-purple to-neon-violet blur-3xl"
+              />
+              <motion.span
+                key="glow-ambient"
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={
+                  prefersReducedMotion
+                    ? { opacity: 0.3, scale: 1 }
+                    : { opacity: [0.4, 0.18, 0.4], scale: [0.92, 1.1, 0.92] }
+                }
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={
+                  prefersReducedMotion
+                    ? { duration: 0 }
+                    : { duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.25 }
+                }
+                className="absolute inset-0 rounded-full blur-3xl"
+                style={{ backgroundColor: "rgb(var(--ambient-rgb) / 45%)" }}
               />
             </>
           )}
         </AnimatePresence>
+
+        <RadialVisualizer
+          isPlaying={isPlaying}
+          analyserNode={analyserNode}
+          prefersReducedMotion={prefersReducedMotion}
+        />
 
         <motion.div
           style={
@@ -105,7 +132,7 @@ export default function Player() {
                 }
               : undefined
           }
-          className="relative h-[clamp(5.5rem,20vh,10rem)] w-[clamp(5.5rem,20vh,10rem)] overflow-hidden rounded-full border border-foreground/10 bg-gradient-to-br from-neon-cyan/50 to-neon-purple/50 p-1"
+          className="relative h-[calc(clamp(9rem,min(64vh,80vw),32rem)-1rem)] w-[calc(clamp(9rem,min(64vh,80vw),32rem)-1rem)] overflow-hidden rounded-full border border-foreground/10 bg-gradient-to-br from-neon-cyan/50 to-neon-purple/50 p-1"
         >
           <div className="relative h-full w-full overflow-hidden rounded-full bg-background-elevated">
             <AnimatePresence mode="wait">
@@ -124,7 +151,7 @@ export default function Player() {
         </motion.div>
       </div>
 
-      <div className="h-[clamp(3rem,6vh,3.5rem)] w-full text-center">
+      <div className="min-h-[clamp(2rem,4vh,3.25rem)] w-full text-center">
         <AnimatePresence mode="wait">
           <motion.div
             key={trackKey}
@@ -133,10 +160,30 @@ export default function Player() {
             exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
             transition={{ duration: prefersReducedMotion ? 0 : 0.35 }}
           >
-            <p className="text-shine truncate text-lg font-semibold">
-              {track}
-            </p>
-            <p className="mt-1 text-xs text-muted">{artist}</p>
+            {isAd ? (
+              <>
+                <p className="text-shine truncate text-[clamp(1.125rem,2.5vw,1.75rem)] font-semibold">
+                  {adAdvertiser}
+                </p>
+                {adLink && (
+                  <a
+                    href={adLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex min-h-8 items-center gap-1.5 rounded-full bg-gradient-to-l from-neon-pink to-neon-purple px-4 py-1.5 text-xs font-semibold text-background"
+                  >
+                    {t("player.visitSponsor")}
+                  </a>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="text-shine truncate text-[clamp(1.125rem,2.5vw,1.75rem)] font-semibold">
+                  {track}
+                </p>
+                <p className="mt-1 text-[clamp(0.75rem,1.3vw,0.9rem)] text-muted">{artist}</p>
+              </>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -146,7 +193,7 @@ export default function Player() {
         onClick={togglePlay}
         whileTap={{ scale: 0.9 }}
         aria-label={isPlaying ? t("player.pause") : t("player.play")}
-        className="flex h-[clamp(3rem,8vh,4rem)] w-[clamp(3rem,8vh,4rem)] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-neon-blue to-neon-purple text-background shadow-[0_0_25px_-5px_rgba(59,130,246,0.7)]"
+        className="flex h-[clamp(2.75rem,6vh,4.25rem)] w-[clamp(2.75rem,6vh,4.25rem)] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-neon-blue to-neon-purple text-background shadow-[0_0_25px_-5px_rgba(59,130,246,0.7)]"
       >
         {isLoading ? (
           <span className="h-6 w-6 animate-spin rounded-full border-2 border-background border-t-transparent" />
@@ -177,24 +224,68 @@ export default function Player() {
           aria-label={t("player.volume")}
           className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-foreground/10 accent-neon-cyan"
         />
-        <Waveform isPlaying={isPlaying} />
       </div>
     </div>
   );
 }
 
-function Waveform({ isPlaying }: { isPlaying: boolean }) {
-  const delays = [0, 0.12, 0.24, 0.36, 0.48];
+// Bar count must match AnalyserNode.fftSize / 2 (frequencyBinCount) set in
+// PlayerContext, so each bar maps 1:1 to a frequency bin with no resampling.
+const VISUALIZER_BAR_COUNT = 32;
+const VISUALIZER_MIN_SCALE = 0.15;
+
+function RadialVisualizer({
+  isPlaying,
+  analyserNode,
+  prefersReducedMotion,
+}: {
+  isPlaying: boolean;
+  analyserNode: AnalyserNode | null;
+  prefersReducedMotion: boolean | null;
+}) {
+  const barRefs = useRef<(HTMLSpanElement | null)[]>([]);
+
+  useEffect(() => {
+    if (prefersReducedMotion || !analyserNode || !isPlaying) {
+      barRefs.current.forEach((el) => {
+        if (el) el.style.transform = `scaleY(${VISUALIZER_MIN_SCALE})`;
+      });
+      return;
+    }
+
+    const data = new Uint8Array(analyserNode.frequencyBinCount);
+    let rafId: number;
+
+    function tick() {
+      analyserNode!.getByteFrequencyData(data);
+      barRefs.current.forEach((el, i) => {
+        if (!el) return;
+        const value = data[i] / 255;
+        el.style.transform = `scaleY(${VISUALIZER_MIN_SCALE + value * (1 - VISUALIZER_MIN_SCALE)})`;
+      });
+      rafId = requestAnimationFrame(tick);
+    }
+
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [isPlaying, analyserNode, prefersReducedMotion]);
 
   return (
-    <div className="flex h-4 shrink-0 items-end gap-0.5" aria-hidden="true">
-      {delays.map((delay, index) => (
-        <span
-          key={index}
-          data-playing={isPlaying}
-          className="waveform-bar h-full w-0.5 rounded-full bg-neon-cyan"
-          style={{ animationDelay: `${delay}s` }}
-        />
+    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+      {Array.from({ length: VISUALIZER_BAR_COUNT }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute inset-0"
+          style={{ transform: `rotate(${(360 / VISUALIZER_BAR_COUNT) * i}deg)` }}
+        >
+          <span
+            ref={(el) => {
+              barRefs.current[i] = el;
+            }}
+            className="absolute left-1/2 top-[-2%] h-[14%] w-[2px] -translate-x-1/2 origin-bottom rounded-full bg-neon-cyan/50"
+            style={{ transform: `scaleY(${VISUALIZER_MIN_SCALE})` }}
+          />
+        </div>
       ))}
     </div>
   );

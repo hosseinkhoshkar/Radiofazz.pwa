@@ -6,7 +6,7 @@ const fa = {
   "brand.name": "رادیو فاز",
 
   "nav.home": "خانه",
-  "nav.schedule": "برنامه‌ها",
+  "nav.about": "DJ Majid",
   "nav.events": "اطلاعیه‌ها",
   "nav.contact": "تماس با ما",
   "nav.languageLabel": "زبان",
@@ -19,6 +19,8 @@ const fa = {
   "player.statusLoading": "در حال اتصال...",
   "player.statusIdle": "برای شروع پخش لمس کنید",
   "player.volume": "میزان صدا",
+  "player.sponsorLabel": "پیام بازرگانی",
+  "player.visitSponsor": "مشاهده اسپانسر",
 
   "events.upcomingTitle": "رویدادهای پیش رو",
   "events.viewAll": "مشاهده همه",
@@ -27,11 +29,23 @@ const fa = {
   "events.empty": "در حال حاضر رویدادی ثبت نشده است.",
   "events.viewMore": "مشاهده بیشتر ←",
 
-  "schedule.title": "برنامه هفتگی",
-  "schedule.subtitle": "جدول پخش برنامه‌های رادیو فاز در طول هفته",
+  "about.title": "دی‌جی مجید",
+  "about.subtitle": "صدای همیشگی رادیو فاز",
+  "about.avatarAlt": "دی‌جی مجید",
+  "about.bio": "رادیو فاز یک رادیوی اینترنتی فارسی و ایرانی است که به‌صورت ۲۴ ساعته از شهر هامبورگ آلمان پخش می‌شود. این رادیو از سال ۲۰۱۰ زیر نظر دی‌جی مجید فعالیت می‌کند و ترکیبی از ترانه‌های فارسی روز، کلاسیک‌های ایرانی، آهنگ شاد، موزیک رقص و انرژی کلاب‌های بین‌المللی را پخش می‌کند.",
+  "about.linkCta": "وب‌سایت شخصی دی‌جی مجید",
+  "about.feature.hits.title": "ترانه‌های روز",
+  "about.feature.hits.desc": "موزیک فارسی، ترانه‌های فارسی، آهنگ شاد و پارتی، تمام ساعات شبانه‌روز.",
+  "about.feature.classics.title": "کلاسیک‌های ماندگار",
+  "about.feature.classics.desc": "کلاسیک‌های ایرانی و ترانه‌های نوستالژیک.",
+  "about.feature.nonstop.title": "۲۴ ساعته و بدون وقفه",
+  "about.feature.nonstop.desc": "همیشه آنلاین، همیشه فارسی.",
 
   "contact.title": "تماس با ما",
   "contact.subtitle": "سوال، پیشنهاد یا انتقادی دارید؟ پیام خود را برای ما بفرستید.",
+  "contact.about": "رادیو فاز یک رادیوی اینترنتی فارسی و ایرانی است که به‌صورت ۲۴ ساعته از شهر هامبورگ آلمان پخش می‌شود. این رادیو از سال ۲۰۱۰ با اجرای دی‌جی مجید فعالیت می‌کند و ترانه‌های فارسی، از کلاسیک تا امروز، را برای شنوندگان سراسر دنیا پخش می‌کند.",
+  "contact.whatsapp.label": "واتس‌اپ",
+  "contact.whatsapp.cta": "گفتگو در واتس‌اپ",
   "contact.form.nameLabel": "نام",
   "contact.form.namePlaceholder": "نام شما",
   "contact.form.emailLabel": "ایمیل",
@@ -55,7 +69,7 @@ const en: Dictionary = {
   "brand.name": "Radio Faaz",
 
   "nav.home": "Home",
-  "nav.schedule": "Schedule",
+  "nav.about": "DJ Majid",
   "nav.events": "Events",
   "nav.contact": "Contact",
   "nav.languageLabel": "Language",
@@ -68,6 +82,8 @@ const en: Dictionary = {
   "player.statusLoading": "Connecting…",
   "player.statusIdle": "Tap to start listening",
   "player.volume": "Volume",
+  "player.sponsorLabel": "Sponsored",
+  "player.visitSponsor": "Visit Sponsor",
 
   "events.upcomingTitle": "Upcoming Events",
   "events.viewAll": "View all",
@@ -76,11 +92,23 @@ const en: Dictionary = {
   "events.empty": "No events scheduled at the moment.",
   "events.viewMore": "Read more →",
 
-  "schedule.title": "Weekly Schedule",
-  "schedule.subtitle": "Radio Faaz's weekly broadcast schedule",
+  "about.title": "DJ Majid",
+  "about.subtitle": "The voice behind Radio Faaz",
+  "about.avatarAlt": "DJ Majid",
+  "about.bio": "Radio Faaz is a 24/7 Persian and Iranian internet radio broadcasting from Hamburg, Germany. Online since 2010 and curated by DJ Majid, it blends modern Persian hits, Iranian classics, Ahange Shad, Music Raghs, and international club energy.",
+  "about.linkCta": "Visit DJ Majid's website",
+  "about.feature.hits.title": "Persian Hits",
+  "about.feature.hits.desc": "Persian music, Persian songs, Ahange Shad and party tracks all day.",
+  "about.feature.classics.title": "Timeless Classics",
+  "about.feature.classics.desc": "Iranian classics and nostalgic songs.",
+  "about.feature.nonstop.title": "Non-stop 24/7",
+  "about.feature.nonstop.desc": "Always online, always Persian.",
 
   "contact.title": "Contact Us",
   "contact.subtitle": "Have a question, suggestion, or feedback? Send us a message.",
+  "contact.about": "Radio Faaz is a 24/7 Persian and Iranian internet radio broadcasting live from Hamburg, Germany. On air since 2010 and curated by DJ Majid, it brings Persian hits and classics to listeners around the world.",
+  "contact.whatsapp.label": "WhatsApp",
+  "contact.whatsapp.cta": "Chat on WhatsApp",
   "contact.form.nameLabel": "Name",
   "contact.form.namePlaceholder": "Your name",
   "contact.form.emailLabel": "Email",
@@ -101,7 +129,7 @@ const de: Dictionary = {
   "brand.name": "Radio Faaz",
 
   "nav.home": "Startseite",
-  "nav.schedule": "Sendeplan",
+  "nav.about": "DJ Majid",
   "nav.events": "Veranstaltungen",
   "nav.contact": "Kontakt",
   "nav.languageLabel": "Sprache",
@@ -114,6 +142,8 @@ const de: Dictionary = {
   "player.statusLoading": "Verbindung wird hergestellt…",
   "player.statusIdle": "Zum Abspielen tippen",
   "player.volume": "Lautstärke",
+  "player.sponsorLabel": "Werbung",
+  "player.visitSponsor": "Zum Sponsor",
 
   "events.upcomingTitle": "Kommende Veranstaltungen",
   "events.viewAll": "Alle anzeigen",
@@ -122,11 +152,23 @@ const de: Dictionary = {
   "events.empty": "Derzeit sind keine Veranstaltungen geplant.",
   "events.viewMore": "Mehr erfahren →",
 
-  "schedule.title": "Wochenprogramm",
-  "schedule.subtitle": "Der wöchentliche Sendeplan von Radio Faaz",
+  "about.title": "DJ Majid",
+  "about.subtitle": "Die Stimme hinter Radio Faaz",
+  "about.avatarAlt": "DJ Majid",
+  "about.bio": "Radio Faaz ist ein persisches und iranisches Internetradio, das rund um die Uhr live aus Hamburg sendet. Seit 2010 auf Sendung und kuratiert von DJ Majid, vereint es aktuelle persische Hits, iranische Klassiker, Ahange Shad, Music Raghs und internationale Club-Energie.",
+  "about.linkCta": "Zur Website von DJ Majid",
+  "about.feature.hits.title": "Persische Hits",
+  "about.feature.hits.desc": "Persische Musik, persische Lieder, Ahange Shad und Partytracks rund um die Uhr.",
+  "about.feature.classics.title": "Zeitlose Klassiker",
+  "about.feature.classics.desc": "Iranische Klassiker und nostalgische Lieder.",
+  "about.feature.nonstop.title": "Rund um die Uhr",
+  "about.feature.nonstop.desc": "Immer online, immer persisch.",
 
   "contact.title": "Kontakt",
   "contact.subtitle": "Haben Sie eine Frage, einen Vorschlag oder Feedback? Schreiben Sie uns.",
+  "contact.about": "Radio Faaz ist ein persisches und iranisches Internetradio, das rund um die Uhr live aus Hamburg sendet. Seit 2010 auf Sendung und kuratiert von DJ Majid, bringt es persische Hits und Klassiker zu Hörern auf der ganzen Welt.",
+  "contact.whatsapp.label": "WhatsApp",
+  "contact.whatsapp.cta": "Auf WhatsApp chatten",
   "contact.form.nameLabel": "Name",
   "contact.form.namePlaceholder": "Ihr Name",
   "contact.form.emailLabel": "E-Mail",
@@ -144,26 +186,3 @@ const de: Dictionary = {
 };
 
 export const translations: Record<Lang, Dictionary> = { fa, en, de };
-
-// Weekday labels, ordered to match public/data/schedule.json (Saturday-first week).
-export const WEEKDAYS: Record<Lang, string[]> = {
-  fa: ["شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه"],
-  en: [
-    "Saturday",
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-  ],
-  de: [
-    "Samstag",
-    "Sonntag",
-    "Montag",
-    "Dienstag",
-    "Mittwoch",
-    "Donnerstag",
-    "Freitag",
-  ],
-};

@@ -11,18 +11,15 @@ export default function Sidebar() {
   const { t } = useLanguage();
 
   return (
-    <aside className="fixed inset-y-0 start-0 z-40 hidden w-60 flex-col justify-between border-e border-neon-purple/20 bg-background-elevated/70 px-4 py-6 md:flex">
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col justify-between border-r border-neon-purple/20 bg-background-elevated/70 px-4 py-6 md:flex">
       <div className="flex flex-col gap-8">
         <button
           type="button"
           onClick={() => setView("home")}
-          className="flex items-center gap-2 px-2 text-xl font-bold"
+          className="flex items-center px-2"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
-          </svg>
-          <span className="bg-gradient-to-l from-neon-pink via-neon-purple to-neon-cyan bg-clip-text text-transparent">
-            {t("brand.name")}
+          <span className="bg-gradient-to-l from-neon-pink via-neon-purple to-neon-cyan bg-clip-text text-xl font-bold tracking-tight text-transparent">
+            radiofaaz
           </span>
         </button>
 

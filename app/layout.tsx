@@ -18,8 +18,23 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
-  title: "رادیو فاز",
-  description: "رادیوی آنلاین فارسی — پخش زنده",
+  title: "رادیو فاز | Radio Faaz — Persian Hits & Classics",
+  description:
+    "رادیو فاز، رادیوی اینترنتی فارسی و ایرانی، ۲۴ ساعته از هامبورگ با اجرای دی‌جی مجید. Radio Faaz — 24/7 Persian & Iranian internet radio broadcasting from Hamburg since 2010, curated by DJ Majid. Persisches und iranisches Internetradio aus Hamburg.",
+  keywords: [
+    "رادیو فارسی",
+    "رادیو ایرانی",
+    "رادیو فاز",
+    "پخش زنده رادیو",
+    "دی‌جی مجید",
+    "Persian radio",
+    "Iranian radio",
+    "Radio Faaz",
+    "Persian music online",
+    "persisches Radio",
+    "iranisches Radio",
+    "Radio Hamburg persisch",
+  ],
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     title: "رادیو فاز",
@@ -51,9 +66,8 @@ const THEME_INIT_SCRIPT = `
 const LANG_INIT_SCRIPT = `
   try {
     var stored = localStorage.getItem("lang");
-    var lang = stored === "en" || stored === "de" || stored === "fa" ? stored : "fa";
+    var lang = stored === "en" || stored === "de" || stored === "fa" ? stored : "en";
     document.documentElement.setAttribute("lang", lang);
-    document.documentElement.setAttribute("dir", lang === "fa" ? "rtl" : "ltr");
   } catch (e) {}
 `;
 
@@ -64,8 +78,8 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="fa"
-      dir="rtl"
+      lang="en"
+      dir="ltr"
       suppressHydrationWarning
       className={`${vazirmatn.variable} h-[100dvh] overflow-hidden antialiased`}
     >
@@ -83,7 +97,7 @@ export default function RootLayout({
           <ViewProvider>
             <PlayerProvider>
               <Sidebar />
-              <div className="h-full pb-16 md:pb-0 md:ps-60">
+              <div className="h-full pb-16 md:pb-0 md:pl-60">
                 <main className="relative h-full overflow-hidden">
                   {children}
                 </main>

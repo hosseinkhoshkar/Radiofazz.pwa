@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useReducedMotion } from "framer-motion";
 import { useFinePointer } from "@/lib/useFinePointer";
 
-const BLOBS = [
+const BLOBS: { factor: number; className: string; ambient?: boolean }[] = [
   {
     factor: 26,
     className:
@@ -19,6 +19,13 @@ const BLOBS = [
     factor: 18,
     className:
       "absolute -bottom-[15%] left-[28%] h-[40vh] w-[40vh] rounded-full bg-neon-pink/10 blur-[100px]",
+  },
+  {
+    // Tracks the current cover art's dominant color (--ambient-rgb), crossfaded by PlayerContext.
+    factor: 30,
+    className:
+      "absolute top-1/2 left-1/2 h-[42vh] w-[42vh] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[110px]",
+    ambient: true,
   },
 ];
 
@@ -39,8 +46,9 @@ export default function GradientBlobs() {
 
       blobRefs.current.forEach((el, index) => {
         if (!el) return;
-        const factor = BLOBS[index].factor;
-        el.style.transform = `translate3d(${x * factor}px, ${y * factor}px, 0)`;
+        const { factor, ambient } = BLOBS[index];
+        const centering = ambient ? "translate(-50%, -50%) " : "";
+        el.style.transform = `${centering}translate3d(${x * factor}px, ${y * factor}px, 0)`;
       });
     }
 
@@ -71,6 +79,11 @@ export default function GradientBlobs() {
           className={`${blob.className} will-change-transform ${
             parallaxEnabled ? "transition-transform duration-700 ease-out" : ""
           }`}
+          style={
+            blob.ambient
+              ? { backgroundColor: "rgb(var(--ambient-rgb) / 16%)" }
+              : undefined
+          }
         />
       ))}
     </div>

@@ -21,24 +21,29 @@ My site is an online radio station (PWA). I want its look and UX turned into a m
   - Glass surfaces (glassmorphism): semi-transparent background with `backdrop-filter: blur()` and a thin semi-transparent border
 - Surfaces (cards, player, nav bar) should have a frosted-glass effect, not flat color.
 - Soft, blurred gradient blobs in the background as an ambient effect — subtle, not dominant.
+- **Dynamic ambient color:** the current track's cover art (or ad image) is sampled client-side (downscaled canvas, average RGB, no external API) and its dominant color tints one of the background blobs and the disc's glow, blended with — not replacing — the brand neon colors. Crossfades over ~1s on track change; snaps instantly under `prefers-reduced-motion`.
 
 ## 2. Overall page structure (no scrolling)
 
 - The entire site must **fit in a single viewport, with no vertical scrolling needed** (`height: 100dvh`, `overflow: hidden`).
 - Instead of scrolling, the site should behave like a **single-page app with view switching**:
-  - **Desktop:** a fixed sidebar (like Spotify desktop) containing the logo, nav items (Home / Schedule / Events / Contact), and at the bottom of the sidebar: language switcher and theme toggle.
+  - **Desktop:** a fixed sidebar (like Spotify desktop) containing the logo (a typographic wordmark, "radiofaaz" in Latin letters, never translated), nav items (Home / Schedule / Events / Contact), and at the bottom of the sidebar: language switcher and theme toggle.
   - **Mobile:** the sidebar becomes a **bottom tab bar**, just like the Spotify mobile app.
+  - LTR structure always, regardless of language; Persian text renders naturally within it, no layout mirroring.
 - Each section (Home/Schedule/Events/Contact) must be designed so its content fits within the viewport height (use `clamp()` for font sizes and spacing, and relative units) rather than needing internal scrolling.
 - Switching between views should use a smooth transition (short fade + slide), not an abrupt jump.
 
 ## 3. Main player (Home view)
 
-- A circular disc/album cover in the center that **does not spin** (no rotation animation).
-- A soft glow around the disc that gently pulses (scale pulse) only while music is playing — not rotation.
+- **Giant centered disc:** the album cover dominates the view, sized to roughly 60-70% of available viewport height (`clamp()` combining `vh` and `vw` so it never overflows on narrow/short mobile screens), scaling down proportionally on smaller viewports. Does **not** spin (no rotation animation) — only the glow pulse and radial visualizer bars animate. Request the largest available artwork size from the source (e.g. iTunes Search API's `600x600bb` instead of the default `100x100bb`).
+- Chrome stays minimal and close beneath the disc: track title, artist name, the single play/stop button, and the volume slider — nothing else competes with the disc for space.
+- A soft glow around the disc that gently pulses (scale pulse) only while music is playing — not rotation. Glow blur radius scales up with the disc's larger size.
 - Below the disc: track title (with a subtle shine/gradient text effect), artist name.
 - Since this is a live radio broadcast (not a playlist), the player only has **a single play/stop button** (no previous, next, shuffle, or like) — the large button with the neon glow that toggles between play and stop on click.
-- A volume slider plus a small, subtle audio waveform visualizer next to it.
-- Next to the player (on desktop), an "Upcoming events" card with a thumbnail image for each event and a "View all" button linking to the Events view.
+- A volume slider next to the play button.
+- A circular radial frequency visualizer: a thin ring of bars around the disc's circumference, driven by real-time frequency data from a Web Audio `AnalyserNode` connected to the audio element. Subtle — thin bars, moderate opacity, scaling with the disc's size without getting proportionally thicker (bar width stays fixed; only the ring radius and bar length grow). Only animates while playing; settles to a minimal flat ring when paused/stopped, and stays static (no per-frame animation) under `prefers-reduced-motion`.
+- **Sponsor mode:** the Icecast now-playing title announces sponsored content with an `AD:` prefix (e.g. `"AD: sponsor-one"`); the remainder is a slug looked up in `public/data/ads.json` (`{ "slug": { image, advertiser, link? } }`). While active: the ad image renders as the cover art with the exact same styling as a track (no frame/badge on the image itself), the dynamic ambient color system (§1) uses a fixed warm gold/amber palette instead of sampling the ad image, and the text below the disc shows the advertiser name plus a "Visit Sponsor" button linking to `link` (omitted if absent) instead of track/artist. The radial visualizer keeps reacting to real audio, unchanged. Returning to a normal track crossfades the palette and layout back the same way. A dev-only `?test-ad=<slug>` query param force-activates a given ad for testing (stripped in production builds).
+- No other widgets on the Home view — the disc and its chrome are the entire view. Events are not previewed here; they're reached via the dedicated Events nav item.
 
 ## 4. Floating mini-player
 
@@ -56,16 +61,17 @@ Enable these effects only on devices with a real mouse (`(hover: hover) and (poi
 - A very subtle 3D tilt on the album disc based on cursor position (not automatic rotation)
 
 General animations (must work on all devices, lightweight, no performance hit):
-- Audio waveform visualizer that only moves while "playing"
+- Radial frequency visualizer around the disc that only moves while "playing" (driven by `requestAnimationFrame`, not `setInterval`)
 - Gentle pulse on the glow around the disc while playback is active
+- Ambient-color crossfade on track/ad change (skipped — applied instantly — under `prefers-reduced-motion`)
 - Smooth transition when switching views
 - Smooth transition when toggling day/night theme
 
 ## 6. Internationalization (i18n)
 
-- Three languages: **English, German, Persian**.
+- Three languages: **English, German, Persian**. Default language on first load: **English**.
 - Language switcher with short labels: `EN` / `DE` / `FA` (use the Latin letters "FA" for Persian too, not "فا").
-- When Persian is selected, the whole page must switch to **RTL** (sidebar direction, icons, spacing — everything must mirror correctly); English and German stay LTR.
+- LTR structure always, regardless of language; Persian text renders naturally within it, no layout mirroring. No `dir="rtl"` is ever set — Persian characters still shape and flow right-to-left at the character level (inherent to the script), but sidebar position, alignment, spacing, icon order, and the mini-player's offset stay exactly as in English/German.
 - All UI text must come from a translation dictionary/object (not hardcoded in HTML), and switching languages must be instant (no page reload).
 - Dates and numbers (e.g. show broadcast times) should be formatted appropriately for the selected language.
 
@@ -88,8 +94,8 @@ General animations (must work on all devices, lightweight, no performance hit):
 
 ## 9. Site sections (views)
 
-1. **Home** — main player + "Upcoming events" card
-2. **Schedule** — weekly show list (day, time, title, host)
+1. **Home** — giant centered disc player, no other widgets
+2. **DJ Majid (About)** — bio, avatar, personal site link, feature highlights
 3. **Events** — grid of event cards with image, title, short description, date
 4. **Contact** — email, phone, social media icons
 

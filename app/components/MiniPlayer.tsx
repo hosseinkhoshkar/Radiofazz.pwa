@@ -9,7 +9,7 @@ export default function MiniPlayer() {
   const { view } = useView();
   const { isPlaying, isLoading, artist, track, coverArt, togglePlay } =
     usePlayer();
-  const { t, dir } = useLanguage();
+  const { t } = useLanguage();
   const prefersReducedMotion = useReducedMotion();
   const visible = view !== "home";
 
@@ -21,11 +21,7 @@ export default function MiniPlayer() {
           animate={{ opacity: 1, y: 0 }}
           exit={prefersReducedMotion ? undefined : { opacity: 0, y: 16 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.25 }}
-          className={`fixed bottom-[calc(4rem+env(safe-area-inset-bottom)+0.75rem)] left-1/2 z-30 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 md:bottom-6 ${
-            dir === "rtl"
-              ? "md:left-auto md:right-[calc(50%+7.5rem)] md:translate-x-1/2"
-              : "md:left-[calc(50%+7.5rem)] md:right-auto"
-          }`}
+          className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom)+0.75rem)] left-1/2 z-30 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 md:bottom-6 md:left-[calc(50%+7.5rem)] md:right-auto"
         >
           <div className="relative flex items-center gap-3 overflow-hidden rounded-full border border-foreground/10 bg-background-elevated/70 p-2 pe-4 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl">
             <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full">

@@ -1,17 +1,16 @@
-[
-  {
+{
+  "sponsor-one": {
     "image": "/ads/ad-placeholder-1.svg",
-    "link": "#",
-    "alt": "فضای تبلیغاتی شماره یک"
+    "advertiser": "Sponsor One",
+    "link": "#"
   },
-  {
+  "sponsor-two": {
     "image": "/ads/ad-placeholder-2.svg",
-    "link": "#",
-    "alt": "فضای تبلیغاتی شماره دو"
+    "advertiser": "Sponsor Two",
+    "link": "#"
   },
-  {
+  "sponsor-three": {
     "image": "/ads/ad-placeholder-3.svg",
-    "link": "#",
-    "alt": "فضای تبلیغاتی شماره سه"
+    "advertiser": "Sponsor Three"
   }
-]
+}
