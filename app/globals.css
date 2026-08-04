@@ -113,3 +113,25 @@ body {
 .waveform-bar[data-playing="true"] {
   animation-play-state: running;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .text-shine {
+    animation: none;
+    background-position: 0% center;
+  }
+
+  .waveform-bar {
+    animation: none !important;
+    transform: scaleY(0.3);
+  }
+
+  .waveform-bar[data-playing="true"] {
+    transform: scaleY(0.85);
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--neon-cyan) !important;
+  outline-offset: 3px;
+  border-radius: 6px;
+}

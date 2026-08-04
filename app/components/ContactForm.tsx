@@ -2,6 +2,8 @@
 
 import emailjs from "@emailjs/browser";
 import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useLanguage } from "../context/LanguageContext";
+import type { TranslationKey } from "@/lib/i18n/translations";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -26,27 +28,28 @@ interface FormErrors {
 
 const initialForm: FormState = { name: "", email: "", message: "", website: "" };
 
-function validate(values: FormState): FormErrors {
+function validate(values: FormState, t: (key: TranslationKey) => string): FormErrors {
   const errors: FormErrors = {};
 
   if (!values.name.trim()) {
-    errors.name = "لطفاً نام خود را وارد کنید.";
+    errors.name = t("contact.form.errors.name");
   }
 
   if (!values.email.trim()) {
-    errors.email = "لطفاً ایمیل خود را وارد کنید.";
+    errors.email = t("contact.form.errors.email");
   } else if (!EMAIL_REGEX.test(values.email.trim())) {
-    errors.email = "ایمیل واردشده معتبر نیست.";
+    errors.email = t("contact.form.errors.emailInvalid");
   }
 
   if (!values.message.trim()) {
-    errors.message = "لطفاً پیام خود را بنویسید.";
+    errors.message = t("contact.form.errors.message");
   }
 
   return errors;
 }
 
 export default function ContactForm() {
+  const { t } = useLanguage();
   const [form, setForm] = useState<FormState>(initialForm);
   const [errors, setErrors] = useState<FormErrors>({});
   const [status, setStatus] = useState<Status>("idle");
@@ -68,7 +71,7 @@ export default function ContactForm() {
       return;
     }
 
-    const validationErrors = validate(form);
+    const validationErrors = validate(form, t);
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
 
@@ -103,7 +106,7 @@ export default function ContactForm() {
     >
       <div className="flex flex-col gap-1.5">
         <label htmlFor="name" className="text-sm text-muted">
-          نام
+          {t("contact.form.nameLabel")}
         </label>
         <input
           id="name"
@@ -112,15 +115,15 @@ export default function ContactForm() {
           value={form.name}
           onChange={handleChange}
           disabled={isSending}
-          placeholder="نام شما"
-          className="rounded-xl border border-neon-purple/30 bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-neon-cyan focus:outline-none disabled:opacity-50"
+          placeholder={t("contact.form.namePlaceholder")}
+          className="min-h-11 rounded-xl border border-neon-purple/30 bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-neon-cyan focus:outline-none disabled:opacity-50"
         />
         {errors.name && <p className="text-xs text-danger">{errors.name}</p>}
       </div>
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="email" className="text-sm text-muted">
-          ایمیل
+          {t("contact.form.emailLabel")}
         </label>
         <input
           id="email"
@@ -131,14 +134,14 @@ export default function ContactForm() {
           onChange={handleChange}
           disabled={isSending}
           placeholder="you@example.com"
-          className="rounded-xl border border-neon-purple/30 bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-end text-foreground placeholder:text-muted/60 focus:border-neon-cyan focus:outline-none disabled:opacity-50"
+          className="min-h-11 rounded-xl border border-neon-purple/30 bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-end text-foreground placeholder:text-muted/60 focus:border-neon-cyan focus:outline-none disabled:opacity-50"
         />
         {errors.email && <p className="text-xs text-danger">{errors.email}</p>}
       </div>
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="message" className="text-sm text-muted">
-          پیام
+          {t("contact.form.messageLabel")}
         </label>
         <textarea
           id="message"
@@ -146,7 +149,7 @@ export default function ContactForm() {
           value={form.message}
           onChange={handleChange}
           disabled={isSending}
-          placeholder="پیام خود را بنویسید..."
+          placeholder={t("contact.form.messagePlaceholder")}
           className="h-[clamp(4rem,14vh,7rem)] resize-none rounded-xl border border-neon-purple/30 bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-neon-cyan focus:outline-none disabled:opacity-50"
         />
         {errors.message && (
@@ -156,9 +159,9 @@ export default function ContactForm() {
 
       <div
         aria-hidden="true"
-        className="absolute -left-[9999px] top-0 h-0 w-0 overflow-hidden"
+        className="absolute -start-[9999px] top-0 h-0 w-0 overflow-hidden"
       >
-        <label htmlFor="website">وب‌سایت</label>
+        <label htmlFor="website">{t("contact.form.honeypotLabel")}</label>
         <input
           id="website"
           name="website"
@@ -175,17 +178,17 @@ export default function ContactForm() {
         disabled={isSending}
         className="mt-2 rounded-xl bg-gradient-to-l from-neon-pink to-neon-purple px-6 py-3 font-semibold text-background transition-opacity disabled:opacity-60"
       >
-        {isSending ? "در حال ارسال..." : "ارسال پیام"}
+        {isSending ? t("contact.form.submitting") : t("contact.form.submit")}
       </button>
 
       {status === "success" && (
         <p className="rounded-xl border border-success/40 bg-success/10 px-4 py-3 text-sm text-success">
-          پیام شما با موفقیت ارسال شد. به‌زودی با شما تماس می‌گیریم.
+          {t("contact.form.success")}
         </p>
       )}
       {status === "error" && (
         <p className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
-          مشکلی در ارسال پیام پیش آمد. لطفاً دوباره تلاش کنید.
+          {t("contact.form.error")}
         </p>
       )}
     </form>

@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useView } from "./context/ViewContext";
 import HomeView from "./components/views/HomeView";
 import ScheduleView from "./components/views/ScheduleView";
@@ -17,15 +17,16 @@ const viewComponents = {
 export default function Home() {
   const { view } = useView();
   const ActiveView = viewComponents[view];
+  const prefersReducedMotion = useReducedMotion();
 
   return (
     <AnimatePresence mode="wait">
       <motion.div
         key={view}
-        initial={{ opacity: 0 }}
+        initial={prefersReducedMotion ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
+        exit={prefersReducedMotion ? undefined : { opacity: 0 }}
+        transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
         className="h-full w-full"
       >
         <ActiveView />

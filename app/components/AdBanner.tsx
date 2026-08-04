@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 const ADS_URL = "/data/ads.json";
 const ROTATE_INTERVAL_MS = 5000;
@@ -15,6 +15,7 @@ interface Ad {
 export default function AdBanner() {
   const [ads, setAds] = useState<Ad[]>([]);
   const [index, setIndex] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     let cancelled = false;
@@ -57,10 +58,10 @@ export default function AdBanner() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={ad.alt}
-            initial={{ opacity: 0, x: 40 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -40 }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0, x: -40 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.6, ease: "easeInOut" }}
             className="absolute inset-0 block"
           >
             <img

@@ -1,7 +1,10 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring } from "framer-motion";
+import type { PointerEvent } from "react";
 import { usePlayer } from "../context/PlayerContext";
+import { useLanguage } from "../context/LanguageContext";
+import { useFinePointer } from "@/lib/useFinePointer";
 
 export default function Player() {
   const {
@@ -14,65 +17,121 @@ export default function Player() {
     setVolume,
     togglePlay,
   } = usePlayer();
+  const { t } = useLanguage();
   const trackKey = `${artist}::${track}`;
+
+  const isFinePointer = useFinePointer();
+  const prefersReducedMotion = useReducedMotion();
+  const tiltEnabled = isFinePointer && !prefersReducedMotion;
+
+  const rotateX = useMotionValue(0);
+  const rotateY = useMotionValue(0);
+  const springRotateX = useSpring(rotateX, { stiffness: 150, damping: 15 });
+  const springRotateY = useSpring(rotateY, { stiffness: 150, damping: 15 });
+
+  function handleDiscPointerMove(event: PointerEvent<HTMLDivElement>) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const relX = (event.clientX - rect.left) / rect.width - 0.5;
+    const relY = (event.clientY - rect.top) / rect.height - 0.5;
+    rotateY.set(relX * 14);
+    rotateX.set(relY * -14);
+  }
+
+  function handleDiscPointerLeave() {
+    rotateX.set(0);
+    rotateY.set(0);
+  }
+
+  const fadeDuration = prefersReducedMotion ? 0 : 0.4;
 
   return (
     <div className="flex w-full max-w-sm shrink flex-col items-center gap-[clamp(0.75rem,2vh,1.5rem)] rounded-3xl border border-foreground/10 bg-background-elevated/60 p-[clamp(1.25rem,3.5vh,2rem)] shadow-[0_0_60px_-15px_rgba(59,130,246,0.35)] backdrop-blur-xl">
-      <div className="relative flex h-[clamp(6rem,22vh,11rem)] w-[clamp(6rem,22vh,11rem)] items-center justify-center">
+      <div
+        className="relative flex h-[clamp(6rem,22vh,11rem)] w-[clamp(6rem,22vh,11rem)] items-center justify-center [perspective:800px]"
+        onPointerMove={tiltEnabled ? handleDiscPointerMove : undefined}
+        onPointerLeave={tiltEnabled ? handleDiscPointerLeave : undefined}
+      >
         <AnimatePresence>
           {isPlaying && (
             <>
               <motion.span
                 key="glow-blue"
                 initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: [0.35, 0.15, 0.35], scale: [0.9, 1.12, 0.9] }}
+                animate={
+                  prefersReducedMotion
+                    ? { opacity: 0.25, scale: 1 }
+                    : { opacity: [0.35, 0.15, 0.35], scale: [0.9, 1.12, 0.9] }
+                }
                 exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                transition={
+                  prefersReducedMotion
+                    ? { duration: 0 }
+                    : { duration: 3, repeat: Infinity, ease: "easeInOut" }
+                }
                 className="absolute inset-0 rounded-full bg-gradient-to-br from-neon-cyan to-neon-blue blur-2xl"
               />
               <motion.span
                 key="glow-purple"
                 initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: [0.3, 0.1, 0.3], scale: [0.95, 1.15, 0.95] }}
+                animate={
+                  prefersReducedMotion
+                    ? { opacity: 0.2, scale: 1 }
+                    : { opacity: [0.3, 0.1, 0.3], scale: [0.95, 1.15, 0.95] }
+                }
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 0.5,
-                }}
+                transition={
+                  prefersReducedMotion
+                    ? { duration: 0 }
+                    : {
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 0.5,
+                      }
+                }
                 className="absolute inset-0 rounded-full bg-gradient-to-br from-neon-purple to-neon-violet blur-2xl"
               />
             </>
           )}
         </AnimatePresence>
 
-        <div className="relative h-[clamp(5.5rem,20vh,10rem)] w-[clamp(5.5rem,20vh,10rem)] overflow-hidden rounded-full border border-foreground/10 bg-gradient-to-br from-neon-cyan/50 to-neon-purple/50 p-1">
+        <motion.div
+          style={
+            tiltEnabled
+              ? {
+                  rotateX: springRotateX,
+                  rotateY: springRotateY,
+                  transformStyle: "preserve-3d",
+                }
+              : undefined
+          }
+          className="relative h-[clamp(5.5rem,20vh,10rem)] w-[clamp(5.5rem,20vh,10rem)] overflow-hidden rounded-full border border-foreground/10 bg-gradient-to-br from-neon-cyan/50 to-neon-purple/50 p-1"
+        >
           <div className="relative h-full w-full overflow-hidden rounded-full bg-background-elevated">
             <AnimatePresence mode="wait">
               <motion.img
                 key={coverArt}
                 src={coverArt}
                 alt={`${artist} - ${track}`}
-                initial={{ opacity: 0, scale: 0.92 }}
+                initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.92 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.92 }}
-                transition={{ duration: 0.4 }}
+                exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.92 }}
+                transition={{ duration: fadeDuration }}
                 className="absolute inset-0 h-full w-full object-cover"
               />
             </AnimatePresence>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       <div className="h-[clamp(3rem,6vh,3.5rem)] w-full text-center">
         <AnimatePresence mode="wait">
           <motion.div
             key={trackKey}
-            initial={{ opacity: 0, y: 10 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.35 }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.35 }}
           >
             <p className="text-shine truncate text-lg font-semibold">
               {track}
@@ -86,7 +145,7 @@ export default function Player() {
         type="button"
         onClick={togglePlay}
         whileTap={{ scale: 0.9 }}
-        aria-label={isPlaying ? "توقف پخش" : "شروع پخش"}
+        aria-label={isPlaying ? t("player.pause") : t("player.play")}
         className="flex h-[clamp(3rem,8vh,4rem)] w-[clamp(3rem,8vh,4rem)] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-neon-blue to-neon-purple text-background shadow-[0_0_25px_-5px_rgba(59,130,246,0.7)]"
       >
         {isLoading ? (
@@ -100,10 +159,10 @@ export default function Player() {
 
       <p className="text-xs text-muted">
         {isPlaying
-          ? "در حال پخش زنده"
+          ? t("player.statusPlaying")
           : isLoading
-            ? "در حال اتصال..."
-            : "برای شروع پخش لمس کنید"}
+            ? t("player.statusLoading")
+            : t("player.statusIdle")}
       </p>
 
       <div className="flex w-full items-center gap-3 px-1">
@@ -115,7 +174,7 @@ export default function Player() {
           step={0.01}
           value={volume}
           onChange={(event) => setVolume(Number(event.target.value))}
-          aria-label="میزان صدا"
+          aria-label={t("player.volume")}
           className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-foreground/10 accent-neon-cyan"
         />
         <Waveform isPlaying={isPlaying} />

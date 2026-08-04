@@ -5,8 +5,11 @@ import Sidebar from "./components/nav/Sidebar";
 import BottomNav from "./components/nav/BottomNav";
 import MiniPlayer from "./components/MiniPlayer";
 import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
+import GradientBlobs from "./components/effects/GradientBlobs";
+import ParticleNetwork from "./components/effects/ParticleNetwork";
 import { PlayerProvider } from "./context/PlayerContext";
 import { ViewProvider } from "./context/ViewContext";
+import { LanguageProvider } from "./context/LanguageContext";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -45,6 +48,15 @@ const THEME_INIT_SCRIPT = `
   } catch (e) {}
 `;
 
+const LANG_INIT_SCRIPT = `
+  try {
+    var stored = localStorage.getItem("lang");
+    var lang = stored === "en" || stored === "de" || stored === "fa" ? stored : "fa";
+    document.documentElement.setAttribute("lang", lang);
+    document.documentElement.setAttribute("dir", lang === "fa" ? "rtl" : "ltr");
+  } catch (e) {}
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -61,19 +73,26 @@ export default function RootLayout({
         <Script id="theme-init" strategy="beforeInteractive">
           {THEME_INIT_SCRIPT}
         </Script>
+        <Script id="lang-init" strategy="beforeInteractive">
+          {LANG_INIT_SCRIPT}
+        </Script>
         <ServiceWorkerRegister />
-        <ViewProvider>
-          <PlayerProvider>
-            <Sidebar />
-            <div className="h-full pb-16 md:pb-0 md:pl-60">
-              <main className="relative h-full overflow-hidden">
-                {children}
-              </main>
-            </div>
-            <MiniPlayer />
-            <BottomNav />
-          </PlayerProvider>
-        </ViewProvider>
+        <GradientBlobs />
+        <ParticleNetwork />
+        <LanguageProvider>
+          <ViewProvider>
+            <PlayerProvider>
+              <Sidebar />
+              <div className="h-full pb-16 md:pb-0 md:ps-60">
+                <main className="relative h-full overflow-hidden">
+                  {children}
+                </main>
+              </div>
+              <MiniPlayer />
+              <BottomNav />
+            </PlayerProvider>
+          </ViewProvider>
+        </LanguageProvider>
       </body>
     </html>
   );
