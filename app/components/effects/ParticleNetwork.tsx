@@ -137,12 +137,6 @@ export default function ParticleNetwork() {
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
     window.addEventListener("pointerleave", handlePointerLeave);
 
-    const themeObserver = new MutationObserver(readColor);
-    themeObserver.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
-
     frame = requestAnimationFrame(step);
 
     return () => {
@@ -150,7 +144,6 @@ export default function ParticleNetwork() {
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerleave", handlePointerLeave);
-      themeObserver.disconnect();
     };
   }, [active]);
 

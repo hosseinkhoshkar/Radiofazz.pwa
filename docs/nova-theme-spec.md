@@ -12,22 +12,21 @@ My site is an online radio station (PWA). I want its look and UX turned into a m
 
 ## 1. Visual identity and color theme
 
-- **Default mode:** Dark, with the ability to switch to Light mode that preserves the same brand identity — not just inverted colors.
+- **Dark only, permanently** — no light mode, no toggle (see §7).
 - **Color palette:**
-  - Dark background: `#06060c`
-  - Light background: `#f3f4fa`
+  - Background: `#06060c`
   - Accent 1 (neon blue): `#22d3ee` to `#3b82f6`
   - Accent 2 (neon purple): `#a855f7` to `#7c3aed`
   - Glass surfaces (glassmorphism): semi-transparent background with `backdrop-filter: blur()` and a thin semi-transparent border
 - Surfaces (cards, player, nav bar) should have a frosted-glass effect, not flat color.
 - Soft, blurred gradient blobs in the background as an ambient effect — subtle, not dominant.
-- **Dynamic ambient color:** the current track's cover art (or ad image) is sampled client-side (downscaled canvas, average RGB, no external API) and its dominant color tints one of the background blobs and the disc's glow, blended with — not replacing — the brand neon colors. Crossfades over ~1s on track change; snaps instantly under `prefers-reduced-motion`.
+- **Curated accent-palette system:** 10 hand-picked two-color gradients (`lib/accentPalettes.ts`) — vibrant, cohesive with each other and the brand's neon-dark identity (two of them intentionally reuse the exact brand accent hexes). One palette is assigned per track deterministically: a small fast hash (sum of char codes mod 10) of `artist::track` (or the ad slug, in sponsor mode) always picks the same palette for the same song/ad — no live color sampling from artwork. This is the site's active accent theme, not just a background tint: it drives the disc's glow, the play button's glass tint, the radial visualizer ring color, the ambient background blob, and the active-nav-item highlight, site-wide (persists across views since playback continues). Crossfades over ~1s between palettes on track/ad change (via CSS custom properties `--accent-from-rgb`/`--accent-to-rgb`, tweened in JS); applied instantly instead under `prefers-reduced-motion`.
 
 ## 2. Overall page structure (no scrolling)
 
 - The entire site must **fit in a single viewport, with no vertical scrolling needed** (`height: 100dvh`, `overflow: hidden`).
 - Instead of scrolling, the site should behave like a **single-page app with view switching**:
-  - **Desktop:** a fixed sidebar (like Spotify desktop) containing the logo (a typographic wordmark, "radiofaaz" in Latin letters, never translated), nav items (Home / Schedule / Events / Contact), and at the bottom of the sidebar: language switcher and theme toggle.
+  - **Desktop:** a fixed sidebar (like Spotify desktop) containing the logo (a typographic wordmark, "radiofaaz" in Latin letters, never translated), nav items (Home / Schedule / Events / Contact), and at the bottom of the sidebar: the language switcher.
   - **Mobile:** the sidebar becomes a **bottom tab bar**, just like the Spotify mobile app.
   - LTR structure always, regardless of language; Persian text renders naturally within it, no layout mirroring.
 - Each section (Home/Schedule/Events/Contact) must be designed so its content fits within the viewport height (use `clamp()` for font sizes and spacing, and relative units) rather than needing internal scrolling.
@@ -36,13 +35,13 @@ My site is an online radio station (PWA). I want its look and UX turned into a m
 ## 3. Main player (Home view)
 
 - **Giant centered disc:** the album cover dominates the view, sized to roughly 60-70% of available viewport height (`clamp()` combining `vh` and `vw` so it never overflows on narrow/short mobile screens), scaling down proportionally on smaller viewports. Does **not** spin (no rotation animation) — only the glow pulse and radial visualizer bars animate. Request the largest available artwork size from the source (e.g. iTunes Search API's `600x600bb` instead of the default `100x100bb`).
-- Chrome stays minimal and close beneath the disc: track title, artist name, the single play/stop button, and the volume slider — nothing else competes with the disc for space.
-- A soft glow around the disc that gently pulses (scale pulse) only while music is playing — not rotation. Glow blur radius scales up with the disc's larger size.
+- Chrome stays minimal and close beneath the disc: track title, artist name, the play/stop button, and a compact mute toggle — nothing else competes with the disc for space.
+- A soft glow around the disc that gently pulses (scale pulse) only while music is playing — not rotation. Glow blur radius scales up with the disc's larger size. Colored by the track's assigned accent palette (§1), two layers (from-color and to-color).
 - Below the disc: track title (with a subtle shine/gradient text effect), artist name.
-- Since this is a live radio broadcast (not a playlist), the player only has **a single play/stop button** (no previous, next, shuffle, or like) — the large button with the neon glow that toggles between play and stop on click.
-- A volume slider next to the play button.
-- A circular radial frequency visualizer: a thin ring of bars around the disc's circumference, driven by real-time frequency data from a Web Audio `AnalyserNode` connected to the audio element. Subtle — thin bars, moderate opacity, scaling with the disc's size without getting proportionally thicker (bar width stays fixed; only the ring radius and bar length grow). Only animates while playing; settles to a minimal flat ring when paused/stopped, and stays static (no per-frame animation) under `prefers-reduced-motion`.
-- **Sponsor mode:** the Icecast now-playing title announces sponsored content with an `AD:` prefix (e.g. `"AD: sponsor-one"`); the remainder is a slug looked up in `public/data/ads.json` (`{ "slug": { image, advertiser, link? } }`). While active: the ad image renders as the cover art with the exact same styling as a track (no frame/badge on the image itself), the dynamic ambient color system (§1) uses a fixed warm gold/amber palette instead of sampling the ad image, and the text below the disc shows the advertiser name plus a "Visit Sponsor" button linking to `link` (omitted if absent) instead of track/artist. The radial visualizer keeps reacting to real audio, unchanged. Returning to a normal track crossfades the palette and layout back the same way. A dev-only `?test-ad=<slug>` query param force-activates a given ad for testing (stripped in production builds).
+- Since this is a live radio broadcast (not a playlist), the player only has **a single play/stop button** (no previous, next, shuffle, or like) — a glassmorphic button (frosted blur, semi-transparent surface, soft border, subtle inner highlight) with a smooth crossfade between the play/pause/loading icon states, not an abrupt swap.
+- No volume slider — a small compact mute/unmute icon button sits next to the play button instead (44px touch target, not a full-width control).
+- A circular radial frequency visualizer: a thin ring of bars around the disc's circumference, driven by real-time frequency data from a Web Audio `AnalyserNode` connected to the audio element. Subtle — thin bars, moderate opacity, scaling with the disc's size without getting proportionally thicker (bar width stays fixed; only the ring radius and bar length grow), colored by the track's assigned accent palette. Only animates while playing; settles to a minimal flat ring when paused/stopped, and stays static (no per-frame animation) under `prefers-reduced-motion`.
+- **Sponsor mode:** the Icecast now-playing title announces sponsored content with an `AD:` prefix (e.g. `"AD: sponsor-one"`); the remainder is a slug looked up in `public/data/ads.json` (`{ "slug": { image, advertiser, link? } }`). While active: the ad image renders as the cover art with the exact same styling as a track (no frame/badge on the image itself), the accent palette is hashed from the ad slug the same way a track's is hashed from `artist::track` — no special-cased sponsor color — and the text below the disc shows the advertiser name plus a "Visit Sponsor" button linking to `link` (omitted if absent) instead of track/artist. The radial visualizer keeps reacting to real audio, unchanged. Returning to a normal track crossfades the palette and layout back the same way. A dev-only `?test-ad=<slug>` query param force-activates a given ad for testing (stripped in production builds).
 - No other widgets on the Home view — the disc and its chrome are the entire view. Events are not previewed here; they're reached via the dedicated Events nav item.
 
 ## 4. Floating mini-player
@@ -63,9 +62,9 @@ Enable these effects only on devices with a real mouse (`(hover: hover) and (poi
 General animations (must work on all devices, lightweight, no performance hit):
 - Radial frequency visualizer around the disc that only moves while "playing" (driven by `requestAnimationFrame`, not `setInterval`)
 - Gentle pulse on the glow around the disc while playback is active
-- Ambient-color crossfade on track/ad change (skipped — applied instantly — under `prefers-reduced-motion`)
+- Accent-palette crossfade on track/ad change (skipped — applied instantly — under `prefers-reduced-motion`)
 - Smooth transition when switching views
-- Smooth transition when toggling day/night theme
+- Smooth icon crossfade on the play button between play/pause/loading states
 
 ## 6. Internationalization (i18n)
 
@@ -75,11 +74,9 @@ General animations (must work on all devices, lightweight, no performance hit):
 - All UI text must come from a translation dictionary/object (not hardcoded in HTML), and switching languages must be instant (no page reload).
 - Dates and numbers (e.g. show broadcast times) should be formatted appropriately for the selected language.
 
-## 7. Light/dark mode
+## 7. Dark mode only
 
-- A theme toggle button (sun/moon icon) that's always accessible (in the desktop sidebar, or the mobile header).
-- Default based on the user's system `prefers-color-scheme`, but manually toggleable by click.
-- Smooth transition between the two modes (no abrupt color change).
+- The site is permanently dark — no light mode, no theme toggle, no `prefers-color-scheme`/`localStorage` theme-persistence logic. One color palette (§1), applied everywhere.
 
 ## 8. Responsiveness and PWA
 

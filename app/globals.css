@@ -14,34 +14,10 @@
   --neon-blue: #3b82f6;
   --success: #2be6a4;
   --danger: #ff3b5c;
-  /* Dominant color sampled from the current cover art, "r g b" channels.
-     Falls back to brand neon-purple until a track's color is extracted. */
-  --ambient-rgb: 168 85 247;
-}
-
-:root[data-theme="light"] {
-  color-scheme: light;
-
-  --background: #f3f4fa;
-  --background-elevated: #ffffff;
-  --foreground: #14121f;
-  --muted: #5b5875;
-  --success: #0ea968;
-  --danger: #dc2626;
-}
-
-/* Fallback for the brief window before the anti-flash script runs (or if JS is disabled) */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]) {
-    color-scheme: light;
-
-    --background: #f3f4fa;
-    --background-elevated: #ffffff;
-    --foreground: #14121f;
-    --muted: #5b5875;
-    --success: #0ea968;
-    --danger: #dc2626;
-  }
+  /* Active accent gradient, deterministically assigned per track/ad from a
+     curated palette set (see lib/accentPalettes.ts). "r g b" channels. */
+  --accent-from-rgb: 139 92 246;
+  --accent-to-rgb: 217 70 239;
 }
 
 @theme inline {

@@ -11,14 +11,13 @@ const fa = {
   "nav.contact": "تماس با ما",
   "nav.languageLabel": "زبان",
 
-  "theme.toggle": "تغییر پوسته روشن/تاریک",
-
   "player.play": "شروع پخش",
   "player.pause": "توقف پخش",
   "player.statusPlaying": "در حال پخش زنده",
   "player.statusLoading": "در حال اتصال...",
   "player.statusIdle": "برای شروع پخش لمس کنید",
-  "player.volume": "میزان صدا",
+  "player.mute": "بی‌صدا کردن",
+  "player.unmute": "باصدا کردن",
   "player.sponsorLabel": "پیام بازرگانی",
   "player.visitSponsor": "مشاهده اسپانسر",
 
@@ -74,14 +73,13 @@ const en: Dictionary = {
   "nav.contact": "Contact",
   "nav.languageLabel": "Language",
 
-  "theme.toggle": "Toggle light/dark theme",
-
   "player.play": "Start playback",
   "player.pause": "Stop playback",
   "player.statusPlaying": "Live now",
   "player.statusLoading": "Connecting…",
   "player.statusIdle": "Tap to start listening",
-  "player.volume": "Volume",
+  "player.mute": "Mute",
+  "player.unmute": "Unmute",
   "player.sponsorLabel": "Sponsored",
   "player.visitSponsor": "Visit Sponsor",
 
@@ -134,14 +132,13 @@ const de: Dictionary = {
   "nav.contact": "Kontakt",
   "nav.languageLabel": "Sprache",
 
-  "theme.toggle": "Hell-/Dunkelmodus umschalten",
-
   "player.play": "Wiedergabe starten",
   "player.pause": "Wiedergabe stoppen",
   "player.statusPlaying": "Jetzt live",
   "player.statusLoading": "Verbindung wird hergestellt…",
   "player.statusIdle": "Zum Abspielen tippen",
-  "player.volume": "Lautstärke",
+  "player.mute": "Stummschalten",
+  "player.unmute": "Stummschaltung aufheben",
   "player.sponsorLabel": "Werbung",
   "player.visitSponsor": "Zum Sponsor",
 

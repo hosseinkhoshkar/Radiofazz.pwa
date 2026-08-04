@@ -4,7 +4,6 @@ import { useView } from "../../context/ViewContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { navItems } from "./navItems";
 import LanguageSwitcher from "./LanguageSwitcher";
-import ThemeToggle from "./ThemeToggle";
 
 export default function Sidebar() {
   const { view, setView } = useView();
@@ -31,7 +30,7 @@ export default function Sidebar() {
                   type="button"
                   onClick={() => setView(item.view)}
                   aria-current={view === item.view ? "page" : undefined}
-                  className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground/70 transition-colors hover:bg-foreground/5 hover:text-neon-cyan aria-[current=page]:text-neon-cyan"
+                  className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground/70 transition-colors hover:bg-foreground/5 hover:text-neon-cyan aria-[current=page]:text-[rgb(var(--accent-from-rgb))]"
                 >
                   <item.icon className="h-5 w-5 shrink-0" />
                   {t(item.labelKey)}
@@ -44,7 +43,6 @@ export default function Sidebar() {
 
       <div className="flex flex-col gap-3">
         <LanguageSwitcher />
-        <ThemeToggle />
       </div>
     </aside>
   );

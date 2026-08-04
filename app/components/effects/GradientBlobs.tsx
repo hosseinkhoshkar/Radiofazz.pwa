@@ -21,7 +21,7 @@ const BLOBS: { factor: number; className: string; ambient?: boolean }[] = [
       "absolute -bottom-[15%] left-[28%] h-[40vh] w-[40vh] rounded-full bg-neon-pink/10 blur-[100px]",
   },
   {
-    // Tracks the current cover art's dominant color (--ambient-rgb), crossfaded by PlayerContext.
+    // Tracks the current track's assigned accent palette (--accent-from-rgb), crossfaded by PlayerContext.
     factor: 30,
     className:
       "absolute top-1/2 left-1/2 h-[42vh] w-[42vh] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[110px]",
@@ -81,7 +81,7 @@ export default function GradientBlobs() {
           }`}
           style={
             blob.ambient
-              ? { backgroundColor: "rgb(var(--ambient-rgb) / 16%)" }
+              ? { backgroundColor: "rgb(var(--accent-from-rgb) / 16%)" }
               : undefined
           }
         />

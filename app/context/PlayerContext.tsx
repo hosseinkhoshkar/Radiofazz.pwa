@@ -10,7 +10,7 @@ import {
 } from "react";
 import { useReducedMotion } from "framer-motion";
 import { DEFAULT_COVER_ART, getCoverArt } from "@/lib/itunes";
-import { extractAverageColor, type RGB } from "@/lib/dominantColor";
+import { ACCENT_PALETTES, hexToRgb, pickPalette, type RGB } from "@/lib/accentPalettes";
 import { useLanguage } from "./LanguageContext";
 
 const STREAM_URL = "http://www.radiofaaz.com:8000/radiofaaz";
@@ -22,11 +22,12 @@ const POLL_INTERVAL_MS = 15000;
 // e.g. "AD: sponsor-one" — the remainder is the slug looked up in ads.json.
 const AD_TITLE_PREFIX = /^ad:\s*/i;
 
-// Brand neon-purple, matches the --ambient-rgb fallback in globals.css.
-const DEFAULT_AMBIENT: RGB = [168, 85, 247];
-// Warm gold/amber — sponsor mode never derives color from the ad image itself.
-const AD_AMBIENT: RGB = [245, 166, 35];
-const AMBIENT_TRANSITION_MS = 1000;
+const PALETTE_TRANSITION_MS = 1000;
+
+interface AccentPair {
+  from: RGB;
+  to: RGB;
+}
 
 interface AdEntry {
   image: string;
@@ -47,12 +48,31 @@ function parseAdSlug(title: string | null): string | null {
 // processing, so a coarse 32-bin resolution is plenty and cheap to poll.
 const ANALYSER_FFT_SIZE = 64;
 
-function applyAmbientColor([r, g, b]: RGB) {
-  document.documentElement.style.setProperty(
-    "--ambient-rgb",
-    `${Math.round(r)} ${Math.round(g)} ${Math.round(b)}`
+function lerpRgb(from: RGB, to: RGB, progress: number): RGB {
+  return [
+    from[0] + (to[0] - from[0]) * progress,
+    from[1] + (to[1] - from[1]) * progress,
+    from[2] + (to[2] - from[2]) * progress,
+  ];
+}
+
+function applyAccentColors({ from, to }: AccentPair) {
+  const root = document.documentElement.style;
+  root.setProperty(
+    "--accent-from-rgb",
+    `${Math.round(from[0])} ${Math.round(from[1])} ${Math.round(from[2])}`
+  );
+  root.setProperty(
+    "--accent-to-rgb",
+    `${Math.round(to[0])} ${Math.round(to[1])} ${Math.round(to[2])}`
   );
 }
+
+// Matches the --accent-from-rgb / --accent-to-rgb fallback in globals.css.
+const DEFAULT_ACCENT: AccentPair = {
+  from: hexToRgb(ACCENT_PALETTES[0].from),
+  to: hexToRgb(ACCENT_PALETTES[0].to),
+};
 
 export type PlayerStatus = "idle" | "loading" | "playing" | "paused";
 
@@ -69,8 +89,8 @@ interface PlayerContextValue {
   artist: string;
   track: string;
   coverArt: string;
-  volume: number;
-  setVolume: (volume: number) => void;
+  isMuted: boolean;
+  toggleMute: () => void;
   togglePlay: () => void;
   analyserNode: AnalyserNode | null;
   isAd: boolean;
@@ -88,16 +108,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<PlayerStatus>("idle");
   const [nowPlaying, setNowPlaying] = useState<NowPlayingSource | null>(null);
   const [coverArt, setCoverArt] = useState(DEFAULT_COVER_ART);
-  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
   const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
   const [ads, setAds] = useState<AdsMap>({});
   const [testAdSlug, setTestAdSlug] = useState<string | null>(null);
 
-  const ambientFromRef = useRef<RGB>(DEFAULT_AMBIENT);
-  const ambientTargetRef = useRef<RGB>(DEFAULT_AMBIENT);
-  const ambientCurrentRef = useRef<RGB>(DEFAULT_AMBIENT);
-  const ambientStartRef = useRef(0);
-  const ambientRafRef = useRef<number | null>(null);
+  const accentFromRef = useRef<AccentPair>(DEFAULT_ACCENT);
+  const accentTargetRef = useRef<AccentPair>(DEFAULT_ACCENT);
+  const accentCurrentRef = useRef<AccentPair>(DEFAULT_ACCENT);
+  const accentStartRef = useRef(0);
+  const accentRafRef = useRef<number | null>(null);
 
   const isPlaying = status === "playing";
   const isLoading = status === "loading";
@@ -107,6 +127,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const isAd = activeAd != null;
   const adAdvertiser = activeAd?.advertiser ?? null;
   const adLink = activeAd?.link ?? null;
+
+  const paletteKey = isAd
+    ? (adSlug ?? "")
+    : `${nowPlaying?.artist ?? ""}::${nowPlaying?.track ?? ""}`;
+  const palette = pickPalette(paletteKey);
 
   const artist = isAd
     ? t("player.sponsorLabel")
@@ -187,73 +212,55 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = volume;
+      audioRef.current.muted = isMuted;
     }
-  }, [volume]);
+  }, [isMuted]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    function applyAmbientTarget(rgb: RGB) {
-      if (prefersReducedMotion) {
-        ambientFromRef.current = rgb;
-        ambientTargetRef.current = rgb;
-        ambientCurrentRef.current = rgb;
-        applyAmbientColor(rgb);
-        return;
-      }
-
-      ambientFromRef.current = ambientCurrentRef.current;
-      ambientTargetRef.current = rgb;
-      ambientStartRef.current = performance.now();
-
-      if (ambientRafRef.current != null) return;
-
-      function tick(now: number) {
-        const elapsed = now - ambientStartRef.current;
-        const progress = Math.min(elapsed / AMBIENT_TRANSITION_MS, 1);
-        const from = ambientFromRef.current;
-        const to = ambientTargetRef.current;
-        const next: RGB = [
-          from[0] + (to[0] - from[0]) * progress,
-          from[1] + (to[1] - from[1]) * progress,
-          from[2] + (to[2] - from[2]) * progress,
-        ];
-        ambientCurrentRef.current = next;
-        applyAmbientColor(next);
-
-        if (progress < 1) {
-          ambientRafRef.current = requestAnimationFrame(tick);
-        } else {
-          ambientRafRef.current = null;
-        }
-      }
-
-      ambientRafRef.current = requestAnimationFrame(tick);
-    }
-
-    // Sponsor mode always uses the fixed amber palette, never the ad image's
-    // own color — everything else derives ambient color from the cover art.
-    if (isAd) {
-      applyAmbientTarget(AD_AMBIENT);
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    extractAverageColor(coverArt).then((rgb) => {
-      if (cancelled || !rgb) return;
-      applyAmbientTarget(rgb);
-    });
-
-    return () => {
-      cancelled = true;
+    const target: AccentPair = {
+      from: hexToRgb(palette.from),
+      to: hexToRgb(palette.to),
     };
-  }, [coverArt, isAd, prefersReducedMotion]);
+
+    if (prefersReducedMotion) {
+      accentFromRef.current = target;
+      accentTargetRef.current = target;
+      accentCurrentRef.current = target;
+      applyAccentColors(target);
+      return;
+    }
+
+    accentFromRef.current = accentCurrentRef.current;
+    accentTargetRef.current = target;
+    accentStartRef.current = performance.now();
+
+    if (accentRafRef.current != null) return;
+
+    function tick(now: number) {
+      const elapsed = now - accentStartRef.current;
+      const progress = Math.min(elapsed / PALETTE_TRANSITION_MS, 1);
+      const from = accentFromRef.current;
+      const to = accentTargetRef.current;
+      const next: AccentPair = {
+        from: lerpRgb(from.from, to.from, progress),
+        to: lerpRgb(from.to, to.to, progress),
+      };
+      accentCurrentRef.current = next;
+      applyAccentColors(next);
+
+      if (progress < 1) {
+        accentRafRef.current = requestAnimationFrame(tick);
+      } else {
+        accentRafRef.current = null;
+      }
+    }
+
+    accentRafRef.current = requestAnimationFrame(tick);
+  }, [palette.name, palette.from, palette.to, prefersReducedMotion]);
 
   useEffect(() => {
     return () => {
-      if (ambientRafRef.current != null) cancelAnimationFrame(ambientRafRef.current);
+      if (accentRafRef.current != null) cancelAnimationFrame(accentRafRef.current);
     };
   }, []);
 
@@ -288,6 +295,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     audio.play().catch(() => setStatus("paused"));
   };
 
+  const toggleMute = () => setIsMuted((prev) => !prev);
+
   return (
     <PlayerContext.Provider
       value={{
@@ -297,8 +306,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         artist,
         track,
         coverArt,
-        volume,
-        setVolume,
+        isMuted,
+        toggleMute,
         togglePlay,
         analyserNode,
         isAd,

@@ -13,8 +13,8 @@ export default function Player() {
     artist,
     track,
     coverArt,
-    volume,
-    setVolume,
+    isMuted,
+    toggleMute,
     togglePlay,
     analyserNode,
     isAd,
@@ -49,7 +49,7 @@ export default function Player() {
   const fadeDuration = prefersReducedMotion ? 0 : 0.4;
 
   return (
-    <div className="flex w-full max-w-2xl shrink flex-col items-center gap-[clamp(0.375rem,1.2vh,1.25rem)] rounded-3xl border border-foreground/10 bg-background-elevated/60 p-[clamp(0.75rem,2vh,1.75rem)] shadow-[0_0_60px_-15px_rgba(59,130,246,0.35)] backdrop-blur-xl">
+    <div className="flex w-full max-w-2xl shrink flex-col items-center gap-[clamp(0.375rem,1.2vh,1.25rem)]">
       <div
         className="relative flex h-[clamp(9rem,min(64vh,80vw),32rem)] w-[clamp(9rem,min(64vh,80vw),32rem)] items-center justify-center [perspective:800px]"
         onPointerMove={tiltEnabled ? handleDiscPointerMove : undefined}
@@ -59,12 +59,12 @@ export default function Player() {
           {isPlaying && (
             <>
               <motion.span
-                key="glow-blue"
+                key="glow-from"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={
                   prefersReducedMotion
-                    ? { opacity: 0.25, scale: 1 }
-                    : { opacity: [0.35, 0.15, 0.35], scale: [0.9, 1.12, 0.9] }
+                    ? { opacity: 0.3, scale: 1 }
+                    : { opacity: [0.4, 0.18, 0.4], scale: [0.9, 1.12, 0.9] }
                 }
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={
@@ -72,15 +72,16 @@ export default function Player() {
                     ? { duration: 0 }
                     : { duration: 3, repeat: Infinity, ease: "easeInOut" }
                 }
-                className="absolute inset-0 rounded-full bg-gradient-to-br from-neon-cyan to-neon-blue blur-3xl"
+                className="absolute inset-0 rounded-full blur-3xl"
+                style={{ backgroundColor: "rgb(var(--accent-from-rgb) / 45%)" }}
               />
               <motion.span
-                key="glow-purple"
+                key="glow-to"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={
                   prefersReducedMotion
-                    ? { opacity: 0.2, scale: 1 }
-                    : { opacity: [0.3, 0.1, 0.3], scale: [0.95, 1.15, 0.95] }
+                    ? { opacity: 0.25, scale: 1 }
+                    : { opacity: [0.35, 0.12, 0.35], scale: [0.95, 1.15, 0.95] }
                 }
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={
@@ -93,24 +94,8 @@ export default function Player() {
                         delay: 0.5,
                       }
                 }
-                className="absolute inset-0 rounded-full bg-gradient-to-br from-neon-purple to-neon-violet blur-3xl"
-              />
-              <motion.span
-                key="glow-ambient"
-                initial={{ opacity: 0, scale: 0.92 }}
-                animate={
-                  prefersReducedMotion
-                    ? { opacity: 0.3, scale: 1 }
-                    : { opacity: [0.4, 0.18, 0.4], scale: [0.92, 1.1, 0.92] }
-                }
-                exit={{ opacity: 0, scale: 0.92 }}
-                transition={
-                  prefersReducedMotion
-                    ? { duration: 0 }
-                    : { duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.25 }
-                }
                 className="absolute inset-0 rounded-full blur-3xl"
-                style={{ backgroundColor: "rgb(var(--ambient-rgb) / 45%)" }}
+                style={{ backgroundColor: "rgb(var(--accent-to-rgb) / 40%)" }}
               />
             </>
           )}
@@ -188,21 +173,81 @@ export default function Player() {
         </AnimatePresence>
       </div>
 
-      <motion.button
-        type="button"
-        onClick={togglePlay}
-        whileTap={{ scale: 0.9 }}
-        aria-label={isPlaying ? t("player.pause") : t("player.play")}
-        className="flex h-[clamp(2.75rem,6vh,4.25rem)] w-[clamp(2.75rem,6vh,4.25rem)] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-neon-blue to-neon-purple text-background shadow-[0_0_25px_-5px_rgba(59,130,246,0.7)]"
-      >
-        {isLoading ? (
-          <span className="h-6 w-6 animate-spin rounded-full border-2 border-background border-t-transparent" />
-        ) : isPlaying ? (
-          <PauseIcon />
-        ) : (
-          <PlayIcon />
-        )}
-      </motion.button>
+      <div className="flex shrink-0 items-center gap-3">
+        <motion.button
+          type="button"
+          onClick={togglePlay}
+          whileTap={{ scale: 0.92 }}
+          aria-label={isPlaying ? t("player.pause") : t("player.play")}
+          className="relative flex h-[clamp(2.75rem,6vh,4.25rem)] w-[clamp(2.75rem,6vh,4.25rem)] shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/10 text-foreground backdrop-blur-xl shadow-[0_8px_28px_-6px_rgba(59,130,246,0.5),inset_0_1px_0_0_rgba(255,255,255,0.35),inset_0_-6px_10px_-8px_rgba(0,0,0,0.3)]"
+        >
+          <span
+            className="pointer-events-none absolute inset-0 rounded-full"
+            style={{
+              backgroundImage:
+                "linear-gradient(135deg, rgb(var(--accent-from-rgb) / 30%), transparent 55%, rgb(var(--accent-to-rgb) / 30%))",
+            }}
+          />
+          <AnimatePresence mode="wait" initial={false}>
+            {isLoading ? (
+              <motion.span
+                key="loading"
+                initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.7 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.7 }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+                className="relative h-6 w-6 animate-spin rounded-full border-2 border-foreground/70 border-t-transparent"
+              />
+            ) : isPlaying ? (
+              <motion.span
+                key="pause"
+                initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.7, rotate: -20 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.7, rotate: 20 }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+                className="relative flex"
+              >
+                <PauseIcon />
+              </motion.span>
+            ) : (
+              <motion.span
+                key="play"
+                initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.7, rotate: 20 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.7, rotate: -20 }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+                className="relative flex"
+              >
+                <PlayIcon />
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
+
+        <button
+          type="button"
+          onClick={toggleMute}
+          aria-label={isMuted ? t("player.unmute") : t("player.mute")}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-muted backdrop-blur-md transition-colors hover:text-neon-cyan"
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={isMuted ? "muted" : "unmuted"}
+              initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.7 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.15 }}
+              className="relative flex"
+            >
+              {isMuted ? (
+                <MutedIcon className="h-4 w-4" />
+              ) : (
+                <VolumeIcon className="h-4 w-4" />
+              )}
+            </motion.span>
+          </AnimatePresence>
+        </button>
+      </div>
 
       <p className="text-xs text-muted">
         {isPlaying
@@ -211,20 +256,6 @@ export default function Player() {
             ? t("player.statusLoading")
             : t("player.statusIdle")}
       </p>
-
-      <div className="flex w-full items-center gap-3 px-1">
-        <VolumeIcon className="h-4 w-4 shrink-0 text-muted" />
-        <input
-          type="range"
-          min={0}
-          max={1}
-          step={0.01}
-          value={volume}
-          onChange={(event) => setVolume(Number(event.target.value))}
-          aria-label={t("player.volume")}
-          className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-foreground/10 accent-neon-cyan"
-        />
-      </div>
     </div>
   );
 }
@@ -282,8 +313,11 @@ function RadialVisualizer({
             ref={(el) => {
               barRefs.current[i] = el;
             }}
-            className="absolute left-1/2 top-[-2%] h-[14%] w-[2px] -translate-x-1/2 origin-bottom rounded-full bg-neon-cyan/50"
-            style={{ transform: `scaleY(${VISUALIZER_MIN_SCALE})` }}
+            className="absolute left-1/2 top-[-2%] h-[14%] w-[2px] -translate-x-1/2 origin-bottom rounded-full"
+            style={{
+              transform: `scaleY(${VISUALIZER_MIN_SCALE})`,
+              backgroundColor: "rgb(var(--accent-from-rgb) / 55%)",
+            }}
           />
         </div>
       ))}
@@ -297,6 +331,15 @@ function VolumeIcon(props: React.SVGProps<SVGSVGElement>) {
       <path d="M11 5 6 9H2v6h4l5 4V5z" />
       <path d="M15.5 8.5a5 5 0 0 1 0 7" />
       <path d="M18.5 6a9 9 0 0 1 0 12" />
+    </svg>
+  );
+}
+
+function MutedIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M11 5 6 9H2v6h4l5 4V5z" />
+      <path d="m17 9 5 6M22 9l-5 6" />
     </svg>
   );
 }

@@ -16,7 +16,7 @@ export default function BottomNav() {
           type="button"
           onClick={() => setView(item.view)}
           aria-current={view === item.view ? "page" : undefined}
-          className="flex min-w-11 flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium text-foreground/60 transition-colors aria-[current=page]:text-neon-cyan"
+          className="flex min-w-11 flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium text-foreground/60 transition-colors aria-[current=page]:text-[rgb(var(--accent-from-rgb))]"
         >
           <item.icon className="h-5 w-5" />
           {t(item.labelKey)}

@@ -50,19 +50,6 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-const THEME_INIT_SCRIPT = `
-  try {
-    var stored = localStorage.getItem("theme");
-    var theme =
-      stored === "light" || stored === "dark"
-        ? stored
-        : window.matchMedia("(prefers-color-scheme: light)").matches
-          ? "light"
-          : "dark";
-    document.documentElement.setAttribute("data-theme", theme);
-  } catch (e) {}
-`;
-
 const LANG_INIT_SCRIPT = `
   try {
     var stored = localStorage.getItem("lang");
@@ -84,9 +71,6 @@ export default function RootLayout({
       className={`${vazirmatn.variable} h-[100dvh] overflow-hidden antialiased`}
     >
       <body className="h-full overflow-hidden bg-background text-foreground">
-        <Script id="theme-init" strategy="beforeInteractive">
-          {THEME_INIT_SCRIPT}
-        </Script>
         <Script id="lang-init" strategy="beforeInteractive">
           {LANG_INIT_SCRIPT}
         </Script>
