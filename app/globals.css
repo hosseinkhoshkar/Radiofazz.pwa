@@ -1,15 +1,44 @@
 @import "tailwindcss";
 
 :root {
-  --background: #05010f;
-  --background-elevated: #0f0a1f;
+  color-scheme: dark;
+
+  --background: #06060c;
+  --background-elevated: #120f22;
   --foreground: #f5f3ff;
   --muted: #a1a1c2;
   --neon-pink: #ff2e88;
   --neon-purple: #a855f7;
+  --neon-violet: #7c3aed;
   --neon-cyan: #22d3ee;
+  --neon-blue: #3b82f6;
   --success: #2be6a4;
   --danger: #ff3b5c;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --background: #f3f4fa;
+  --background-elevated: #ffffff;
+  --foreground: #14121f;
+  --muted: #5b5875;
+  --success: #0ea968;
+  --danger: #dc2626;
+}
+
+/* Fallback for the brief window before the anti-flash script runs (or if JS is disabled) */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+
+    --background: #f3f4fa;
+    --background-elevated: #ffffff;
+    --foreground: #14121f;
+    --muted: #5b5875;
+    --success: #0ea968;
+    --danger: #dc2626;
+  }
 }
 
 @theme inline {
@@ -19,7 +48,9 @@
   --color-muted: var(--muted);
   --color-neon-pink: var(--neon-pink);
   --color-neon-purple: var(--neon-purple);
+  --color-neon-violet: var(--neon-violet);
   --color-neon-cyan: var(--neon-cyan);
+  --color-neon-blue: var(--neon-blue);
   --color-success: var(--success);
   --color-danger: var(--danger);
   --font-sans: var(--font-vazir);
@@ -28,4 +59,57 @@
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  *,
+  *::before,
+  *::after {
+    transition:
+      background-color 0.35s ease,
+      border-color 0.35s ease,
+      color 0.35s ease,
+      fill 0.35s ease,
+      stroke 0.35s ease;
+  }
+}
+
+@keyframes text-shine {
+  to {
+    background-position: -200% center;
+  }
+}
+
+.text-shine {
+  background-image: linear-gradient(
+    90deg,
+    var(--foreground) 30%,
+    var(--neon-cyan) 50%,
+    var(--foreground) 70%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: text-shine 5s linear infinite;
+}
+
+@keyframes waveform-bounce {
+  0%,
+  100% {
+    transform: scaleY(0.25);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.waveform-bar {
+  animation: waveform-bounce 1s ease-in-out infinite;
+  animation-play-state: paused;
+  transform: scaleY(0.25);
+}
+
+.waveform-bar[data-playing="true"] {
+  animation-play-state: running;
 }

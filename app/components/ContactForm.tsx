@@ -99,7 +99,7 @@ export default function ContactForm() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="relative flex flex-col gap-5"
+      className="relative flex flex-col gap-[clamp(0.75rem,2vh,1.25rem)]"
     >
       <div className="flex flex-col gap-1.5">
         <label htmlFor="name" className="text-sm text-muted">
@@ -113,7 +113,7 @@ export default function ContactForm() {
           onChange={handleChange}
           disabled={isSending}
           placeholder="نام شما"
-          className="rounded-xl border border-neon-purple/30 bg-background px-4 py-2.5 text-foreground placeholder:text-muted/60 focus:border-neon-cyan focus:outline-none disabled:opacity-50"
+          className="rounded-xl border border-neon-purple/30 bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-neon-cyan focus:outline-none disabled:opacity-50"
         />
         {errors.name && <p className="text-xs text-danger">{errors.name}</p>}
       </div>
@@ -131,7 +131,7 @@ export default function ContactForm() {
           onChange={handleChange}
           disabled={isSending}
           placeholder="you@example.com"
-          className="rounded-xl border border-neon-purple/30 bg-background px-4 py-2.5 text-end text-foreground placeholder:text-muted/60 focus:border-neon-cyan focus:outline-none disabled:opacity-50"
+          className="rounded-xl border border-neon-purple/30 bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-end text-foreground placeholder:text-muted/60 focus:border-neon-cyan focus:outline-none disabled:opacity-50"
         />
         {errors.email && <p className="text-xs text-danger">{errors.email}</p>}
       </div>
@@ -143,12 +143,11 @@ export default function ContactForm() {
         <textarea
           id="message"
           name="message"
-          rows={5}
           value={form.message}
           onChange={handleChange}
           disabled={isSending}
           placeholder="پیام خود را بنویسید..."
-          className="resize-none rounded-xl border border-neon-purple/30 bg-background px-4 py-2.5 text-foreground placeholder:text-muted/60 focus:border-neon-cyan focus:outline-none disabled:opacity-50"
+          className="h-[clamp(4rem,14vh,7rem)] resize-none rounded-xl border border-neon-purple/30 bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-neon-cyan focus:outline-none disabled:opacity-50"
         />
         {errors.message && (
           <p className="text-xs text-danger">{errors.message}</p>

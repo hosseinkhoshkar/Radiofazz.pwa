@@ -1,8 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Vazirmatn } from "next/font/google";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
+import Script from "next/script";
+import Sidebar from "./components/nav/Sidebar";
+import BottomNav from "./components/nav/BottomNav";
+import MiniPlayer from "./components/MiniPlayer";
 import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
+import { PlayerProvider } from "./context/PlayerContext";
+import { ViewProvider } from "./context/ViewContext";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -28,18 +32,48 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
+const THEME_INIT_SCRIPT = `
+  try {
+    var stored = localStorage.getItem("theme");
+    var theme =
+      stored === "light" || stored === "dark"
+        ? stored
+        : window.matchMedia("(prefers-color-scheme: light)").matches
+          ? "light"
+          : "dark";
+    document.documentElement.setAttribute("data-theme", theme);
+  } catch (e) {}
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fa" dir="rtl" className={`${vazirmatn.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col bg-background text-foreground">
+    <html
+      lang="fa"
+      dir="rtl"
+      suppressHydrationWarning
+      className={`${vazirmatn.variable} h-[100dvh] overflow-hidden antialiased`}
+    >
+      <body className="h-full overflow-hidden bg-background text-foreground">
+        <Script id="theme-init" strategy="beforeInteractive">
+          {THEME_INIT_SCRIPT}
+        </Script>
         <ServiceWorkerRegister />
-        <Header />
-        <main className="flex flex-1 flex-col">{children}</main>
-        <Footer />
+        <ViewProvider>
+          <PlayerProvider>
+            <Sidebar />
+            <div className="h-full pb-16 md:pb-0 md:pl-60">
+              <main className="relative h-full overflow-hidden">
+                {children}
+              </main>
+            </div>
+            <MiniPlayer />
+            <BottomNav />
+          </PlayerProvider>
+        </ViewProvider>
       </body>
     </html>
   );

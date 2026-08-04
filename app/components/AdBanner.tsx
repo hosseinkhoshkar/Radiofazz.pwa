@@ -48,8 +48,8 @@ export default function AdBanner() {
   const ad = ads[index];
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-6">
-      <div className="relative aspect-[4/1] w-full overflow-hidden rounded-2xl border border-neon-purple/20">
+    <div className="mx-auto w-full max-w-4xl shrink-0 px-[clamp(1rem,3vw,1.5rem)]">
+      <div className="relative aspect-[4/1] max-h-[14vh] w-full overflow-hidden rounded-2xl border border-neon-purple/20">
         <AnimatePresence>
           <motion.a
             key={index}

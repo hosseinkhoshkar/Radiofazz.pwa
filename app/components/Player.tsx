@@ -1,111 +1,53 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { DEFAULT_COVER_ART, getCoverArt } from "@/lib/itunes";
-
-const STREAM_URL = "http://www.radiofaaz.com:8000/radiofaaz";
-const NOWPLAYING_URL = "/api/nowplaying";
-const POLL_INTERVAL_MS = 15000;
-
-type PlayerStatus = "idle" | "loading" | "playing" | "paused";
-
-interface NowPlayingSource {
-  artist: string | null;
-  track: string | null;
-  listeners: number;
-}
+import { usePlayer } from "../context/PlayerContext";
 
 export default function Player() {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [status, setStatus] = useState<PlayerStatus>("idle");
-  const [nowPlaying, setNowPlaying] = useState<NowPlayingSource | null>(null);
-  const [coverArt, setCoverArt] = useState(DEFAULT_COVER_ART);
-
-  const isPlaying = status === "playing";
-  const isLoading = status === "loading";
-
-  const artist = nowPlaying?.artist ?? "رادیو فاز";
-  const track = nowPlaying?.track ?? "در حال پخش زنده";
+  const {
+    isPlaying,
+    isLoading,
+    artist,
+    track,
+    coverArt,
+    volume,
+    setVolume,
+    togglePlay,
+  } = usePlayer();
   const trackKey = `${artist}::${track}`;
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchNowPlaying() {
-      try {
-        const res = await fetch(NOWPLAYING_URL);
-        if (!res.ok) return;
-
-        const data: { sources: NowPlayingSource[] } = await res.json();
-        const primary = data.sources?.[0] ?? null;
-        if (!cancelled && primary) {
-          setNowPlaying(primary);
-        }
-      } catch {
-        // stream metadata is best-effort; keep showing the last known track
-      }
-    }
-
-    fetchNowPlaying();
-    const interval = setInterval(fetchNowPlaying, POLL_INTERVAL_MS);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    getCoverArt(nowPlaying?.artist ?? null, nowPlaying?.track ?? null).then(
-      (url) => {
-        if (!cancelled) setCoverArt(url);
-      }
-    );
-
-    return () => {
-      cancelled = true;
-    };
-  }, [nowPlaying?.artist, nowPlaying?.track]);
-
-  const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (isPlaying || isLoading) {
-      audio.pause();
-      setStatus("paused");
-      return;
-    }
-
-    setStatus("loading");
-    audio.play().catch(() => setStatus("paused"));
-  };
-
   return (
-    <div className="flex w-full max-w-sm flex-col items-center gap-6 rounded-3xl border border-neon-purple/20 bg-background-elevated p-8 shadow-[0_0_60px_-15px_rgba(168,85,247,0.35)]">
-      <audio
-        ref={audioRef}
-        src={STREAM_URL}
-        preload="none"
-        onPlaying={() => setStatus("playing")}
-        onWaiting={() => setStatus("loading")}
-        onPause={() => setStatus("paused")}
-        onError={() => setStatus("paused")}
-      />
+    <div className="flex w-full max-w-sm shrink flex-col items-center gap-[clamp(0.75rem,2vh,1.5rem)] rounded-3xl border border-foreground/10 bg-background-elevated/60 p-[clamp(1.25rem,3.5vh,2rem)] shadow-[0_0_60px_-15px_rgba(59,130,246,0.35)] backdrop-blur-xl">
+      <div className="relative flex h-[clamp(6rem,22vh,11rem)] w-[clamp(6rem,22vh,11rem)] items-center justify-center">
+        <AnimatePresence>
+          {isPlaying && (
+            <>
+              <motion.span
+                key="glow-blue"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: [0.35, 0.15, 0.35], scale: [0.9, 1.12, 0.9] }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute inset-0 rounded-full bg-gradient-to-br from-neon-cyan to-neon-blue blur-2xl"
+              />
+              <motion.span
+                key="glow-purple"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: [0.3, 0.1, 0.3], scale: [0.95, 1.15, 0.95] }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.5,
+                }}
+                className="absolute inset-0 rounded-full bg-gradient-to-br from-neon-purple to-neon-violet blur-2xl"
+              />
+            </>
+          )}
+        </AnimatePresence>
 
-      <div className="relative h-40 w-40">
-        <motion.div
-          animate={{ rotate: isPlaying ? 360 : 0 }}
-          transition={
-            isPlaying
-              ? { duration: 12, repeat: Infinity, ease: "linear" }
-              : { duration: 0.4 }
-          }
-          className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-neon-pink via-neon-purple to-neon-cyan p-1"
-        >
+        <div className="relative h-[clamp(5.5rem,20vh,10rem)] w-[clamp(5.5rem,20vh,10rem)] overflow-hidden rounded-full border border-foreground/10 bg-gradient-to-br from-neon-cyan/50 to-neon-purple/50 p-1">
           <div className="relative h-full w-full overflow-hidden rounded-full bg-background-elevated">
             <AnimatePresence mode="wait">
               <motion.img
@@ -120,22 +62,10 @@ export default function Player() {
               />
             </AnimatePresence>
           </div>
-        </motion.div>
-
-        <AnimatePresence>
-          {isPlaying && (
-            <motion.span
-              initial={{ opacity: 0.6, scale: 1 }}
-              animate={{ opacity: 0, scale: 1.35 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
-              className="pointer-events-none absolute inset-0 rounded-full border-2 border-neon-cyan"
-            />
-          )}
-        </AnimatePresence>
+        </div>
       </div>
 
-      <div className="h-12 w-full text-center">
+      <div className="h-[clamp(3rem,6vh,3.5rem)] w-full text-center">
         <AnimatePresence mode="wait">
           <motion.div
             key={trackKey}
@@ -144,10 +74,10 @@ export default function Player() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.35 }}
           >
-            <p className="text-xs text-muted">{artist}</p>
-            <p className="mt-1 truncate text-lg font-semibold text-foreground">
+            <p className="text-shine truncate text-lg font-semibold">
               {track}
             </p>
+            <p className="mt-1 text-xs text-muted">{artist}</p>
           </motion.div>
         </AnimatePresence>
       </div>
@@ -157,7 +87,7 @@ export default function Player() {
         onClick={togglePlay}
         whileTap={{ scale: 0.9 }}
         aria-label={isPlaying ? "توقف پخش" : "شروع پخش"}
-        className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-neon-pink to-neon-purple text-background shadow-[0_0_25px_-5px_rgba(255,46,136,0.7)]"
+        className="flex h-[clamp(3rem,8vh,4rem)] w-[clamp(3rem,8vh,4rem)] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-neon-blue to-neon-purple text-background shadow-[0_0_25px_-5px_rgba(59,130,246,0.7)]"
       >
         {isLoading ? (
           <span className="h-6 w-6 animate-spin rounded-full border-2 border-background border-t-transparent" />
@@ -175,7 +105,49 @@ export default function Player() {
             ? "در حال اتصال..."
             : "برای شروع پخش لمس کنید"}
       </p>
+
+      <div className="flex w-full items-center gap-3 px-1">
+        <VolumeIcon className="h-4 w-4 shrink-0 text-muted" />
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.01}
+          value={volume}
+          onChange={(event) => setVolume(Number(event.target.value))}
+          aria-label="میزان صدا"
+          className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-foreground/10 accent-neon-cyan"
+        />
+        <Waveform isPlaying={isPlaying} />
+      </div>
     </div>
+  );
+}
+
+function Waveform({ isPlaying }: { isPlaying: boolean }) {
+  const delays = [0, 0.12, 0.24, 0.36, 0.48];
+
+  return (
+    <div className="flex h-4 shrink-0 items-end gap-0.5" aria-hidden="true">
+      {delays.map((delay, index) => (
+        <span
+          key={index}
+          data-playing={isPlaying}
+          className="waveform-bar h-full w-0.5 rounded-full bg-neon-cyan"
+          style={{ animationDelay: `${delay}s` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function VolumeIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M11 5 6 9H2v6h4l5 4V5z" />
+      <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+      <path d="M18.5 6a9 9 0 0 1 0 12" />
+    </svg>
   );
 }
 
