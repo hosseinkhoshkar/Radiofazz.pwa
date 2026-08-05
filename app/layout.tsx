@@ -4,6 +4,7 @@ import Script from "next/script";
 import Sidebar from "./components/nav/Sidebar";
 import BottomNav from "./components/nav/BottomNav";
 import LanguageSwitcher from "./components/nav/LanguageSwitcher";
+import InstallAppButton from "./components/nav/InstallAppButton";
 import MiniPlayer from "./components/MiniPlayer";
 import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
 import GradientBlobs from "./components/effects/GradientBlobs";
@@ -87,7 +88,15 @@ export default function RootLayout({
                   {children}
                 </main>
               </div>
-              <LanguageSwitcher />
+              {/* Fixed top-right group — z-[60] keeps it above the mini-player
+                  (z-50) and everything else. The hero's own content is
+                  bottom-anchored within its card, so there's nothing near the
+                  top of the viewport for this to collide with, on any view or
+                  breakpoint. */}
+              <div className="fixed top-4 right-12 z-[60] flex items-center gap-2 sm:right-16">
+                <InstallAppButton />
+                <LanguageSwitcher />
+              </div>
               <MiniPlayer />
               <BottomNav />
             </PlayerProvider>

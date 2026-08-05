@@ -116,7 +116,7 @@ export default function ContactForm() {
           onChange={handleChange}
           disabled={isSending}
           placeholder={t("contact.form.namePlaceholder")}
-          className="min-h-11 rounded-xl border border-neon-purple/30 bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-neon-cyan focus:outline-none disabled:opacity-50"
+          className="min-h-11 rounded-xl border border-[rgb(var(--accent-from-rgb)/30%)] bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-[rgb(var(--accent-from-rgb))] focus:outline-none disabled:opacity-50"
         />
         {errors.name && <p className="text-xs text-danger">{errors.name}</p>}
       </div>
@@ -134,7 +134,7 @@ export default function ContactForm() {
           onChange={handleChange}
           disabled={isSending}
           placeholder="you@example.com"
-          className="min-h-11 rounded-xl border border-neon-purple/30 bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-end text-foreground placeholder:text-muted/60 focus:border-neon-cyan focus:outline-none disabled:opacity-50"
+          className="min-h-11 rounded-xl border border-[rgb(var(--accent-from-rgb)/30%)] bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-end text-foreground placeholder:text-muted/60 focus:border-[rgb(var(--accent-from-rgb))] focus:outline-none disabled:opacity-50"
         />
         {errors.email && <p className="text-xs text-danger">{errors.email}</p>}
       </div>
@@ -150,7 +150,7 @@ export default function ContactForm() {
           onChange={handleChange}
           disabled={isSending}
           placeholder={t("contact.form.messagePlaceholder")}
-          className="h-[clamp(3.5rem,11vh,6rem)] resize-none rounded-xl border border-neon-purple/30 bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-neon-cyan focus:outline-none disabled:opacity-50"
+          className="h-[clamp(3.5rem,11vh,6rem)] resize-none rounded-xl border border-[rgb(var(--accent-from-rgb)/30%)] bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-[rgb(var(--accent-from-rgb))] focus:outline-none disabled:opacity-50"
         />
         {errors.message && (
           <p className="text-xs text-danger">{errors.message}</p>
@@ -176,7 +176,15 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={isSending}
-        className="mt-2 rounded-xl bg-gradient-to-l from-neon-pink to-neon-purple px-6 py-3 font-semibold text-background transition-opacity disabled:opacity-60"
+        // Palette gradient + accent-on-rgb (not a hardcoded dark text
+        // color) — same reasoning as PlayButton.tsx: some of the 10
+        // palettes are dark enough that fixed dark text on the gradient
+        // would fail contrast, so this picks whichever of near-black/
+        // near-white reads best against the current palette.
+        style={{
+          backgroundImage: "linear-gradient(to left, rgb(var(--accent-from-rgb)), rgb(var(--accent-to-rgb)))",
+        }}
+        className="mt-2 rounded-xl px-6 py-3 font-semibold text-[rgb(var(--accent-on-rgb))] transition-opacity disabled:opacity-60"
       >
         {isSending ? t("contact.form.submitting") : t("contact.form.submit")}
       </button>

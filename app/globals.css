@@ -16,11 +16,17 @@
   --danger: #ff3b5c;
   /* Active accent gradient, deterministically assigned per track/ad from a
      curated palette set (see lib/accentPalettes.ts). "r g b" channels. */
-  --accent-from-rgb: 139 92 246;
-  --accent-to-rgb: 217 70 239;
+  --accent-from-rgb: 13 77 87;
+  --accent-to-rgb: 18 92 148;
+  /* Lightness-floored variant of accent-from for direct text-as-accent-color
+     use (badges, stat numbers, card titles) — see AccentPalette.textFrom. */
+  --accent-text-rgb: 14 105 120;
+  /* Fixed near-black/near-white pick for text sitting on a full accent
+     background (PlayButton) — see AccentPalette.onAccent. */
+  --accent-on-rgb: 245 243 255;
   /* Page-background tint, same palette assignment as the accent above —
      stays near-black; only the hue shifts. "r g b" channels. */
-  --bg-from-rgb: 10 6 18;
+  --bg-from-rgb: 3 15 17;
   --bg-to-rgb: 6 6 12;
   /* Total bottom clearance content needs to reserve for MiniPlayer: its own
      fixed height (h-20 = 5rem) PLUS the floating gap above whatever it's

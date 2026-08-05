@@ -10,7 +10,7 @@ import {
 } from "react";
 import { useReducedMotion } from "framer-motion";
 import { DEFAULT_COVER_ART, getCoverArt } from "@/lib/itunes";
-import { ACCENT_PALETTES, hexToRgb, pickPalette, type RGB } from "@/lib/accentPalettes";
+import { ACCENT_PALETTES, hexToRgb, pickPalette, type AccentPalette, type RGB } from "@/lib/accentPalettes";
 import { useLanguage } from "./LanguageContext";
 
 const STREAM_URL = "http://www.radiofaaz.com:8000/radiofaaz";
@@ -27,6 +27,7 @@ const PALETTE_TRANSITION_MS = 1000;
 interface ThemeColors {
   accentFrom: RGB;
   accentTo: RGB;
+  accentText: RGB;
   bgFrom: RGB;
   bgTo: RGB;
 }
@@ -64,6 +65,7 @@ function applyThemeColors(theme: ThemeColors) {
   const root = document.documentElement.style;
   root.setProperty("--accent-from-rgb", rgbVar(theme.accentFrom));
   root.setProperty("--accent-to-rgb", rgbVar(theme.accentTo));
+  root.setProperty("--accent-text-rgb", rgbVar(theme.accentText));
   root.setProperty("--bg-from-rgb", rgbVar(theme.bgFrom));
   root.setProperty("--bg-to-rgb", rgbVar(theme.bgTo));
 }
@@ -72,13 +74,23 @@ function applyThemeColors(theme: ThemeColors) {
 const DEFAULT_THEME: ThemeColors = {
   accentFrom: hexToRgb(ACCENT_PALETTES[0].from),
   accentTo: hexToRgb(ACCENT_PALETTES[0].to),
+  accentText: hexToRgb(ACCENT_PALETTES[0].textFrom),
   bgFrom: hexToRgb(ACCENT_PALETTES[0].bgFrom),
   bgTo: hexToRgb(ACCENT_PALETTES[0].bgTo),
 };
 
-// Sponsor mode always uses this palette (not hashed per-slug) so every ad
-// reads as a consistent, recognizable "sponsored" moment.
-const SPONSOR_PALETTE = ACCENT_PALETTES.find((p) => p.name === "gold-amber")!;
+// Sponsor mode always uses this palette (not hashed per-slug, and not part
+// of the rotating 10) so every ad reads as a consistent, recognizable
+// "sponsored" moment regardless of what hues the rotation currently uses.
+const SPONSOR_PALETTE: AccentPalette = {
+  name: "sponsor-gold",
+  from: "#fde68a",
+  to: "#f59e0b",
+  bgFrom: "#11100a",
+  bgTo: "#06060c",
+  textFrom: "#fde68a",
+  onAccent: "#06060c",
+};
 
 export type PlayerStatus = "idle" | "loading" | "playing" | "paused";
 
@@ -97,6 +109,8 @@ interface PlayerContextValue {
   coverArt: string;
   isMuted: boolean;
   toggleMute: () => void;
+  volume: number;
+  setVolume: (volume: number) => void;
   togglePlay: () => void;
   isAd: boolean;
   adAdvertiser: string | null;
@@ -115,6 +129,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [nowPlaying, setNowPlaying] = useState<NowPlayingSource | null>(null);
   const [coverArt, setCoverArt] = useState(DEFAULT_COVER_ART);
   const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolumeState] = useState(1);
   const [ads, setAds] = useState<AdsMap>({});
   const [testAdSlug, setTestAdSlug] = useState<string | null>(null);
 
@@ -224,9 +239,24 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [isMuted]);
 
   useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  // onAccent is a fixed near-black/near-white choice, not a color to
+  // crossfade between (lerping black->white draws a muddy gray mid-fade) —
+  // snapped straight to the target palette's value, independent of the RAF
+  // tween below.
+  useEffect(() => {
+    document.documentElement.style.setProperty("--accent-on-rgb", rgbVar(hexToRgb(palette.onAccent)));
+  }, [palette.onAccent]);
+
+  useEffect(() => {
     const target: ThemeColors = {
       accentFrom: hexToRgb(palette.from),
       accentTo: hexToRgb(palette.to),
+      accentText: hexToRgb(palette.textFrom),
       bgFrom: hexToRgb(palette.bgFrom),
       bgTo: hexToRgb(palette.bgTo),
     };
@@ -253,6 +283,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const next: ThemeColors = {
         accentFrom: lerpRgb(from.accentFrom, to.accentFrom, progress),
         accentTo: lerpRgb(from.accentTo, to.accentTo, progress),
+        accentText: lerpRgb(from.accentText, to.accentText, progress),
         bgFrom: lerpRgb(from.bgFrom, to.bgFrom, progress),
         bgTo: lerpRgb(from.bgTo, to.bgTo, progress),
       };
@@ -267,7 +298,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
 
     themeRafRef.current = requestAnimationFrame(tick);
-  }, [palette.name, palette.from, palette.to, palette.bgFrom, palette.bgTo, prefersReducedMotion]);
+  }, [palette.name, palette.from, palette.to, palette.textFrom, palette.bgFrom, palette.bgTo, prefersReducedMotion]);
 
   useEffect(() => {
     return () => {
@@ -291,6 +322,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const toggleMute = () => setIsMuted((prev) => !prev);
 
+  const setVolume = (next: number) => {
+    const clamped = Math.max(0, Math.min(1, next));
+    setVolumeState(clamped);
+    // Raising the volume while muted should audibly do something —
+    // otherwise dragging the slider up looks broken.
+    if (clamped > 0 && isMuted) setIsMuted(false);
+  };
+
   return (
     <PlayerContext.Provider
       value={{
@@ -302,6 +341,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         coverArt,
         isMuted,
         toggleMute,
+        volume,
+        setVolume,
         togglePlay,
         isAd,
         adAdvertiser,

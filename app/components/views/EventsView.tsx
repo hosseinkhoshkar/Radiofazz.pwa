@@ -110,7 +110,7 @@ function EventCardFront({
     <article className={GLASS_CARD_CLASSES}>
       <img src={imageUrl} alt="" className="h-[42%] w-full shrink-0 object-cover" />
       <div className="flex min-h-0 flex-1 flex-col gap-0.5 p-[clamp(0.5rem,1.2vw,0.85rem)]">
-        <span className="text-[clamp(0.55rem,1vw,0.68rem)] font-medium text-neon-cyan">
+        <span className="text-[clamp(0.55rem,1vw,0.68rem)] font-medium text-[rgb(var(--accent-text-rgb))]">
           {formatEventDate(event.date, lang)}
         </span>
         <h3 className="truncate text-[clamp(0.75rem,1.2vw,0.9rem)] font-semibold text-foreground">
@@ -122,7 +122,7 @@ function EventCardFront({
         <button
           type="button"
           onClick={onFlip}
-          className="mt-auto self-start text-[clamp(0.6rem,0.9vw,0.72rem)] font-medium text-neon-pink transition-colors hover:text-neon-cyan"
+          className="mt-auto self-start text-[clamp(0.6rem,0.9vw,0.72rem)] font-medium text-[rgb(var(--accent-text-rgb))] transition-opacity hover:opacity-80"
         >
           {t("events.viewMore")}
         </button>
@@ -149,7 +149,7 @@ function EventCardBack({
         type="button"
         onClick={onFlip}
         aria-label={t("events.back.backLabel")}
-        className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-background/60 text-muted transition-colors hover:text-neon-cyan"
+        className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-background/60 text-muted transition-colors hover:text-[rgb(var(--accent-text-rgb))]"
       >
         <CloseIcon className="h-3 w-3" />
       </button>
@@ -162,15 +162,15 @@ function EventCardBack({
       </p>
       <dl className="mt-1 flex flex-col gap-0.5 text-[clamp(0.58rem,0.85vw,0.7rem)]">
         <div className="flex gap-1">
-          <dt className="shrink-0 font-medium text-neon-cyan">{t("events.back.timeLabel")}:</dt>
+          <dt className="shrink-0 font-medium text-[rgb(var(--accent-text-rgb))]">{t("events.back.timeLabel")}:</dt>
           <dd className="truncate text-muted">{t("events.back.timeValue")}</dd>
         </div>
         <div className="flex gap-1">
-          <dt className="shrink-0 font-medium text-neon-cyan">{t("events.back.locationLabel")}:</dt>
+          <dt className="shrink-0 font-medium text-[rgb(var(--accent-text-rgb))]">{t("events.back.locationLabel")}:</dt>
           <dd className="truncate text-muted">{t("events.back.locationValue")}</dd>
         </div>
         <div className="flex gap-1">
-          <dt className="shrink-0 font-medium text-neon-cyan">{t("events.back.organizerLabel")}:</dt>
+          <dt className="shrink-0 font-medium text-[rgb(var(--accent-text-rgb))]">{t("events.back.organizerLabel")}:</dt>
           <dd className="truncate text-muted">{t("events.back.organizerValue")}</dd>
         </div>
       </dl>

@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { usePlayer } from "../context/PlayerContext";
 import { useView } from "../context/ViewContext";
 import { useLanguage } from "../context/LanguageContext";
+import { useFinePointer } from "@/lib/useFinePointer";
 import PlayButton from "./PlayButton";
 import HomeWaveform from "./HomeWaveform";
 
@@ -12,11 +14,14 @@ import HomeWaveform from "./HomeWaveform";
 // never need to be reconciled: they're already always in sync.
 //
 // Unlike the Home hero's intentionally minimal single play/stop button, this
-// bar carries the fuller reference control set (shuffle/rewind/forward are
-// decorative-only — there's no seekable/shuffleable position on a
-// continuous live stream — real mute toggle, and a "Full Player" shortcut
-// back to the hero). See docs/nova-theme-spec.md §4 for both are documented
-// as deliberately different from one another.
+// bar carries the fuller reference control set: a real volume control (a
+// glassmorphic horizontal slider that overlays above the icon on
+// hover/tap — see VolumeControl below — without shifting any of this bar's
+// other content, plus a quick mute toggle on the icon itself) and a
+// "Full Player" shortcut back to the hero. The previous shuffle/rewind-10/
+// forward-10 decorative icons are gone entirely — there's no seekable or
+// shuffleable position on a continuous live stream, so they never did
+// anything and were removed rather than kept as inert placeholders.
 //
 // A floating rounded panel (not flush against any edge anymore): margins on
 // the bottom/left/right so all four corners are genuinely visible, spanning
@@ -47,7 +52,14 @@ export default function MiniPlayer() {
       initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: prefersReducedMotion ? 0 : 0.25 }}
-      className="fixed inset-x-4 bottom-[calc(4rem+1rem+env(safe-area-inset-bottom))] z-50 h-20 overflow-hidden rounded-3xl border border-[rgb(var(--accent-from-rgb)/25%)] bg-background-elevated/90 shadow-[0_0_0_1px_rgb(var(--accent-from-rgb)/15%),0_8px_40px_-4px_rgba(0,0,0,0.7)] backdrop-blur-2xl md:bottom-4"
+      // No overflow-hidden here (used to be) — the volume popup below is
+      // `absolute bottom-full`, floating above this bar's own box, and an
+      // overflow-hidden ancestor was silently clipping it away entirely:
+      // the slider was correctly wired to audio.volume the whole time, it
+      // was just invisible/unreachable. Nothing else here relies on the
+      // bar's own clip (the thumbnail has its own local overflow-hidden
+      // rounded-full), so dropping it is safe.
+      className="fixed inset-x-4 bottom-[calc(4rem+1rem+env(safe-area-inset-bottom))] z-50 h-20 rounded-3xl border border-[rgb(var(--accent-from-rgb)/25%)] bg-background-elevated/90 shadow-[0_0_0_1px_rgb(var(--accent-from-rgb)/15%),0_8px_40px_-4px_rgba(0,0,0,0.7)] backdrop-blur-2xl md:bottom-4"
     >
       <div className="grid h-full w-full grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 sm:gap-4 sm:px-4">
         {/* Left zone: thumbnail + title/artist */}
@@ -62,16 +74,11 @@ export default function MiniPlayer() {
           </div>
         </div>
 
-        {/* Center zone: shuffle / rewind / play / forward / mute */}
+        {/* Center zone: play / volume */}
         <div className="flex items-center justify-self-center gap-2 sm:gap-3">
-          <InertControlButton icon={ShuffleIcon} label={t("player.notAvailableLive")} />
-          <InertControlButton icon={RewindIcon} label={t("player.notAvailableLive")} />
-
           <PlayButton className="h-12 w-12" iconClassName="h-5 w-5" showLabel={false} />
 
-          <InertControlButton icon={ForwardIcon} label={t("player.notAvailableLive")} />
-
-          <MuteButton />
+          <VolumeControl />
         </div>
 
         {/* Right zone: waveform + LIVE badge + Full Player */}
@@ -92,39 +99,96 @@ export default function MiniPlayer() {
   );
 }
 
-function InertControlButton({
-  icon: Icon,
-  label,
-}: {
-  icon: (props: React.SVGProps<SVGSVGElement>) => React.JSX.Element;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      disabled
-      aria-label={label}
-      title={label}
-      className="hidden h-8 w-8 shrink-0 cursor-not-allowed items-center justify-center rounded-full text-foreground/60 opacity-40 sm:flex"
-    >
-      <Icon className="h-4 w-4" />
-    </button>
-  );
-}
-
-function MuteButton() {
-  const { isMuted, toggleMute } = usePlayer();
+// A real volume control: the icon is still a quick mute toggle (a plain
+// click, independent of the panel now), and a glassmorphic horizontal
+// slider reveals next to it — via hover on devices with a real mouse
+// ((hover: hover) and (pointer: fine), same gate the cursor-driven ambient
+// effects use elsewhere), via tap-to-toggle on touch devices where hover
+// doesn't exist. The panel is an absolute overlay, not an inline element
+// that grows the layout — it floats above the icon and never shifts the
+// play button, waveform, LIVE badge, or Full Player button next to it,
+// expanding or collapsed.
+function VolumeControl() {
+  const { isMuted, toggleMute, volume, setVolume } = usePlayer();
   const { t } = useLanguage();
+  const prefersReducedMotion = useReducedMotion();
+  const isFinePointer = useFinePointer();
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [open]);
+
+  const isEffectivelyMuted = isMuted || volume === 0;
 
   return (
-    <button
-      type="button"
-      onClick={toggleMute}
-      aria-label={isMuted ? t("player.unmute") : t("player.mute")}
-      className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full text-foreground/70 transition-colors hover:text-[rgb(var(--accent-from-rgb))] sm:flex"
+    <div
+      ref={rootRef}
+      className="relative flex shrink-0 items-center"
+      onMouseEnter={isFinePointer ? () => setOpen(true) : undefined}
+      onMouseLeave={isFinePointer ? () => setOpen(false) : undefined}
     >
-      {isMuted ? <MutedIcon className="h-4 w-4" /> : <VolumeIcon className="h-4 w-4" />}
-    </button>
+      <button
+        type="button"
+        onClick={toggleMute}
+        onTouchEnd={
+          isFinePointer
+            ? undefined
+            : (event) => {
+                // No hover on touch — tap toggles the panel instead.
+                // preventDefault suppresses the synthetic click that would
+                // otherwise also fire toggleMute right after.
+                event.preventDefault();
+                setOpen((prev) => !prev);
+              }
+        }
+        aria-label={isMuted ? t("player.unmute") : t("player.mute")}
+        aria-expanded={open}
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-foreground/70 transition-colors hover:text-[rgb(var(--accent-text-rgb))]"
+      >
+        {isEffectivelyMuted ? <MutedIcon className="h-4 w-4" /> : <VolumeIcon className="h-4 w-4" />}
+      </button>
+
+      {/* Absolute overlay: width/opacity/border animate together
+          (transition-all) so it grows from a sliver into a proper rounded
+          pill rather than an abrupt pop, but it never occupies space in the
+          center zone's flex flow — collapsed or expanded, siblings don't
+          move. Collapsed state keeps the border transparent — a bordered
+          0-width box would still leave a faint 1px seam where its corners
+          meet — and pointer-events-none so it can't intercept clicks while
+          invisible. */}
+      <div
+        className={`absolute bottom-full left-1/2 z-10 mb-2 flex -translate-x-1/2 items-center overflow-hidden rounded-full border bg-background-elevated/80 shadow-lg backdrop-blur-xl ${
+          prefersReducedMotion ? "" : "transition-all duration-300 ease-out"
+        } ${
+          open
+            ? "w-20 border-white/10 px-3 py-2 opacity-100"
+            : "pointer-events-none w-0 border-transparent px-0 py-2 opacity-0"
+        }`}
+      >
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={1}
+          value={isMuted ? 0 : Math.round(volume * 100)}
+          onChange={(event) => setVolume(Number(event.target.value) / 100)}
+          aria-label={t("player.volumeLabel")}
+          tabIndex={open ? 0 : -1}
+          className="h-1.5 w-14 cursor-pointer rounded-full accent-[rgb(var(--accent-from-rgb))]"
+        />
+      </div>
+    </div>
   );
 }
 
@@ -138,47 +202,11 @@ function FullPlayerButton() {
     <button
       type="button"
       onClick={() => setView("home")}
-      className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 py-1.5 text-xs font-medium text-foreground/80 transition-colors hover:border-[rgb(var(--accent-from-rgb)/50%)] hover:text-[rgb(var(--accent-from-rgb))] sm:px-3"
+      className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 py-1.5 text-xs font-medium text-foreground/80 transition-colors hover:border-[rgb(var(--accent-from-rgb)/50%)] hover:text-[rgb(var(--accent-text-rgb))] sm:px-3"
     >
       <ExpandIcon className="h-4 w-4" />
       <span className="hidden sm:inline">{t("player.fullPlayer")}</span>
     </button>
-  );
-}
-
-function ShuffleIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M3 6h3.5a4 4 0 0 1 3.2 1.6L15 18a4 4 0 0 0 3.2 1.6H21" />
-      <path d="M3 18h3.5a4 4 0 0 0 3.2-1.6l.7-1" />
-      <path d="M14.3 7.6a4 4 0 0 1 3.2-1.6H21" />
-      <path d="m18 3 3 3-3 3" />
-      <path d="m18 15 3 3-3 3" />
-    </svg>
-  );
-}
-
-function RewindIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M3 12a9 9 0 1 0 3-6.7" />
-      <path d="M3 4v4h4" />
-      <text x="12.5" y="15" textAnchor="middle" fontSize="7" fill="currentColor" stroke="none" fontWeight="700">
-        10
-      </text>
-    </svg>
-  );
-}
-
-function ForwardIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M21 12a9 9 0 1 1-3-6.7" />
-      <path d="M21 4v4h-4" />
-      <text x="11.5" y="15" textAnchor="middle" fontSize="7" fill="currentColor" stroke="none" fontWeight="700">
-        10
-      </text>
-    </svg>
   );
 }
 

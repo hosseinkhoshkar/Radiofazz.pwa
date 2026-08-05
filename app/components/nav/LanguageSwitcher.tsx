@@ -10,11 +10,10 @@ const LANGS: { code: Lang; nativeName: string }[] = [
   { code: "de", nativeName: "Deutsch" },
 ];
 
-// Fixed top-right floating element on every breakpoint (no longer anchored
-// inside the sidebar) — z-[60] keeps it above the mini-player (z-50) and
-// everything else. The hero's own content is bottom-anchored within its
-// card (see HomeHero.tsx's `items-end`), so there's nothing near the top of
-// the viewport for this to collide with, on any view or breakpoint.
+// Rendered inside the fixed top-right group alongside InstallAppButton (see
+// layout.tsx) — that shared wrapper owns the fixed positioning/z-index now,
+// this is just a `relative` item within it so its own dropdown's
+// `absolute top-full right-0` still anchors correctly.
 export default function LanguageSwitcher() {
   const { lang, setLang, t } = useLanguage();
   const [open, setOpen] = useState(false);
@@ -34,24 +33,24 @@ export default function LanguageSwitcher() {
   }, [open]);
 
   return (
-    <div ref={rootRef} className="fixed top-4 right-6 z-[60] sm:right-8">
+    <div ref={rootRef} className="relative">
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={t("nav.languageLabel")}
-        className="flex h-11 items-center justify-center gap-2 rounded-full border border-neon-purple/20 bg-background-elevated/80 px-3 text-xs font-semibold text-foreground/80 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-colors hover:text-neon-cyan"
+        className="flex h-11 items-center justify-center gap-2 rounded-full border border-[rgb(var(--accent-from-rgb)/20%)] bg-background-elevated/80 px-3 text-xs font-semibold text-foreground/80 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-colors hover:text-[rgb(var(--accent-text-rgb))]"
       >
         <GlobeIcon className="h-4 w-4" />
-        {lang.toUpperCase()}
+        <span className="text-foreground">{lang.toUpperCase()}</span>
       </button>
 
       {open && (
         <ul
           role="listbox"
           aria-label={t("nav.languageLabel")}
-          className="absolute top-full right-0 z-[60] mt-2 w-full min-w-[10rem] overflow-hidden rounded-xl border border-neon-purple/20 bg-background-elevated/95 py-1 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl"
+          className="absolute top-full right-0 z-[60] mt-2 w-full min-w-[10rem] overflow-hidden rounded-xl border border-[rgb(var(--accent-from-rgb)/20%)] bg-background-elevated/95 py-1 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl"
         >
           {LANGS.map(({ code, nativeName }) => (
             <li key={code}>
@@ -63,13 +62,13 @@ export default function LanguageSwitcher() {
                   setLang(code);
                   setOpen(false);
                 }}
-                className="flex min-h-11 w-full items-center justify-between gap-2 px-3 py-2 text-sm text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-neon-cyan"
+                className="flex min-h-11 w-full items-center justify-between gap-2 px-3 py-2 text-sm text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-[rgb(var(--accent-text-rgb))]"
               >
                 <span className="flex items-center gap-2">
                   <span className="text-xs font-semibold text-muted">{code.toUpperCase()}</span>
                   {nativeName}
                 </span>
-                {lang === code && <CheckIcon className="h-4 w-4 text-[rgb(var(--accent-from-rgb))]" />}
+                {lang === code && <CheckIcon className="h-4 w-4 text-[rgb(var(--accent-text-rgb))]" />}
               </button>
             </li>
           ))}
