@@ -92,6 +92,25 @@ const fa = {
   "contact.form.errors.emailInvalid": "ایمیل واردشده معتبر نیست.",
   "contact.form.errors.message": "لطفاً پیام خود را بنویسید.",
   "contact.form.honeypotLabel": "وب‌سایت",
+
+  "install.title": "نصب رادیو فاز",
+  "install.subtitle": "رادیو فاز را به صفحه اصلی گوشی خود اضافه کنید تا سریع‌تر باز شود، مثل یک اپلیکیشن واقعی نمایش داده شود و بدون نوار آدرس مرورگر استفاده کنید.",
+  "install.benefit.offline": "باز شدن سریع، حتی با اتصال ضعیف",
+  "install.benefit.homescreen": "با یک لمس از صفحه اصلی، درست مثل یک اپ واقعی",
+  "install.benefit.appLike": "نمایش تمام‌صفحه — بدون نوار آدرس یا تب‌های مرورگر",
+  "install.installNow": "نصب کن",
+  "install.installedTitle": "قبلاً نصب شده",
+  "install.installedBody": "رادیو فاز روی این دستگاه نصب است — آن را در صفحه اصلی خود پیدا کنید.",
+  "install.dismissedHint": "مشکلی نیست — هر زمان می‌توانید از همین صفحه نصب کنید.",
+  "install.detectedBadge": "دستگاه شما",
+  "install.android.title": "اندروید / کروم",
+  "install.android.step1": "روی منوی مرورگر (⋮) در گوشه بالا سمت راست ضربه بزنید",
+  "install.android.step2": "گزینه «نصب اپلیکیشن» یا «افزودن به صفحه اصلی» را انتخاب کنید",
+  "install.android.step3": "برای افزودن رادیو فاز به صفحه اصلی تأیید کنید",
+  "install.ios.title": "iOS / سافاری",
+  "install.ios.step1": "روی آیکون اشتراک‌گذاری در نوار ابزار سافاری ضربه بزنید",
+  "install.ios.step2": "به پایین اسکرول کنید و «Add to Home Screen» را بزنید",
+  "install.ios.step3": "برای تأیید روی «Add» ضربه بزنید",
 } as const;
 
 export type TranslationKey = keyof typeof fa;
@@ -187,6 +206,25 @@ const en: Dictionary = {
   "contact.form.errors.emailInvalid": "Please enter a valid email address.",
   "contact.form.errors.message": "Please write your message.",
   "contact.form.honeypotLabel": "Website",
+
+  "install.title": "Install Radio Faaz",
+  "install.subtitle": "Add Radio Faaz to your home screen for instant access, a full-screen app-like experience, and quicker launches — no browser address bar in the way.",
+  "install.benefit.offline": "Launches instantly, even on a spotty connection",
+  "install.benefit.homescreen": "One tap from your home screen, just like a native app",
+  "install.benefit.appLike": "Full-screen experience — no browser bar or tabs",
+  "install.installNow": "Install Now",
+  "install.installedTitle": "Already Installed",
+  "install.installedBody": "Radio Faaz is installed on this device — look for it on your home screen.",
+  "install.dismissedHint": "No worries — you can install anytime from this page.",
+  "install.detectedBadge": "Your device",
+  "install.android.title": "Android / Chrome",
+  "install.android.step1": "Tap the browser menu (⋮) in the top-right corner",
+  "install.android.step2": "Select \"Install app\" or \"Add to Home screen\"",
+  "install.android.step3": "Confirm to add Radio Faaz to your home screen",
+  "install.ios.title": "iOS / Safari",
+  "install.ios.step1": "Tap the Share icon in Safari's toolbar",
+  "install.ios.step2": "Scroll down and tap \"Add to Home Screen\"",
+  "install.ios.step3": "Tap \"Add\" to confirm",
 };
 
 const de: Dictionary = {
@@ -279,6 +317,25 @@ const de: Dictionary = {
   "contact.form.errors.emailInvalid": "Die eingegebene E-Mail-Adresse ist ungültig.",
   "contact.form.errors.message": "Bitte schreiben Sie Ihre Nachricht.",
   "contact.form.honeypotLabel": "Webseite",
+
+  "install.title": "Radio Faaz installieren",
+  "install.subtitle": "Fügen Sie Radio Faaz zu Ihrem Startbildschirm hinzu für schnellen Zugriff, ein Vollbild-App-Erlebnis und schnellere Starts — ganz ohne Browser-Adressleiste.",
+  "install.benefit.offline": "Startet sofort, auch bei schwacher Verbindung",
+  "install.benefit.homescreen": "Ein Fingertipp vom Startbildschirm, wie eine native App",
+  "install.benefit.appLike": "Vollbild-Erlebnis — keine Browserleiste oder Tabs",
+  "install.installNow": "Jetzt installieren",
+  "install.installedTitle": "Bereits installiert",
+  "install.installedBody": "Radio Faaz ist auf diesem Gerät installiert — Sie finden es auf Ihrem Startbildschirm.",
+  "install.dismissedHint": "Kein Problem — Sie können jederzeit von dieser Seite aus installieren.",
+  "install.detectedBadge": "Ihr Gerät",
+  "install.android.title": "Android / Chrome",
+  "install.android.step1": "Tippen Sie oben rechts auf das Browser-Menü (⋮)",
+  "install.android.step2": "Wählen Sie „App installieren“ oder „Zum Startbildschirm hinzufügen“",
+  "install.android.step3": "Bestätigen Sie, um Radio Faaz zum Startbildschirm hinzuzufügen",
+  "install.ios.title": "iOS / Safari",
+  "install.ios.step1": "Tippen Sie auf das Teilen-Symbol in der Safari-Symbolleiste",
+  "install.ios.step2": "Scrollen Sie nach unten und tippen Sie auf „Zum Home-Bildschirm“",
+  "install.ios.step3": "Tippen Sie zur Bestätigung auf „Hinzufügen“",
 };
 
 export const translations: Record<Lang, Dictionary> = { fa, en, de };

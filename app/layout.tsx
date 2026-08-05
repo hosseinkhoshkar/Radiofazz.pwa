@@ -12,6 +12,7 @@ import ParticleNetwork from "./components/effects/ParticleNetwork";
 import { PlayerProvider } from "./context/PlayerContext";
 import { ViewProvider } from "./context/ViewContext";
 import { LanguageProvider } from "./context/LanguageContext";
+import { InstallPromptProvider } from "./context/InstallPromptContext";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -81,6 +82,7 @@ export default function RootLayout({
         <ParticleNetwork />
         <LanguageProvider>
           <ViewProvider>
+          <InstallPromptProvider>
             <PlayerProvider>
               <Sidebar />
               {/* No more pb-16 mobile reservation — that used to clear the
@@ -107,6 +109,7 @@ export default function RootLayout({
               <MiniPlayer />
               <MobileMenu />
             </PlayerProvider>
+          </InstallPromptProvider>
           </ViewProvider>
         </LanguageProvider>
       </body>

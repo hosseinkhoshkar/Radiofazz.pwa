@@ -40,6 +40,16 @@ function ContactIcon(props: IconProps) {
   );
 }
 
+function InstallIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M12 3v12" />
+      <path d="m7 10 5 5 5-5" />
+      <path d="M5 19h14" />
+    </svg>
+  );
+}
+
 export const navItems: {
   view: View;
   labelKey: TranslationKey;
@@ -49,4 +59,5 @@ export const navItems: {
   { view: "about", labelKey: "nav.about", icon: AboutIcon },
   { view: "events", labelKey: "nav.events", icon: EventsIcon },
   { view: "contact", labelKey: "nav.contact", icon: ContactIcon },
+  { view: "install", labelKey: "nav.installApp", icon: InstallIcon },
 ];
