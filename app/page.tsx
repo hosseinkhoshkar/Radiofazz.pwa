@@ -146,9 +146,10 @@ export default function Home() {
           transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
           // The mini-player is fixed and persistently visible on every view
           // (including Home) — reserve clearance for it here so it never
-          // overlaps view content. It's now a flush full-width bar (no gap
-          // from the edge/tab-bar), so the shared --mini-player-height var
-          // is the entire offset needed, same on every breakpoint.
+          // overlaps view content. The shared --mini-player-height var
+          // (its own height + floating margin) is the entire offset
+          // needed, same on every breakpoint — mobile no longer has a
+          // separate bottom tab bar to additionally clear (see MobileMenu.tsx).
           className="min-h-full w-full pb-[var(--mini-player-height)] md:h-full"
         >
           <ActiveView />

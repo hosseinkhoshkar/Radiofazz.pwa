@@ -14,6 +14,8 @@ const fa = {
   "nav.socialFacebookLabel": "ما را در فیسبوک دنبال کنید",
   "nav.socialInstagramLabel": "ما را در اینستاگرام دنبال کنید",
   "nav.socialComingSoon": "به زودی",
+  "nav.openMenu": "باز کردن منو",
+  "nav.closeMenu": "بستن منو",
 
   "player.play": "شروع پخش",
   "player.pause": "توقف پخش",
@@ -107,6 +109,8 @@ const en: Dictionary = {
   "nav.socialFacebookLabel": "Follow us on Facebook",
   "nav.socialInstagramLabel": "Follow us on Instagram",
   "nav.socialComingSoon": "Coming soon",
+  "nav.openMenu": "Open menu",
+  "nav.closeMenu": "Close menu",
 
   "player.play": "Start playback",
   "player.pause": "Stop playback",
@@ -197,6 +201,8 @@ const de: Dictionary = {
   "nav.socialFacebookLabel": "Folgen Sie uns auf Facebook",
   "nav.socialInstagramLabel": "Folgen Sie uns auf Instagram",
   "nav.socialComingSoon": "Demnächst",
+  "nav.openMenu": "Menü öffnen",
+  "nav.closeMenu": "Menü schließen",
 
   "player.play": "Wiedergabe starten",
   "player.pause": "Wiedergabe stoppen",

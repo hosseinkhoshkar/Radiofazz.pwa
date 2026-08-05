@@ -5,6 +5,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import { navItems } from "./navItems";
 import { socialLinks } from "./socialLinks";
 import SocialIcon from "./SocialIcon";
+import Logo from "./Logo";
 
 export default function Sidebar() {
   const { view, setView } = useView();
@@ -29,18 +30,13 @@ export default function Sidebar() {
         <button
           type="button"
           onClick={() => setView("home")}
-          className="flex flex-wrap items-center gap-1.5 px-2 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]"
+          className="flex px-2 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]"
         >
           {/* text-3xl wrapped the LIVE tag onto its own line in this 240px
-              sidebar (w-60, minus px-4 + button's own px-2) — this is the
+              sidebar (w-60, minus px-4 + button's own px-2) — 27px is the
               largest size that still measured out to fit both on one line,
               bigger than the earlier text-2xl baseline. */}
-          <span className="logo-shine text-[27px] leading-none font-bold tracking-tight uppercase">
-            RADIO FAAZ
-          </span>
-          <span className="shrink-0 rounded border border-danger/30 bg-danger/15 px-1 text-[10px] font-bold uppercase tracking-wide text-danger">
-            LIVE
-          </span>
+          <Logo textClassName="text-[27px]" />
         </button>
 
         <nav>

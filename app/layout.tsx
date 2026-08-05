@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Vazirmatn } from "next/font/google";
 import Script from "next/script";
 import Sidebar from "./components/nav/Sidebar";
-import BottomNav from "./components/nav/BottomNav";
+import MobileMenu from "./components/nav/MobileMenu";
 import LanguageSwitcher from "./components/nav/LanguageSwitcher";
 import InstallAppButton from "./components/nav/InstallAppButton";
 import MiniPlayer from "./components/MiniPlayer";
@@ -83,7 +83,12 @@ export default function RootLayout({
           <ViewProvider>
             <PlayerProvider>
               <Sidebar />
-              <div className="h-full pb-16 md:pb-0 md:pl-60">
+              {/* No more pb-16 mobile reservation — that used to clear the
+                  bottom tab bar's own h-16, which is gone now (replaced by
+                  MobileMenu's hamburger overlay). The mini-player's own
+                  clearance is handled per-view via pb-[var(--mini-player-height)]
+                  in page.tsx, unrelated to this wrapper. */}
+              <div className="h-full md:pl-60">
                 <main className="relative h-full overflow-hidden">
                   {children}
                 </main>
@@ -92,13 +97,15 @@ export default function RootLayout({
                   (z-50) and everything else. The hero's own content is
                   bottom-anchored within its card, so there's nothing near the
                   top of the viewport for this to collide with, on any view or
-                  breakpoint. */}
-              <div className="fixed top-4 right-12 z-[60] flex items-center gap-2 sm:right-16">
+                  breakpoint. Desktop-only now: mobile has no room for a
+                  floating Install button, and the language switcher moved
+                  into MobileMenu's hamburger overlay instead. */}
+              <div className="fixed top-4 right-12 z-[60] hidden items-center gap-2 sm:right-16 md:flex">
                 <InstallAppButton />
                 <LanguageSwitcher />
               </div>
               <MiniPlayer />
-              <BottomNav />
+              <MobileMenu />
             </PlayerProvider>
           </ViewProvider>
         </LanguageProvider>
