@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useReducedMotion } from "framer-motion";
 import { useFinePointer } from "@/lib/useFinePointer";
 
-const PARTICLE_COUNT = 45;
+const PARTICLE_COUNT = 70;
 const LINK_DISTANCE = 130;
 const CURSOR_RADIUS = 140;
 const CURSOR_PUSH = 0.6;
@@ -111,7 +111,7 @@ export default function ParticleNetwork() {
           const b = particles[j];
           const dist = Math.hypot(a.x - b.x, a.y - b.y);
           if (dist < LINK_DISTANCE) {
-            ctx!.strokeStyle = `rgba(${color}, ${0.18 * (1 - dist / LINK_DISTANCE)})`;
+            ctx!.strokeStyle = `rgba(${color}, ${0.4 * (1 - dist / LINK_DISTANCE)})`;
             ctx!.lineWidth = 1;
             ctx!.beginPath();
             ctx!.moveTo(a.x, a.y);
@@ -120,9 +120,9 @@ export default function ParticleNetwork() {
           }
         }
 
-        ctx!.fillStyle = `rgba(${color}, 0.35)`;
+        ctx!.fillStyle = `rgba(${color}, 0.75)`;
         ctx!.beginPath();
-        ctx!.arc(particles[i].x, particles[i].y, 1.4, 0, Math.PI * 2);
+        ctx!.arc(particles[i].x, particles[i].y, 2, 0, Math.PI * 2);
         ctx!.fill();
       }
 

@@ -18,6 +18,16 @@
      curated palette set (see lib/accentPalettes.ts). "r g b" channels. */
   --accent-from-rgb: 139 92 246;
   --accent-to-rgb: 217 70 239;
+  /* Page-background tint, same palette assignment as the accent above —
+     stays near-black; only the hue shifts. "r g b" channels. */
+  --bg-from-rgb: 10 6 18;
+  --bg-to-rgb: 6 6 12;
+  /* Total bottom clearance content needs to reserve for MiniPlayer: its own
+     fixed height (h-20 = 5rem) PLUS the floating gap above whatever it's
+     docked to (1rem, same value used for both its `bottom-4` on desktop and
+     the extra gap added on top of the bottom-tab-bar's height on mobile).
+     Not a flush bar anymore, so this is height + gap, not height alone. */
+  --mini-player-height: 6rem;
 }
 
 @theme inline {
@@ -36,7 +46,7 @@
 }
 
 body {
-  background: var(--background);
+  background: linear-gradient(160deg, rgb(var(--bg-from-rgb)) 0%, rgb(var(--bg-to-rgb)) 55%);
   color: var(--foreground);
 }
 
@@ -77,6 +87,38 @@ body {
   .text-shine {
     animation: none;
     background-position: 0% center;
+  }
+}
+
+/* Sidebar wordmark: off-white with a constant soft glow, plus a periodic
+   diagonal shine sweep — unlike .text-shine (continuous loop), this rests
+   for most of the cycle and only sweeps briefly every 5s. */
+@keyframes logo-shine {
+  0%,
+  70% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -100% center;
+  }
+}
+
+.logo-shine {
+  background-image: linear-gradient(100deg, var(--foreground) 40%, #ffffff 50%, var(--foreground) 60%);
+  background-size: 250% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow:
+    0 0 4px rgba(255, 255, 255, 0.7),
+    0 0 14px rgba(255, 255, 255, 0.35);
+  animation: logo-shine 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-shine {
+    animation: none;
+    background-position: 200% center;
   }
 }
 

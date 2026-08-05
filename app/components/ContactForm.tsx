@@ -102,7 +102,7 @@ export default function ContactForm() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="relative flex flex-col gap-[clamp(0.75rem,2vh,1.25rem)]"
+      className="relative flex flex-col gap-[clamp(0.5rem,1.5vh,1.25rem)]"
     >
       <div className="flex flex-col gap-1.5">
         <label htmlFor="name" className="text-sm text-muted">
@@ -150,7 +150,7 @@ export default function ContactForm() {
           onChange={handleChange}
           disabled={isSending}
           placeholder={t("contact.form.messagePlaceholder")}
-          className="h-[clamp(4rem,14vh,7rem)] resize-none rounded-xl border border-neon-purple/30 bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-neon-cyan focus:outline-none disabled:opacity-50"
+          className="h-[clamp(3.5rem,11vh,6rem)] resize-none rounded-xl border border-neon-purple/30 bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-neon-cyan focus:outline-none disabled:opacity-50"
         />
         {errors.message && (
           <p className="text-xs text-danger">{errors.message}</p>

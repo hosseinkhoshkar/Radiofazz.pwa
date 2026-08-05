@@ -2,8 +2,7 @@
   {
     "title": "Radio Faaz 1st Anniversary Party",
     "date": "2026-05-20",
-    "description": "Celebrating one year of non-stop live broadcasting and music together — thank you for listening with us.",
-    "image": "/events/event-placeholder.svg"
+    "description": "Celebrating one year of non-stop live broadcasting and music together — thank you for listening with us."
   },
   {
     "title": "Meet the Radio Faaz Team — Webinar",
@@ -13,14 +12,16 @@
   {
     "title": "Radio Faaz Live Music Night",
     "date": "2026-08-15",
-    "description": "A special evening of live music with guest artists, plus a live in-studio conversation.",
-    "image": "/events/event-placeholder.svg",
-    "link": "#"
+    "description": "A special evening of live music with guest artists, plus a live in-studio conversation."
   },
   {
     "title": "Radio Faaz Big Giveaway",
     "date": "2026-09-10",
-    "description": "Join the giveaway and win special prizes; entry details will be announced soon.",
-    "link": "#"
+    "description": "Join the giveaway and win special prizes; entry details will be announced soon."
+  },
+  {
+    "title": "Radio Faaz Charity Concert",
+    "date": "2026-10-24",
+    "description": "An evening of live performances raising funds for local community projects, hosted by Radio Faaz."
   }
 ]

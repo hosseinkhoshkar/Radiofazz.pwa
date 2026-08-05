@@ -8,17 +8,17 @@ const BLOBS: { factor: number; className: string; ambient?: boolean }[] = [
   {
     factor: 26,
     className:
-      "absolute -top-[12%] -left-[8%] h-[45vh] w-[45vh] rounded-full bg-neon-cyan/20 blur-[100px]",
+      "absolute -top-[12%] -left-[8%] h-[45vh] w-[45vh] rounded-full bg-neon-cyan/30 blur-[100px]",
   },
   {
     factor: 40,
     className:
-      "absolute top-[18%] -right-[12%] h-[50vh] w-[50vh] rounded-full bg-neon-purple/20 blur-[110px]",
+      "absolute top-[18%] -right-[12%] h-[50vh] w-[50vh] rounded-full bg-neon-purple/30 blur-[110px]",
   },
   {
     factor: 18,
     className:
-      "absolute -bottom-[15%] left-[28%] h-[40vh] w-[40vh] rounded-full bg-neon-pink/10 blur-[100px]",
+      "absolute -bottom-[15%] left-[28%] h-[40vh] w-[40vh] rounded-full bg-neon-pink/18 blur-[100px]",
   },
   {
     // Tracks the current track's assigned accent palette (--accent-from-rgb), crossfaded by PlayerContext.

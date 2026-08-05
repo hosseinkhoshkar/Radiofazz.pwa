@@ -1,9 +1,11 @@
-import Player from "../Player";
+"use client";
+
+import HomeHero from "../HomeHero";
 
 export default function HomeView() {
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center overflow-hidden px-[clamp(1rem,3vw,2.5rem)] py-[clamp(0.25rem,1vh,0.75rem)]">
-      <Player />
+    <div className="flex min-h-full w-full flex-col gap-2 px-[clamp(0.75rem,3vw,2rem)] py-[clamp(0.4rem,1vh,1rem)] md:h-full md:overflow-hidden">
+      <HomeHero />
     </div>
   );
 }

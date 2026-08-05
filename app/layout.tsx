@@ -3,6 +3,7 @@ import { Vazirmatn } from "next/font/google";
 import Script from "next/script";
 import Sidebar from "./components/nav/Sidebar";
 import BottomNav from "./components/nav/BottomNav";
+import LanguageSwitcher from "./components/nav/LanguageSwitcher";
 import MiniPlayer from "./components/MiniPlayer";
 import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
 import GradientBlobs from "./components/effects/GradientBlobs";
@@ -86,6 +87,7 @@ export default function RootLayout({
                   {children}
                 </main>
               </div>
+              <LanguageSwitcher />
               <MiniPlayer />
               <BottomNav />
             </PlayerProvider>

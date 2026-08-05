@@ -1,34 +1,97 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "../../context/LanguageContext";
 import type { Lang } from "@/lib/i18n/translations";
 
-const LANGS: { code: Lang; label: string }[] = [
-  { code: "fa", label: "FA" },
-  { code: "en", label: "EN" },
-  { code: "de", label: "DE" },
+const LANGS: { code: Lang; nativeName: string }[] = [
+  { code: "en", nativeName: "English" },
+  { code: "fa", nativeName: "فارسی" },
+  { code: "de", nativeName: "Deutsch" },
 ];
 
+// Fixed top-right floating element on every breakpoint (no longer anchored
+// inside the sidebar) — z-[60] keeps it above the mini-player (z-50) and
+// everything else. The hero's own content is bottom-anchored within its
+// card (see HomeHero.tsx's `items-end`), so there's nothing near the top of
+// the viewport for this to collide with, on any view or breakpoint.
 export default function LanguageSwitcher() {
   const { lang, setLang, t } = useLanguage();
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [open]);
 
   return (
-    <div
-      role="group"
-      aria-label={t("nav.languageLabel")}
-      className="flex items-center justify-between gap-1 rounded-full border border-neon-purple/20 bg-background/60 p-1"
-    >
-      {LANGS.map(({ code, label }) => (
-        <button
-          key={code}
-          type="button"
-          onClick={() => setLang(code)}
-          aria-current={lang === code ? "true" : undefined}
-          className="min-h-11 flex-1 rounded-full px-2 py-2 text-xs font-medium text-foreground/60 transition-colors aria-[current=true]:bg-neon-purple/20 aria-[current=true]:text-neon-cyan"
+    <div ref={rootRef} className="fixed top-4 right-6 z-[60] sm:right-8">
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={t("nav.languageLabel")}
+        className="flex h-11 items-center justify-center gap-2 rounded-full border border-neon-purple/20 bg-background-elevated/80 px-3 text-xs font-semibold text-foreground/80 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-colors hover:text-neon-cyan"
+      >
+        <GlobeIcon className="h-4 w-4" />
+        {lang.toUpperCase()}
+      </button>
+
+      {open && (
+        <ul
+          role="listbox"
+          aria-label={t("nav.languageLabel")}
+          className="absolute top-full right-0 z-[60] mt-2 w-full min-w-[10rem] overflow-hidden rounded-xl border border-neon-purple/20 bg-background-elevated/95 py-1 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl"
         >
-          {label}
-        </button>
-      ))}
+          {LANGS.map(({ code, nativeName }) => (
+            <li key={code}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={lang === code}
+                onClick={() => {
+                  setLang(code);
+                  setOpen(false);
+                }}
+                className="flex min-h-11 w-full items-center justify-between gap-2 px-3 py-2 text-sm text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-neon-cyan"
+              >
+                <span className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-muted">{code.toUpperCase()}</span>
+                  {nativeName}
+                </span>
+                {lang === code && <CheckIcon className="h-4 w-4 text-[rgb(var(--accent-from-rgb))]" />}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
+  );
+}
+
+function GlobeIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+    </svg>
+  );
+}
+
+function CheckIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M5 12l5 5L20 7" />
+    </svg>
   );
 }

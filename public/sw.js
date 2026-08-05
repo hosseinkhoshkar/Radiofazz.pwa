@@ -1,4 +1,4 @@
-const CACHE_NAME = "radiofaaz-shell-v1";
+const CACHE_NAME = "radiofaaz-shell-v2";
 
 // Requests that must always hit the network fresh: live now-playing
 // metadata and the audio stream itself.
@@ -43,20 +43,23 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Network-first: the app shell changes often during active development, so
+  // a stale cache-first response would silently serve an old build forever
+  // (the browser has no reason to revalidate a "successful" cached response).
+  // Cache is only a fallback for offline use.
   event.respondWith(
     caches.open(CACHE_NAME).then(async (cache) => {
-      const cached = await cache.match(request);
-
-      const networkFetch = fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            cache.put(request, response.clone());
-          }
-          return response;
-        })
-        .catch(() => cached);
-
-      return cached || networkFetch;
+      try {
+        const response = await fetch(request);
+        if (response.ok) {
+          cache.put(request, response.clone());
+        }
+        return response;
+      } catch {
+        const cached = await cache.match(request);
+        if (cached) return cached;
+        throw new Error("Offline and no cached response available");
+      }
     })
   );
 });

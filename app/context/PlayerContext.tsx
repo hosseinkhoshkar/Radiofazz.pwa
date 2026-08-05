@@ -24,9 +24,11 @@ const AD_TITLE_PREFIX = /^ad:\s*/i;
 
 const PALETTE_TRANSITION_MS = 1000;
 
-interface AccentPair {
-  from: RGB;
-  to: RGB;
+interface ThemeColors {
+  accentFrom: RGB;
+  accentTo: RGB;
+  bgFrom: RGB;
+  bgTo: RGB;
 }
 
 interface AdEntry {
@@ -44,10 +46,6 @@ function parseAdSlug(title: string | null): string | null {
   return title.slice(match[0].length).trim() || null;
 }
 
-// Kept small on purpose: this only feeds a decorative visualizer, not audio
-// processing, so a coarse 32-bin resolution is plenty and cheap to poll.
-const ANALYSER_FFT_SIZE = 64;
-
 function lerpRgb(from: RGB, to: RGB, progress: number): RGB {
   return [
     from[0] + (to[0] - from[0]) * progress,
@@ -56,23 +54,31 @@ function lerpRgb(from: RGB, to: RGB, progress: number): RGB {
   ];
 }
 
-function applyAccentColors({ from, to }: AccentPair) {
-  const root = document.documentElement.style;
-  root.setProperty(
-    "--accent-from-rgb",
-    `${Math.round(from[0])} ${Math.round(from[1])} ${Math.round(from[2])}`
-  );
-  root.setProperty(
-    "--accent-to-rgb",
-    `${Math.round(to[0])} ${Math.round(to[1])} ${Math.round(to[2])}`
-  );
+function rgbVar([r, g, b]: RGB): string {
+  return `${Math.round(r)} ${Math.round(g)} ${Math.round(b)}`;
 }
 
-// Matches the --accent-from-rgb / --accent-to-rgb fallback in globals.css.
-const DEFAULT_ACCENT: AccentPair = {
-  from: hexToRgb(ACCENT_PALETTES[0].from),
-  to: hexToRgb(ACCENT_PALETTES[0].to),
+// Accent and background are written together every frame so they crossfade
+// as one cohesive shift, never independently or out of sync.
+function applyThemeColors(theme: ThemeColors) {
+  const root = document.documentElement.style;
+  root.setProperty("--accent-from-rgb", rgbVar(theme.accentFrom));
+  root.setProperty("--accent-to-rgb", rgbVar(theme.accentTo));
+  root.setProperty("--bg-from-rgb", rgbVar(theme.bgFrom));
+  root.setProperty("--bg-to-rgb", rgbVar(theme.bgTo));
+}
+
+// Matches the --accent-*-rgb / --bg-*-rgb fallbacks in globals.css.
+const DEFAULT_THEME: ThemeColors = {
+  accentFrom: hexToRgb(ACCENT_PALETTES[0].from),
+  accentTo: hexToRgb(ACCENT_PALETTES[0].to),
+  bgFrom: hexToRgb(ACCENT_PALETTES[0].bgFrom),
+  bgTo: hexToRgb(ACCENT_PALETTES[0].bgTo),
 };
+
+// Sponsor mode always uses this palette (not hashed per-slug) so every ad
+// reads as a consistent, recognizable "sponsored" moment.
+const SPONSOR_PALETTE = ACCENT_PALETTES.find((p) => p.name === "gold-amber")!;
 
 export type PlayerStatus = "idle" | "loading" | "playing" | "paused";
 
@@ -92,10 +98,11 @@ interface PlayerContextValue {
   isMuted: boolean;
   toggleMute: () => void;
   togglePlay: () => void;
-  analyserNode: AnalyserNode | null;
   isAd: boolean;
   adAdvertiser: string | null;
   adLink: string | null;
+  adImage: string | null;
+  listeners: number;
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -104,34 +111,34 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const { t } = useLanguage();
   const prefersReducedMotion = useReducedMotion();
   const audioRef = useRef<HTMLAudioElement>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
   const [status, setStatus] = useState<PlayerStatus>("idle");
   const [nowPlaying, setNowPlaying] = useState<NowPlayingSource | null>(null);
   const [coverArt, setCoverArt] = useState(DEFAULT_COVER_ART);
   const [isMuted, setIsMuted] = useState(false);
-  const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
   const [ads, setAds] = useState<AdsMap>({});
   const [testAdSlug, setTestAdSlug] = useState<string | null>(null);
 
-  const accentFromRef = useRef<AccentPair>(DEFAULT_ACCENT);
-  const accentTargetRef = useRef<AccentPair>(DEFAULT_ACCENT);
-  const accentCurrentRef = useRef<AccentPair>(DEFAULT_ACCENT);
-  const accentStartRef = useRef(0);
-  const accentRafRef = useRef<number | null>(null);
+  const themeFromRef = useRef<ThemeColors>(DEFAULT_THEME);
+  const themeTargetRef = useRef<ThemeColors>(DEFAULT_THEME);
+  const themeCurrentRef = useRef<ThemeColors>(DEFAULT_THEME);
+  const themeStartRef = useRef(0);
+  const themeRafRef = useRef<number | null>(null);
 
   const isPlaying = status === "playing";
   const isLoading = status === "loading";
 
+  // An "AD:"-prefixed title means sponsor mode even if the slug isn't in
+  // ads.json yet — falls back to a generic sponsored state below instead of
+  // silently reverting to normal-track display.
   const adSlug = testAdSlug ?? parseAdSlug(nowPlaying?.track ?? null);
+  const isAd = adSlug != null;
   const activeAd = adSlug ? (ads[adSlug] ?? null) : null;
-  const isAd = activeAd != null;
-  const adAdvertiser = activeAd?.advertiser ?? null;
+  const adAdvertiser = isAd ? (activeAd?.advertiser ?? t("player.sponsorLabel")) : null;
   const adLink = activeAd?.link ?? null;
+  const adImage = activeAd?.image ?? null;
 
-  const paletteKey = isAd
-    ? (adSlug ?? "")
-    : `${nowPlaying?.artist ?? ""}::${nowPlaying?.track ?? ""}`;
-  const palette = pickPalette(paletteKey);
+  const paletteKey = `${nowPlaying?.artist ?? ""}::${nowPlaying?.track ?? ""}`;
+  const palette = isAd ? SPONSOR_PALETTE : pickPalette(paletteKey);
 
   const artist = isAd
     ? t("player.sponsorLabel")
@@ -217,50 +224,54 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [isMuted]);
 
   useEffect(() => {
-    const target: AccentPair = {
-      from: hexToRgb(palette.from),
-      to: hexToRgb(palette.to),
+    const target: ThemeColors = {
+      accentFrom: hexToRgb(palette.from),
+      accentTo: hexToRgb(palette.to),
+      bgFrom: hexToRgb(palette.bgFrom),
+      bgTo: hexToRgb(palette.bgTo),
     };
 
     if (prefersReducedMotion) {
-      accentFromRef.current = target;
-      accentTargetRef.current = target;
-      accentCurrentRef.current = target;
-      applyAccentColors(target);
+      themeFromRef.current = target;
+      themeTargetRef.current = target;
+      themeCurrentRef.current = target;
+      applyThemeColors(target);
       return;
     }
 
-    accentFromRef.current = accentCurrentRef.current;
-    accentTargetRef.current = target;
-    accentStartRef.current = performance.now();
+    themeFromRef.current = themeCurrentRef.current;
+    themeTargetRef.current = target;
+    themeStartRef.current = performance.now();
 
-    if (accentRafRef.current != null) return;
+    if (themeRafRef.current != null) return;
 
     function tick(now: number) {
-      const elapsed = now - accentStartRef.current;
+      const elapsed = now - themeStartRef.current;
       const progress = Math.min(elapsed / PALETTE_TRANSITION_MS, 1);
-      const from = accentFromRef.current;
-      const to = accentTargetRef.current;
-      const next: AccentPair = {
-        from: lerpRgb(from.from, to.from, progress),
-        to: lerpRgb(from.to, to.to, progress),
+      const from = themeFromRef.current;
+      const to = themeTargetRef.current;
+      const next: ThemeColors = {
+        accentFrom: lerpRgb(from.accentFrom, to.accentFrom, progress),
+        accentTo: lerpRgb(from.accentTo, to.accentTo, progress),
+        bgFrom: lerpRgb(from.bgFrom, to.bgFrom, progress),
+        bgTo: lerpRgb(from.bgTo, to.bgTo, progress),
       };
-      accentCurrentRef.current = next;
-      applyAccentColors(next);
+      themeCurrentRef.current = next;
+      applyThemeColors(next);
 
       if (progress < 1) {
-        accentRafRef.current = requestAnimationFrame(tick);
+        themeRafRef.current = requestAnimationFrame(tick);
       } else {
-        accentRafRef.current = null;
+        themeRafRef.current = null;
       }
     }
 
-    accentRafRef.current = requestAnimationFrame(tick);
-  }, [palette.name, palette.from, palette.to, prefersReducedMotion]);
+    themeRafRef.current = requestAnimationFrame(tick);
+  }, [palette.name, palette.from, palette.to, palette.bgFrom, palette.bgTo, prefersReducedMotion]);
 
   useEffect(() => {
     return () => {
-      if (accentRafRef.current != null) cancelAnimationFrame(accentRafRef.current);
+      if (themeRafRef.current != null) cancelAnimationFrame(themeRafRef.current);
     };
   }, []);
 
@@ -273,23 +284,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setStatus("paused");
       return;
     }
-
-    if (!prefersReducedMotion && !audioContextRef.current) {
-      try {
-        const ctx = new AudioContext();
-        const source = ctx.createMediaElementSource(audio);
-        const analyser = ctx.createAnalyser();
-        analyser.fftSize = ANALYSER_FFT_SIZE;
-        source.connect(analyser);
-        analyser.connect(ctx.destination);
-        audioContextRef.current = ctx;
-        setAnalyserNode(analyser);
-      } catch {
-        // The radial visualizer is a decorative enhancement; playback works without it.
-      }
-    }
-
-    audioContextRef.current?.resume();
 
     setStatus("loading");
     audio.play().catch(() => setStatus("paused"));
@@ -309,10 +303,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         isMuted,
         toggleMute,
         togglePlay,
-        analyserNode,
         isAd,
         adAdvertiser,
         adLink,
+        adImage,
+        listeners: nowPlaying?.listeners ?? 0,
       }}
     >
       <audio
