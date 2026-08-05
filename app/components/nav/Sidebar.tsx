@@ -24,7 +24,7 @@ export default function Sidebar() {
       // legibility-only (softens whatever's behind, no tint/color of its
       // own), and drop-shadow-[...] on the text/icon content below does the
       // rest of the contrast work, rather than a solid/tinted panel.
-      className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col justify-between border-r border-[rgb(var(--accent-from-rgb)/20%)] px-4 pt-10 pb-[calc(1.5rem+var(--mini-player-height))] backdrop-blur-sm md:flex"
+      className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col justify-between border-r border-[rgb(var(--accent-from-rgb)/20%)] px-4 pt-10 pb-[calc(1.5rem+var(--mini-player-height))] backdrop-blur-sm lg:flex"
     >
       <div className="flex flex-col gap-24">
         <button

@@ -22,8 +22,11 @@ const LANGS: { code: Lang; nativeName: string }[] = [
 // isn't the same floating-pill LanguageSwitcher component used there either
 // — here it's styled as a regular menu row that expands inline in place,
 // since a nested dropdown-within-a-drawer reads worse than a drawer-native
-// expand/collapse row. md:hidden throughout; desktop keeps its fixed
-// Sidebar + LanguageSwitcher, completely unaffected by anything in this file.
+// expand/collapse row. lg:hidden throughout — covers phone AND tablet
+// widths now (was md:hidden, phone-only); only >=1024px desktop keeps the
+// fixed Sidebar + LanguageSwitcher, completely unaffected by anything in
+// this file. Drawer width/bg step up at md: (768-1024, tablet) to their
+// own values, independent of the phone-tier (<768) ones on the base class.
 export default function MobileMenu() {
   const { view, setView } = useView();
   const { t } = useLanguage();
@@ -48,7 +51,7 @@ export default function MobileMenu() {
         aria-label={t("nav.openMenu")}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className="fixed top-4 left-4 z-[60] flex h-11 w-11 items-center justify-center rounded-full border border-[rgb(var(--accent-from-rgb)/20%)] bg-background-elevated/80 text-foreground/80 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-colors hover:text-[rgb(var(--accent-text-rgb))] md:hidden"
+        className="fixed top-4 left-4 z-[60] flex h-11 w-11 items-center justify-center rounded-full border border-[rgb(var(--accent-from-rgb)/20%)] bg-background-elevated/80 text-foreground/80 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-colors hover:text-[rgb(var(--accent-text-rgb))] lg:hidden"
       >
         <MenuIcon className="h-5 w-5" />
       </button>
@@ -61,7 +64,7 @@ export default function MobileMenu() {
           <div
             aria-hidden="true"
             onClick={() => setOpen(false)}
-            className="fixed inset-0 z-[65] bg-black/20 md:hidden"
+            className="fixed inset-0 z-[65] bg-black/20 lg:hidden"
           />
 
           {/* Slide-in drawer from the left (same side as the hamburger
@@ -82,7 +85,7 @@ export default function MobileMenu() {
             role="dialog"
             aria-modal="true"
             aria-label={t("nav.openMenu")}
-            className="fixed inset-y-0 left-0 z-[70] flex w-3/5 max-w-sm flex-col bg-background/50 backdrop-blur-2xl md:hidden"
+            className="fixed inset-y-0 left-0 z-[70] flex w-3/5 max-w-sm flex-col bg-background/50 backdrop-blur-2xl md:w-[30%] md:bg-background/50 lg:hidden"
           >
             <div className="flex shrink-0 items-center justify-between px-4 pt-4">
               {/* Shared component with Sidebar.tsx (see Logo.tsx) — the LIVE
@@ -100,7 +103,10 @@ export default function MobileMenu() {
               </button>
             </div>
 
-            <nav className="flex flex-1 flex-col justify-center gap-2 overflow-y-auto px-6">
+            {/* gap-1 (was gap-2) + each row's own min-h-10 (was min-h-14,
+                text-sm): tighter list, row height still clears the ~40px
+                sensible-minimum tap target even with the smaller font. */}
+            <nav className="flex flex-1 flex-col justify-center gap-1 overflow-y-auto px-6">
               {navItems.map((item) => (
                 <button
                   key={item.view}
@@ -110,9 +116,9 @@ export default function MobileMenu() {
                     setOpen(false);
                   }}
                   aria-current={view === item.view ? "page" : undefined}
-                  className="flex min-h-14 w-full items-center gap-4 rounded-2xl px-4 text-sm font-medium text-foreground/80 transition-colors aria-[current=page]:bg-[rgb(var(--accent-from-rgb))] aria-[current=page]:text-white"
+                  className="flex min-h-10 w-full items-center gap-3 rounded-2xl px-4 text-xs font-medium text-foreground/80 transition-colors aria-[current=page]:bg-[rgb(var(--accent-from-rgb))] aria-[current=page]:text-white"
                 >
-                  <item.icon className="h-6 w-6 shrink-0" />
+                  <item.icon className="h-5 w-5 shrink-0" />
                   {t(item.labelKey)}
                 </button>
               ))}
@@ -150,9 +156,9 @@ function LanguageMenuItem() {
         type="button"
         onClick={() => setLangOpen((prev) => !prev)}
         aria-expanded={langOpen}
-        className="flex min-h-14 w-full items-center gap-4 rounded-2xl px-4 text-sm font-medium text-foreground/80 transition-colors hover:bg-foreground/5"
+        className="flex min-h-10 w-full items-center gap-3 rounded-2xl px-4 text-xs font-medium text-foreground/80 transition-colors hover:bg-foreground/5"
       >
-        <GlobeIcon className="h-6 w-6 shrink-0" />
+        <GlobeIcon className="h-5 w-5 shrink-0" />
         {t("nav.languageLabel")}
         {/* No language-code label here anymore (was lang.toUpperCase(),
             e.g. "EN") — this collapsed row now reads as a generic
@@ -162,7 +168,10 @@ function LanguageMenuItem() {
       </button>
 
       {langOpen && (
-        <div role="listbox" aria-label={t("nav.languageLabel")} className="flex flex-col gap-1 py-1 ps-14">
+        // ps-12 (was ps-14): re-aligned to the trigger row's own icon+gap+
+        // padding now that the icon shrank (h-6 -> h-5, gap-4 -> gap-3), so
+        // the options still line up directly under the trigger's own label.
+        <div role="listbox" aria-label={t("nav.languageLabel")} className="flex flex-col gap-1 py-1 ps-12">
           {LANGS.map(({ code, nativeName }) => (
             <button
               key={code}
@@ -173,9 +182,9 @@ function LanguageMenuItem() {
                 setLang(code);
                 setLangOpen(false);
               }}
-              className="flex min-h-11 w-full items-center gap-2 rounded-xl px-3 text-start text-sm text-foreground/70 transition-colors hover:bg-foreground/5 aria-[selected=true]:text-[rgb(var(--accent-text-rgb))]"
+              className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-foreground/70 transition-colors hover:bg-foreground/5 aria-[selected=true]:text-[rgb(var(--accent-text-rgb))]"
             >
-              <span className="text-xs font-semibold text-muted">{code.toUpperCase()}</span>
+              <span className="text-[0.65rem] font-semibold text-muted">{code.toUpperCase()}</span>
               {nativeName}
               {lang === code && <CheckIcon className="ms-auto h-4 w-4 text-[rgb(var(--accent-text-rgb))]" />}
             </button>

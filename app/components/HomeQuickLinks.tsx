@@ -32,8 +32,32 @@ const AD_IMAGE_URL =
 // the one remaining lever to keep it fully clear of the fixed mini-player
 // bar without touching the hero's own height or the cover art inside it.
 // md: restores the exact original clamp, desktop unaffected.
+// Phone-landscape variant (e.g. iPhone 14 Pro Max at 932x430): a custom
+// arbitrary-variant media query gated on BOTH landscape orientation and a
+// short max-height, not width — width alone can't distinguish a landscape
+// phone (932px wide) from a tablet/desktop, but a phone in landscape is
+// always short. 500px clears every landscape phone (tallest is ~430px) while
+// staying well under the shortest landscape tablet (iPad mini is 768px
+// tall), so this never fires on anything but a phone on its side. `!`
+// (important) on every override here because plain source-order can't be
+// trusted to beat the existing `md:` rules once viewport width crosses 768px
+// (a 932px-wide phone already qualifies for `md:` too) — important pins the
+// win to orientation regardless of which width bucket also matched.
+//
+// IMPORTANT (Tailwind v4 scanning): every one of these classes below is
+// spelled out in full, literally, in this file's source text — Tailwind's
+// build-time scanner extracts classes via a static regex over the raw
+// source, it never evaluates JS. A shared `const PL = "[@media(...)]:"`
+// spliced in via `${PL}!h-7` looks like a real class at runtime but is
+// invisible to the scanner (the source bytes are literally `${PL}!h-7`, not
+// the expanded string), so no CSS gets generated for it. Learned this the
+// hard way — first pass used the `${PL}` template and silently produced
+// zero matching rules in the compiled stylesheet.
 const CARD_CLASSES =
-  "group relative isolate flex h-[clamp(7rem,18vh,9.5rem)] w-[92%] shrink-0 snap-center flex-col justify-end overflow-hidden rounded-3xl border border-white/10 text-start shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.08)] [clip-path:inset(0_round_1.5rem)] transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02] md:h-[clamp(9rem,22vh,12.5rem)] md:w-auto";
+  "group relative isolate flex h-[clamp(7rem,18vh,9.5rem)] w-[92%] shrink-0 snap-center flex-col justify-end overflow-hidden rounded-3xl border border-white/10 text-start shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.08)] [clip-path:inset(0_round_1.5rem)] transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02] md:h-[clamp(9rem,22vh,12.5rem)] md:w-auto " +
+  // ~20% of the normal mobile-portrait card height (7rem-9.5rem tall) ->
+  // a compact ~1.75rem/28px button, row-centered content, no scroll-snap.
+  "[@media(orientation:landscape)_and_(max-height:500px)]:!h-7 [@media(orientation:landscape)_and_(max-height:500px)]:!w-full [@media(orientation:landscape)_and_(max-height:500px)]:!shrink [@media(orientation:landscape)_and_(max-height:500px)]:!flex-row [@media(orientation:landscape)_and_(max-height:500px)]:!items-center [@media(orientation:landscape)_and_(max-height:500px)]:!justify-center [@media(orientation:landscape)_and_(max-height:500px)]:!rounded-xl [@media(orientation:landscape)_and_(max-height:500px)]:!border-[rgb(var(--accent-from-rgb)/40%)] [@media(orientation:landscape)_and_(max-height:500px)]:!bg-[rgb(var(--accent-from-rgb)/14%)] [@media(orientation:landscape)_and_(max-height:500px)]:!backdrop-blur-md [@media(orientation:landscape)_and_(max-height:500px)]:!shadow-none [@media(orientation:landscape)_and_(max-height:500px)]:hover:!translate-y-0 [@media(orientation:landscape)_and_(max-height:500px)]:hover:!scale-100";
 
 function CardImage({ src }: { src: string }) {
   return (
@@ -42,7 +66,7 @@ function CardImage({ src }: { src: string }) {
       alt=""
       aria-hidden="true"
       loading="lazy"
-      className="absolute inset-0 h-full w-full rounded-3xl object-cover"
+      className="absolute inset-0 h-full w-full rounded-3xl object-cover [@media(orientation:landscape)_and_(max-height:500px)]:!hidden"
     />
   );
 }
@@ -51,21 +75,21 @@ function CardGlow() {
   return (
     <>
       {/* Dark scrim for text contrast over the card's own photo. */}
-      <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-t from-black/90 via-black/60 to-black/25" />
+      <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-t from-black/90 via-black/60 to-black/25 [@media(orientation:landscape)_and_(max-height:500px)]:!hidden" />
       {/* Glassmorphic blur/tint layer sitting on top of the scrim+photo —
           the backdrop-blur compositing layer needs its own radius, parent
           clipping alone isn't reliable for it. */}
-      <div className="pointer-events-none absolute inset-0 rounded-3xl bg-background-elevated/35 backdrop-blur-[0.5px]" />
+      <div className="pointer-events-none absolute inset-0 rounded-3xl bg-background-elevated/35 backdrop-blur-[0.5px] [@media(orientation:landscape)_and_(max-height:500px)]:!hidden" />
       {/* Faint palette-colored glow anchored to a corner — ties the glass
           panel to the track's active accent. */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-3xl opacity-60"
+        className="pointer-events-none absolute inset-0 rounded-3xl opacity-60 [@media(orientation:landscape)_and_(max-height:500px)]:!hidden"
         style={{
           background:
             "radial-gradient(120% 90% at 15% 0%, rgb(var(--accent-from-rgb)/30%), transparent 65%)",
         }}
       />
-      <div className="pointer-events-none absolute inset-0 rounded-3xl bg-white/0 transition-colors duration-300 group-hover:bg-white/5" />
+      <div className="pointer-events-none absolute inset-0 rounded-3xl bg-white/0 transition-colors duration-300 group-hover:bg-white/5 [@media(orientation:landscape)_and_(max-height:500px)]:!hidden" />
     </>
   );
 }
@@ -82,10 +106,14 @@ function CardBody({
   const { t } = useLanguage();
 
   return (
-    <div className="relative z-10 flex flex-col gap-1 p-[clamp(1rem,2.2vw,1.4rem)]">
-      <p className="truncate text-[clamp(1.05rem,1.8vw,1.3rem)] font-bold text-foreground">{title}</p>
-      <p className="line-clamp-2 text-[clamp(0.75rem,1.3vw,0.9rem)] text-muted">{description}</p>
-      <span className="mt-1 text-[clamp(0.75rem,1.3vw,0.9rem)] font-semibold text-[rgb(var(--accent-text-rgb))]">
+    <div className="relative z-10 flex flex-col gap-1 p-[clamp(1rem,2.2vw,1.4rem)] [@media(orientation:landscape)_and_(max-height:500px)]:!w-full [@media(orientation:landscape)_and_(max-height:500px)]:!items-center [@media(orientation:landscape)_and_(max-height:500px)]:!justify-center [@media(orientation:landscape)_and_(max-height:500px)]:!gap-0 [@media(orientation:landscape)_and_(max-height:500px)]:!p-1">
+      <p className="truncate text-[clamp(1.05rem,1.8vw,1.3rem)] font-bold text-foreground [@media(orientation:landscape)_and_(max-height:500px)]:!max-w-full [@media(orientation:landscape)_and_(max-height:500px)]:!text-center [@media(orientation:landscape)_and_(max-height:500px)]:!text-[0.7rem] [@media(orientation:landscape)_and_(max-height:500px)]:!font-semibold">
+        {title}
+      </p>
+      <p className="line-clamp-2 text-[clamp(0.75rem,1.3vw,0.9rem)] text-muted [@media(orientation:landscape)_and_(max-height:500px)]:!hidden">
+        {description}
+      </p>
+      <span className="mt-1 text-[clamp(0.75rem,1.3vw,0.9rem)] font-semibold text-[rgb(var(--accent-text-rgb))] [@media(orientation:landscape)_and_(max-height:500px)]:!hidden">
         {t(ctaKey)}
       </span>
     </div>
@@ -115,7 +143,7 @@ export default function HomeQuickLinks() {
   }, []);
 
   return (
-    <div className="flex w-full gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] snap-x snap-mandatory md:grid md:grid-cols-3 md:gap-2 md:overflow-visible md:pb-0">
+    <div className="flex w-full gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] snap-x snap-mandatory md:grid md:grid-cols-3 md:gap-2 md:overflow-visible md:pb-0 [@media(orientation:landscape)_and_(max-height:500px)]:!grid [@media(orientation:landscape)_and_(max-height:500px)]:!grid-cols-3 [@media(orientation:landscape)_and_(max-height:500px)]:!gap-1.5 [@media(orientation:landscape)_and_(max-height:500px)]:!overflow-visible [@media(orientation:landscape)_and_(max-height:500px)]:!pb-0 [@media(orientation:landscape)_and_(max-height:500px)]:!snap-none">
       {/* Opens DJ Majid's own site in a new tab — a deliberate exception to
           this row's other two cards, which switch the internal view. The
           internal "DJ Majid" view is still reachable via the sidebar/tab-bar

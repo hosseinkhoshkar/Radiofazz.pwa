@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { usePlayer } from "../context/PlayerContext";
 import { useLanguage } from "../context/LanguageContext";
 import { DEFAULT_COVER_ART } from "@/lib/itunes";
 import PlayButton from "./PlayButton";
 import HomeWaveform from "./HomeWaveform";
+import MarqueeText from "./MarqueeText";
 
 // Local hero background — replaced the canvas/SVG generative experiments
 // (both abandoned; static photo again). Also the fallback for sponsor mode
@@ -26,12 +26,16 @@ export default function HomeHero() {
 
   const listenersCount = new Intl.NumberFormat(NUMBER_LOCALES[lang] ?? "en-US").format(listeners);
 
-  // No API-found art for this track — hide the image (opacity, not
-  // unmount/display:none) rather than fall back to the old placeholder, so
-  // the reserved square keeps the text column/waveform/stats/language
-  // switcher from shifting.
+  // No API-found art for this track — collapse its space entirely (width to
+  // 0 on the md+ flex row, reserved mobile padding to 0) rather than hiding
+  // it behind opacity while still holding the layout slot. The text
+  // column/waveform (md: via flex-1 on the now-wider row; mobile: via the
+  // freed pr- reservation) reflow to fill whatever space opens up. Same
+  // 400ms timing as the image's own crossfade below, so the collapse and
+  // the fade read as one motion.
   const hasCoverArt = coverArt !== DEFAULT_COVER_ART;
   const heroImageSrc = isAd ? (adImage ?? HERO_IMAGE_URL) : HERO_IMAGE_URL;
+  const collapseDurationClass = prefersReducedMotion ? "duration-0" : "duration-[400ms]";
 
   return (
     // Mobile: hard-capped h-[60dvh] (up from 50dvh) — the three-card section used to live
@@ -131,13 +135,21 @@ export default function HomeHero() {
           side against the row's cross axis: vertical on desktop, horizontal
           on mobile. The text column keeps w-full so this alignment never
           affects its own left-aligned content. */}
-      <div className="flex w-full flex-col-reverse items-center gap-[clamp(1rem,3vw,2rem)] md:flex-row">
+      <div
+        className={`flex w-full flex-col-reverse items-center gap-[clamp(1rem,3vw,2rem)] transition-[column-gap] ${collapseDurationClass} ease-out md:flex-row ${
+          hasCoverArt ? "md:gap-x-[clamp(1rem,3vw,2rem)]" : "md:gap-x-0"
+        }`}
+      >
         {/* No margin hack here anymore — the hero above is now a real
             h-[70dvh] fixed box, and the outer hero div's own justify-end
             bottom-anchors this whole content block within that fixed
             budget naturally, no hand-tuned px/vh guess required. */}
         <div className="flex w-full min-w-0 flex-1 flex-col items-start gap-[clamp(0.1rem,0.3vh,0.3rem)] md:gap-[clamp(0.2rem,0.7vh,0.5rem)]">
-          <div className="flex flex-wrap items-center gap-2 pr-[12.75rem] md:pr-0">
+          <div
+            className={`flex flex-wrap items-center gap-2 transition-[padding-right] ${collapseDurationClass} ease-out md:pr-0 ${
+              hasCoverArt ? "pr-[12.75rem]" : "pr-0"
+            }`}
+          >
             <div className="flex items-center gap-2 rounded-full border border-[rgb(var(--accent-from-rgb)/40%)] bg-white/10 px-2.5 py-1 backdrop-blur-md md:px-3 md:py-1.5">
               <span
                 className={`h-2 w-2 rounded-full bg-success ${
@@ -156,24 +168,38 @@ export default function HomeHero() {
             )}
           </div>
 
-          <div className="max-w-full pr-[12.75rem] md:pr-0">
+          <div
+            className={`max-w-full transition-[padding-right] ${collapseDurationClass} ease-out md:pr-0 ${
+              hasCoverArt ? "pr-[12.75rem]" : "pr-0"
+            }`}
+          >
             {/* Mobile-base clamp floors lowered (noticeably smaller on
                 narrow viewports); md: restores the exact original clamp so
                 desktop is byte-identical to before this change. Marquee
                 only engages when the title actually overflows — see
-                MarqueeTitle below.
+                MarqueeText (shared with the mini-player's title/artist).
                 pr- reserves the absolutely-positioned mobile cover art's own
                 width (clamp ceiling 11rem) + its right-4 gutter + a small
                 gap — at 50dvh this row's y-band now falls inside the cover
                 art's y-band (it didn't at 70dvh, where there was ~94px of
                 clear space below it), so a long/marquee-scrolling title
                 would otherwise paint under the cover art instead of stopping
-                short of it. md:pr-0: desktop's cover art is a normal
-                flex-row sibling, never absolute, so no reservation needed
-                there. */}
-            <MarqueeTitle
+                short of it. Collapses to pr-0 when there's no cover art to
+                protect against (see hasCoverArt above), not just on desktop.
+                md:pr-0: desktop's cover art is a normal flex-row sibling,
+                never absolute, so no reservation needed there regardless. */}
+            {/* ~18% off both the floor and ceiling of both clamps (mobile
+                1rem->0.8rem, 2.85rem->2.35rem; md 1.35rem->1.1rem, same new
+                2.35rem ceiling) plus the preferred term (4.5vw->3.7vw) — a
+                prior pass apparently missed the shared 2.85rem ceiling,
+                which is what actually caps the size on every viewport once
+                4.5vw exceeds it (true from ~1013px up), so desktop never
+                visibly shrank last time. This pass touches all three
+                numbers in both clamps so every breakpoint's rendered size
+                actually drops. */}
+            <MarqueeText
               text={track}
-              className="text-[clamp(1rem,4.5vw,2.85rem)] font-bold leading-tight text-foreground drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] md:text-[clamp(1.35rem,4.5vw,2.85rem)]"
+              className="text-[clamp(0.8rem,3.7vw,2.35rem)] font-bold leading-tight text-foreground drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] md:text-[clamp(1.1rem,3.7vw,2.35rem)]"
             />
             {!isAd && (
               <p className="mt-0.5 truncate text-[clamp(0.75rem,2vw,1.25rem)] text-foreground/70 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] md:mt-1 md:text-[clamp(0.875rem,2vw,1.25rem)]">
@@ -269,7 +295,11 @@ export default function HomeHero() {
             opposite the text column) is completely unaffected, never
             touches position:absolute at all. */}
         {!isAd && (
-          <div className="absolute top-[calc(10rem+10vh)] right-4 shrink-0 md:static md:top-auto md:right-auto">
+          <div
+            className={`absolute top-[calc(10rem+10vh)] right-4 shrink-0 overflow-hidden transition-[width] ${collapseDurationClass} ease-out md:static md:top-auto md:right-auto ${
+              hasCoverArt ? "md:w-[clamp(11rem,32vh,20rem)]" : "md:w-0"
+            }`}
+          >
             <AnimatePresence mode="wait">
               <motion.img
                 key={coverArt}
@@ -287,59 +317,6 @@ export default function HomeHero() {
         )}
       </div>
       </div>
-    </div>
-  );
-}
-
-// Horizontal marquee for the track title specifically — only when it
-// actually overflows its container at the current font size; short titles
-// render as a plain static (truncated as a safety net, though it should
-// never actually need to truncate once this measurement is correct) line,
-// never scrolling. A separate always-mounted invisible measuring span
-// (not the visible one, which swaps between the static/marquee markup)
-// is what makes re-measurement correct even after the title has already
-// started scrolling — measuring the visible node directly would go stale
-// once it stops being an unbroken single-line element, so a later short
-// title could never be detected as "no longer overflowing" and switch back.
-// prefers-reduced-motion: renders the static branch outright instead of an
-// animated-but-motionless marquee, matching how continuous motion is
-// avoided elsewhere in this app (also backstopped at the CSS level in
-// globals.css, same belt-and-suspenders pattern as .logo-shine there).
-function MarqueeTitle({ text, className }: { text: string; className: string }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const measureRef = useRef<HTMLSpanElement>(null);
-  const [isOverflowing, setIsOverflowing] = useState(false);
-  const prefersReducedMotion = useReducedMotion();
-
-  useEffect(() => {
-    function measure() {
-      if (containerRef.current && measureRef.current) {
-        setIsOverflowing(measureRef.current.scrollWidth > containerRef.current.clientWidth);
-      }
-    }
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [text]);
-
-  const shouldScroll = isOverflowing && !prefersReducedMotion;
-
-  return (
-    <div ref={containerRef} className={`relative overflow-hidden ${className}`}>
-      <span ref={measureRef} aria-hidden="true" className="invisible absolute whitespace-nowrap">
-        {text}
-      </span>
-
-      {shouldScroll ? (
-        <div className="flex w-max animate-marquee whitespace-nowrap">
-          <span className="pe-16">{text}</span>
-          <span aria-hidden="true" className="pe-16">
-            {text}
-          </span>
-        </div>
-      ) : (
-        <span className="block truncate whitespace-nowrap">{text}</span>
-      )}
     </div>
   );
 }

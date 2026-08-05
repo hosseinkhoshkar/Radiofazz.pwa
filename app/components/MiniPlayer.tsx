@@ -7,8 +7,10 @@ import { useView } from "../context/ViewContext";
 import { useLanguage } from "../context/LanguageContext";
 import { useFinePointer } from "@/lib/useFinePointer";
 import { useIsMobileViewport } from "@/lib/useIsMobileViewport";
+import { DEFAULT_COVER_ART } from "@/lib/itunes";
 import PlayButton from "./PlayButton";
 import HomeWaveform from "./HomeWaveform";
+import MarqueeText from "./MarqueeText";
 
 // Persistently visible on every view, including Home — it and the hero's
 // own PlayButton both read/drive the same PlayerContext singleton, so they
@@ -60,6 +62,12 @@ export default function MiniPlayer() {
   const { t } = useLanguage();
   const prefersReducedMotion = useReducedMotion();
   const isMobile = useIsMobileViewport();
+  // No API-found art for this track — collapse the thumbnail's own width
+  // (and its spacing) to 0 instead of just showing a placeholder image, so
+  // the title/artist column expands to fill the freed space. Same 400ms
+  // timing as the hero's own cover-art crossfade (see HomeHero.tsx).
+  const hasCoverArt = coverArt !== DEFAULT_COVER_ART;
+  const collapseDurationClass = prefersReducedMotion ? "duration-0" : "duration-[400ms]";
 
   return (
     <motion.div
@@ -83,15 +91,35 @@ export default function MiniPlayer() {
           isMobile ? "grid-cols-[1fr_auto]" : "grid-cols-[1fr_auto_1fr]"
         }`}
       >
-        {/* Left zone: thumbnail + title/artist */}
-        <div className="flex min-w-0 items-center justify-self-start gap-2 sm:gap-3">
-          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full">
+        {/* Left zone: thumbnail + title/artist. No justify-self-start here
+            (would opt this grid item out of the column's default stretch,
+            which makes the browser size it to its own max-content width
+            instead — and a flex child's min-w-0 only bounds its MINIMUM
+            size, not its max-content contribution, so a long nowrap title
+            inside would still inflate this whole zone past the bar's own
+            edge and visually run under the play button. Left-alignment is
+            already the natural result of stretch + this row's own
+            justify-content default (flex-start), so nothing is lost by
+            leaving it out.) */}
+        <div className="flex min-w-0 items-center">
+          <div
+            className={`h-11 shrink-0 overflow-hidden rounded-full transition-[width,margin-right] ${collapseDurationClass} ease-out ${
+              hasCoverArt ? "w-11 mr-2 sm:mr-3" : "w-0 mr-0"
+            }`}
+          >
             <img src={coverArt} alt="" className="h-full w-full object-cover" />
           </div>
 
+          {/* Same overflow-detection + scroll-on-demand marquee the hero's
+              track title uses (see MarqueeText) — a long title/artist used
+              to just truncate=false render past its own box and visually
+              run underneath the play button next to it; this measures
+              against the actual available width (this min-w-0 flex-1
+              column, which stops short of Play/Volume) and only scrolls
+              when the text truly doesn't fit. */}
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-foreground">{track}</p>
-            <p className="truncate text-xs text-muted">{artist}</p>
+            <MarqueeText text={track} className="text-sm font-medium text-foreground" />
+            <MarqueeText text={artist} className="text-xs text-muted" />
           </div>
         </div>
 

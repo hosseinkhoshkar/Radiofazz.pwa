@@ -88,7 +88,7 @@ export default function RootLayout({
                   MobileMenu's hamburger overlay). The mini-player's own
                   clearance is handled per-view via pb-[var(--mini-player-height)]
                   in page.tsx, unrelated to this wrapper. */}
-              <div className="h-full md:pl-60">
+              <div className="h-full lg:pl-60">
                 <main className="relative h-full overflow-hidden">
                   {children}
                 </main>
@@ -100,7 +100,7 @@ export default function RootLayout({
                   breakpoint. Desktop-only now: mobile has no room for a
                   floating Install button, and the language switcher moved
                   into MobileMenu's hamburger overlay instead. */}
-              <div className="fixed top-4 right-12 z-[60] hidden items-center gap-2 sm:right-16 md:flex">
+              <div className="fixed top-4 right-12 z-[60] hidden items-center gap-2 sm:right-16 lg:flex">
                 <InstallAppButton />
                 <LanguageSwitcher />
               </div>
