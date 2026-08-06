@@ -25,15 +25,15 @@ export default function AboutView() {
       />
 
       <div className="shrink-0 text-center">
-        <h1 className="text-[clamp(1.25rem,2.5vw,1.75rem)] font-bold text-foreground">
+        <h1 className="text-[clamp(1.4rem,2.8vw,1.95rem)] font-bold text-foreground">
           {t("about.title")}
         </h1>
-        <p className="mt-1 text-[clamp(0.7rem,1.5vw,0.85rem)] text-muted">
+        <p className="mt-1 text-[clamp(0.78rem,1.7vw,0.95rem)] text-muted">
           {t("about.subtitle")}
         </p>
       </div>
 
-      <p className="max-w-2xl shrink-0 text-center text-[clamp(0.75rem,1.5vw,0.875rem)] leading-snug text-muted">
+      <p className="max-w-2xl shrink-0 text-center text-[clamp(0.84rem,1.7vw,0.98rem)] leading-snug text-muted">
         {t("about.bio")}
       </p>
 
@@ -41,7 +41,7 @@ export default function AboutView() {
         href={DJ_MAJID_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="shrink-0 text-[clamp(0.75rem,1.5vw,0.875rem)] font-medium text-[rgb(var(--accent-text-rgb))] transition-opacity hover:opacity-80"
+        className="shrink-0 text-[clamp(0.84rem,1.7vw,0.98rem)] font-medium text-[rgb(var(--accent-text-rgb))] transition-opacity hover:opacity-80"
       >
         {t("about.linkCta")}
       </a>
@@ -52,10 +52,10 @@ export default function AboutView() {
             key={feature.titleKey}
             className="flex flex-col gap-1 rounded-2xl border border-foreground/10 bg-background-elevated/60 px-[clamp(0.75rem,1.5vw,1rem)] py-[clamp(0.5rem,1.2vh,1rem)] text-center backdrop-blur-xl"
           >
-            <h2 className="text-[clamp(0.8rem,1.2vw,0.9rem)] font-semibold text-foreground">
+            <h2 className="text-[clamp(0.9rem,1.35vw,1rem)] font-semibold text-foreground">
               {t(feature.titleKey)}
             </h2>
-            <p className="text-[clamp(0.65rem,1vw,0.75rem)] text-muted">
+            <p className="text-[clamp(0.73rem,1.1vw,0.84rem)] text-muted">
               {t(feature.descKey)}
             </p>
           </div>

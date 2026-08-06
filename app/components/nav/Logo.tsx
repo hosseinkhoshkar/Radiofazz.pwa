@@ -6,13 +6,13 @@
 // both automatically. textClassName lets each call site keep its own size
 // (desktop's 27px was specifically tuned to fit the LIVE tag on one line in
 // the 240px sidebar; the drawer has more room and uses a different size).
-export default function Logo({ textClassName = "text-2xl" }: { textClassName?: string }) {
+export default function Logo({ textClassName = "text-3xl" }: { textClassName?: string }) {
   return (
     <span className="flex flex-wrap items-center gap-1.5">
       <span className={`logo-shine font-bold leading-none tracking-tight uppercase ${textClassName}`}>
         RADIO FAAZ
       </span>
-      <span className="shrink-0 rounded border border-danger/30 bg-danger/15 px-1 text-[10px] font-bold uppercase tracking-wide text-danger">
+      <span className="shrink-0 rounded border border-danger/30 bg-danger/15 px-1 text-[11px] font-bold uppercase tracking-wide text-danger">
         LIVE
       </span>
     </span>

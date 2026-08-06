@@ -40,7 +40,7 @@ export default function LanguageSwitcher() {
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={t("nav.languageLabel")}
-        className="flex h-11 items-center justify-center gap-2 rounded-full border border-[rgb(var(--accent-from-rgb)/20%)] bg-background-elevated/80 px-3 text-xs font-semibold text-foreground/80 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-colors hover:text-[rgb(var(--accent-text-rgb))]"
+        className="flex h-11 items-center justify-center gap-2 rounded-full border border-[rgb(var(--accent-from-rgb)/20%)] bg-background-elevated/80 px-3 text-sm font-semibold text-foreground/80 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-colors hover:text-[rgb(var(--accent-text-rgb))]"
       >
         <GlobeIcon className="h-4 w-4" />
         <span className="text-foreground">{lang.toUpperCase()}</span>
@@ -62,10 +62,10 @@ export default function LanguageSwitcher() {
                   setLang(code);
                   setOpen(false);
                 }}
-                className="flex min-h-11 w-full items-center justify-between gap-2 px-3 py-2 text-sm text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-[rgb(var(--accent-text-rgb))]"
+                className="flex min-h-11 w-full items-center justify-between gap-2 px-3 py-2 text-base text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-[rgb(var(--accent-text-rgb))]"
               >
                 <span className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-muted">{code.toUpperCase()}</span>
+                  <span className="text-sm font-semibold text-muted">{code.toUpperCase()}</span>
                   {nativeName}
                 </span>
                 {lang === code && <CheckIcon className="h-4 w-4 text-[rgb(var(--accent-text-rgb))]" />}

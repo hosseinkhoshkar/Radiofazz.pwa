@@ -105,7 +105,7 @@ export default function ContactForm() {
       className="relative flex flex-col gap-[clamp(0.5rem,1.5vh,1.25rem)]"
     >
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="name" className="text-sm text-muted">
+        <label htmlFor="name" className="text-base text-muted">
           {t("contact.form.nameLabel")}
         </label>
         <input
@@ -118,11 +118,11 @@ export default function ContactForm() {
           placeholder={t("contact.form.namePlaceholder")}
           className="min-h-11 rounded-xl border border-[rgb(var(--accent-from-rgb)/30%)] bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-[rgb(var(--accent-from-rgb))] focus:outline-none disabled:opacity-50"
         />
-        {errors.name && <p className="text-xs text-danger">{errors.name}</p>}
+        {errors.name && <p className="text-sm text-danger">{errors.name}</p>}
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="email" className="text-sm text-muted">
+        <label htmlFor="email" className="text-base text-muted">
           {t("contact.form.emailLabel")}
         </label>
         <input
@@ -136,11 +136,11 @@ export default function ContactForm() {
           placeholder="you@example.com"
           className="min-h-11 rounded-xl border border-[rgb(var(--accent-from-rgb)/30%)] bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-end text-foreground placeholder:text-muted/60 focus:border-[rgb(var(--accent-from-rgb))] focus:outline-none disabled:opacity-50"
         />
-        {errors.email && <p className="text-xs text-danger">{errors.email}</p>}
+        {errors.email && <p className="text-sm text-danger">{errors.email}</p>}
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="message" className="text-sm text-muted">
+        <label htmlFor="message" className="text-base text-muted">
           {t("contact.form.messageLabel")}
         </label>
         <textarea
@@ -153,7 +153,7 @@ export default function ContactForm() {
           className="h-[clamp(3.5rem,11vh,6rem)] resize-none rounded-xl border border-[rgb(var(--accent-from-rgb)/30%)] bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-[rgb(var(--accent-from-rgb))] focus:outline-none disabled:opacity-50"
         />
         {errors.message && (
-          <p className="text-xs text-danger">{errors.message}</p>
+          <p className="text-sm text-danger">{errors.message}</p>
         )}
       </div>
 
@@ -190,12 +190,12 @@ export default function ContactForm() {
       </button>
 
       {status === "success" && (
-        <p className="rounded-xl border border-success/40 bg-success/10 px-4 py-3 text-sm text-success">
+        <p className="rounded-xl border border-success/40 bg-success/10 px-4 py-3 text-base text-success">
           {t("contact.form.success")}
         </p>
       )}
       {status === "error" && (
-        <p className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
+        <p className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-base text-danger">
           {t("contact.form.error")}
         </p>
       )}

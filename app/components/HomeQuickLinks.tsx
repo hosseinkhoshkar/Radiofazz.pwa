@@ -74,12 +74,14 @@ function CardImage({ src }: { src: string }) {
 function CardGlow() {
   return (
     <>
-      {/* Dark scrim for text contrast over the card's own photo. */}
-      <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-t from-black/90 via-black/60 to-black/25 [@media(orientation:landscape)_and_(max-height:500px)]:!hidden" />
+      {/* Dark scrim for text contrast over the card's own photo — lightened
+          from /90-/60-/25 so the photo itself reads clearer/less obscured,
+          while still keeping the title/description legible. */}
+      <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-t from-black/70 via-black/40 to-black/10 [@media(orientation:landscape)_and_(max-height:500px)]:!hidden" />
       {/* Glassmorphic blur/tint layer sitting on top of the scrim+photo —
           the backdrop-blur compositing layer needs its own radius, parent
           clipping alone isn't reliable for it. */}
-      <div className="pointer-events-none absolute inset-0 rounded-3xl bg-background-elevated/35 backdrop-blur-[0.5px] [@media(orientation:landscape)_and_(max-height:500px)]:!hidden" />
+      <div className="pointer-events-none absolute inset-0 rounded-3xl bg-background-elevated/22 backdrop-blur-[0.5px] [@media(orientation:landscape)_and_(max-height:500px)]:!hidden" />
       {/* Faint palette-colored glow anchored to a corner — ties the glass
           panel to the track's active accent. */}
       <div
@@ -107,13 +109,19 @@ function CardBody({
 
   return (
     <div className="relative z-10 flex flex-col gap-1 p-[clamp(1rem,2.2vw,1.4rem)] [@media(orientation:landscape)_and_(max-height:500px)]:!w-full [@media(orientation:landscape)_and_(max-height:500px)]:!items-center [@media(orientation:landscape)_and_(max-height:500px)]:!justify-center [@media(orientation:landscape)_and_(max-height:500px)]:!gap-0 [@media(orientation:landscape)_and_(max-height:500px)]:!p-1">
-      <p className="truncate text-[clamp(1.05rem,1.8vw,1.3rem)] font-bold text-foreground [@media(orientation:landscape)_and_(max-height:500px)]:!max-w-full [@media(orientation:landscape)_and_(max-height:500px)]:!text-center [@media(orientation:landscape)_and_(max-height:500px)]:!text-[0.7rem] [@media(orientation:landscape)_and_(max-height:500px)]:!font-semibold">
+      <p
+        className="truncate text-[clamp(1.18rem,2vw,1.45rem)] font-bold text-foreground [@media(orientation:landscape)_and_(max-height:500px)]:!max-w-full [@media(orientation:landscape)_and_(max-height:500px)]:!text-center [@media(orientation:landscape)_and_(max-height:500px)]:!text-[0.7rem] [@media(orientation:landscape)_and_(max-height:500px)]:!font-semibold"
+        style={{
+          textShadow:
+            "0 0 12px rgb(var(--accent-from-rgb)/85%), 0 0 26px rgb(var(--accent-to-rgb)/55%)",
+        }}
+      >
         {title}
       </p>
-      <p className="line-clamp-2 text-[clamp(0.75rem,1.3vw,0.9rem)] text-muted [@media(orientation:landscape)_and_(max-height:500px)]:!hidden">
+      <p className="line-clamp-2 text-[clamp(0.84rem,1.45vw,1rem)] text-muted [@media(orientation:landscape)_and_(max-height:500px)]:!hidden">
         {description}
       </p>
-      <span className="mt-1 text-[clamp(0.75rem,1.3vw,0.9rem)] font-semibold text-[rgb(var(--accent-text-rgb))] [@media(orientation:landscape)_and_(max-height:500px)]:!hidden">
+      <span className="mt-1 text-[clamp(0.84rem,1.45vw,1rem)] font-semibold text-[rgb(var(--accent-text-rgb))] [@media(orientation:landscape)_and_(max-height:500px)]:!hidden">
         {t(ctaKey)}
       </span>
     </div>

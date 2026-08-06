@@ -36,7 +36,7 @@ export default function Sidebar() {
               sidebar (w-60, minus px-4 + button's own px-2) — 27px is the
               largest size that still measured out to fit both on one line,
               bigger than the earlier text-2xl baseline. */}
-          <Logo textClassName="text-[27px]" />
+          <Logo textClassName="text-[30px]" />
         </button>
 
         <nav>
@@ -47,7 +47,7 @@ export default function Sidebar() {
                   type="button"
                   onClick={() => setView(item.view)}
                   aria-current={view === item.view ? "page" : undefined}
-                  className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground/70 drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)] transition-colors hover:bg-foreground/5 hover:text-[rgb(var(--accent-text-rgb))] aria-[current=page]:bg-[rgb(var(--accent-from-rgb))] aria-[current=page]:text-white aria-[current=page]:hover:bg-[rgb(var(--accent-from-rgb))] aria-[current=page]:hover:text-white"
+                  className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-3 text-base font-medium text-foreground/70 drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)] transition-colors hover:bg-foreground/5 hover:text-[rgb(var(--accent-text-rgb))] aria-[current=page]:bg-[rgb(var(--accent-from-rgb))] aria-[current=page]:text-white aria-[current=page]:hover:bg-[rgb(var(--accent-from-rgb))] aria-[current=page]:hover:text-white"
                 >
                   <item.icon className="h-5 w-5 shrink-0" />
                   {t(item.labelKey)}

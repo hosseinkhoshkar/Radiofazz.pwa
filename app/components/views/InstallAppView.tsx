@@ -60,10 +60,10 @@ export default function InstallAppView() {
   return (
     <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col justify-center gap-[clamp(0.75rem,2vh,1.5rem)] overflow-visible px-[clamp(1rem,3vw,2.5rem)] py-[clamp(0.5rem,1.5vh,2rem)] md:h-full md:overflow-hidden">
       <div className="w-full shrink-0 text-center">
-        <h1 className="text-[clamp(1.25rem,2.5vw,1.75rem)] font-bold text-foreground">
+        <h1 className="text-[clamp(1.4rem,2.8vw,1.95rem)] font-bold text-foreground">
           {t("install.title")}
         </h1>
-        <p className="mx-auto mt-2 w-full max-w-md text-[clamp(0.75rem,1.5vw,0.875rem)] leading-snug text-muted">
+        <p className="mx-auto mt-2 w-full max-w-md text-[clamp(0.84rem,1.7vw,0.98rem)] leading-snug text-muted">
           {t("install.subtitle")}
         </p>
       </div>
@@ -72,7 +72,7 @@ export default function InstallAppView() {
         {BENEFITS.map((key) => (
           <li
             key={key}
-            className="flex items-center gap-2 text-[clamp(0.7rem,1.3vw,0.8125rem)] text-foreground/80"
+            className="flex items-center gap-2 text-[clamp(0.78rem,1.45vw,0.91rem)] text-foreground/80"
           >
             <CheckCircleIcon className="h-4 w-4 shrink-0 text-[rgb(var(--accent-text-rgb))]" />
             {t(key)}
@@ -91,7 +91,7 @@ export default function InstallAppView() {
           the manual steps below instead. */}
       <div className="mx-auto w-full max-w-md shrink-0">
         {installed ? (
-          <div className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border border-success/40 bg-success/10 px-4 text-sm font-semibold text-success">
+          <div className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border border-success/40 bg-success/10 px-4 text-base font-semibold text-success">
             <CheckCircleIcon className="h-5 w-5" />
             {t("install.installedTitle")}
           </div>
@@ -99,7 +99,7 @@ export default function InstallAppView() {
           <button
             type="button"
             onClick={handleInstallClick}
-            className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border border-[rgb(var(--accent-from-rgb)/40%)] bg-[rgb(var(--accent-from-rgb)/15%)] px-4 text-sm font-semibold text-foreground shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-colors hover:bg-[rgb(var(--accent-from-rgb)/25%)]"
+            className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border border-[rgb(var(--accent-from-rgb)/40%)] bg-[rgb(var(--accent-from-rgb)/15%)] px-4 text-base font-semibold text-foreground shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-colors hover:bg-[rgb(var(--accent-from-rgb)/25%)]"
           >
             <DownloadIcon className="h-5 w-5" />
             {t("install.installNow")}
@@ -107,12 +107,12 @@ export default function InstallAppView() {
         ) : null}
 
         {installed && (
-          <p className="mt-1 text-center text-[clamp(0.65rem,1.2vw,0.75rem)] text-muted">
+          <p className="mt-1 text-center text-[clamp(0.73rem,1.35vw,0.84rem)] text-muted">
             {t("install.installedBody")}
           </p>
         )}
         {outcome === "dismissed" && (
-          <p className="mt-2 text-center text-[clamp(0.65rem,1.2vw,0.75rem)] text-muted">
+          <p className="mt-2 text-center text-[clamp(0.73rem,1.35vw,0.84rem)] text-muted">
             {t("install.dismissedHint")}
           </p>
         )}
@@ -150,11 +150,11 @@ function PlatformCard({
       }`}
     >
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-[clamp(0.8rem,1.2vw,0.9rem)] font-semibold text-foreground">
+        <h2 className="text-[clamp(0.9rem,1.35vw,1rem)] font-semibold text-foreground">
           {t(titleKey)}
         </h2>
         {detected && (
-          <span className="shrink-0 rounded-full bg-[rgb(var(--accent-from-rgb))] px-2 py-0.5 text-[0.65rem] font-semibold text-white">
+          <span className="shrink-0 rounded-full bg-[rgb(var(--accent-from-rgb))] px-2 py-0.5 text-[0.73rem] font-semibold text-white">
             {t("install.detectedBadge")}
           </span>
         )}
@@ -164,7 +164,7 @@ function PlatformCard({
         {steps.map(({ key, icon: StepIcon }, index) => (
           <li
             key={key}
-            className="flex items-start gap-2 text-[clamp(0.65rem,1.1vw,0.75rem)] leading-snug text-muted"
+            className="flex items-start gap-2 text-[clamp(0.73rem,1.25vw,0.84rem)] leading-snug text-muted"
           >
             <StepIcon className="mt-0.5 h-4 w-4 shrink-0 text-[rgb(var(--accent-text-rgb))]" />
             <span>

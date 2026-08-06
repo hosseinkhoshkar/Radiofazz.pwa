@@ -84,7 +84,12 @@ export default function MiniPlayer() {
       // (1rem margin + safe-area-inset-bottom) — the old bottom tab bar
       // this used to float above (+4rem reservation) is gone, replaced by
       // MobileMenu's hamburger overlay. md:bottom-4 (desktop) unchanged.
-      className="fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-50 h-20 rounded-3xl border border-[rgb(var(--accent-from-rgb)/25%)] bg-background-elevated/90 shadow-[0_0_0_1px_rgb(var(--accent-from-rgb)/15%),0_8px_40px_-4px_rgba(0,0,0,0.7)] backdrop-blur-2xl md:bottom-4"
+      // Border/shadow bumped from a faint edge separator to a visible
+      // palette-colored halo around the whole bar's perimeter, and the
+      // surface dropped from bg-*/90 to /65 + backdrop-blur-2xl to
+      // backdrop-blur-3xl — reads as clearly glassy/translucent now
+      // instead of a near-opaque flat panel.
+      className="fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-50 h-20 rounded-3xl border border-[rgb(var(--accent-from-rgb)/60%)] bg-background-elevated/65 shadow-[0_0_0_1px_rgb(var(--accent-from-rgb)/30%),0_0_36px_-4px_rgb(var(--accent-from-rgb)/70%),0_0_64px_-8px_rgb(var(--accent-to-rgb)/50%),0_8px_40px_-4px_rgba(0,0,0,0.7)] backdrop-blur-3xl md:bottom-4"
     >
       <div
         className={`grid h-full w-full items-center gap-2 px-3 sm:gap-4 sm:px-4 ${
@@ -118,8 +123,8 @@ export default function MiniPlayer() {
               column, which stops short of Play/Volume) and only scrolls
               when the text truly doesn't fit. */}
           <div className="min-w-0 flex-1">
-            <MarqueeText text={track} className="text-sm font-medium text-foreground" />
-            <MarqueeText text={artist} className="text-xs text-muted" />
+            <MarqueeText text={track} className="text-base font-medium text-foreground" />
+            <MarqueeText text={artist} className="text-sm text-muted" />
           </div>
         </div>
 
@@ -149,7 +154,7 @@ export default function MiniPlayer() {
             <div className="w-20">
               <HomeWaveform heightClassName="h-4" barCountDesktop={20} barCountMobile={14} />
             </div>
-            <span className="text-[10px] font-bold tracking-wide text-danger">
+            <span className="text-[11px] font-bold tracking-wide text-danger">
               • {t("home.statsLiveLabel")}
             </span>
           </div>
@@ -275,7 +280,7 @@ function FullPlayerButton() {
     <button
       type="button"
       onClick={() => setView("home")}
-      className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 py-1.5 text-xs font-medium text-foreground/80 transition-colors hover:border-[rgb(var(--accent-from-rgb)/50%)] hover:text-[rgb(var(--accent-text-rgb))] sm:px-3"
+      className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 py-1.5 text-sm font-medium text-foreground/80 transition-colors hover:border-[rgb(var(--accent-from-rgb)/50%)] hover:text-[rgb(var(--accent-text-rgb))] sm:px-3"
     >
       <ExpandIcon className="h-4 w-4" />
       <span className="hidden sm:inline">{t("player.fullPlayer")}</span>

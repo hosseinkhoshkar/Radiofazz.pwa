@@ -35,17 +35,17 @@ export default function EventsView() {
   return (
     <div className="flex min-h-full w-full flex-col gap-[clamp(0.75rem,2vh,1.5rem)] overflow-visible px-[clamp(1rem,3vw,2.5rem)] py-[clamp(1rem,3vh,2rem)] md:h-full md:overflow-hidden">
       <div className="shrink-0 text-center">
-        <h1 className="text-[clamp(1.25rem,2.5vw,1.75rem)] font-bold text-foreground">
+        <h1 className="text-[clamp(1.4rem,2.8vw,1.95rem)] font-bold text-foreground">
           {t("events.pageTitle")}
         </h1>
-        <p className="mt-1 text-[clamp(0.7rem,1.5vw,0.85rem)] text-muted">
+        <p className="mt-1 text-[clamp(0.78rem,1.7vw,0.95rem)] text-muted">
           {t("events.pageSubtitle")}
         </p>
       </div>
 
       {upcoming.length === 0 ? (
         <div className="flex flex-1 items-center justify-center">
-          <p className="text-sm text-muted">{t("events.empty")}</p>
+          <p className="text-base text-muted">{t("events.empty")}</p>
         </div>
       ) : (
         <div className="grid min-h-0 flex-1 auto-rows-max content-center grid-cols-1 gap-[clamp(0.75rem,1.5vw,1.25rem)] sm:grid-cols-2 lg:grid-cols-3">
@@ -110,19 +110,19 @@ function EventCardFront({
     <article className={GLASS_CARD_CLASSES}>
       <img src={imageUrl} alt="" className="h-[42%] w-full shrink-0 object-cover" />
       <div className="flex min-h-0 flex-1 flex-col gap-0.5 p-[clamp(0.5rem,1.2vw,0.85rem)]">
-        <span className="text-[clamp(0.55rem,1vw,0.68rem)] font-medium text-[rgb(var(--accent-text-rgb))]">
+        <span className="text-[clamp(0.62rem,1.1vw,0.76rem)] font-medium text-[rgb(var(--accent-text-rgb))]">
           {formatEventDate(event.date, lang)}
         </span>
-        <h3 className="truncate text-[clamp(0.75rem,1.2vw,0.9rem)] font-semibold text-foreground">
+        <h3 className="truncate text-[clamp(0.84rem,1.35vw,1rem)] font-semibold text-foreground">
           {event.title}
         </h3>
-        <p className="line-clamp-1 text-[clamp(0.6rem,0.9vw,0.72rem)] text-muted sm:line-clamp-2">
+        <p className="line-clamp-1 text-[clamp(0.67rem,1vw,0.81rem)] text-muted sm:line-clamp-2">
           {event.description}
         </p>
         <button
           type="button"
           onClick={onFlip}
-          className="mt-auto self-start text-[clamp(0.6rem,0.9vw,0.72rem)] font-medium text-[rgb(var(--accent-text-rgb))] transition-opacity hover:opacity-80"
+          className="mt-auto self-start text-[clamp(0.67rem,1vw,0.81rem)] font-medium text-[rgb(var(--accent-text-rgb))] transition-opacity hover:opacity-80"
         >
           {t("events.viewMore")}
         </button>
@@ -154,13 +154,13 @@ function EventCardBack({
         <CloseIcon className="h-3 w-3" />
       </button>
 
-      <h3 className="pe-6 text-[clamp(0.75rem,1.2vw,0.9rem)] font-semibold text-foreground">
+      <h3 className="pe-6 text-[clamp(0.84rem,1.35vw,1rem)] font-semibold text-foreground">
         {event.title}
       </h3>
-      <p className="mt-1 line-clamp-3 flex-1 text-[clamp(0.6rem,0.9vw,0.72rem)] leading-snug text-muted">
+      <p className="mt-1 line-clamp-3 flex-1 text-[clamp(0.67rem,1vw,0.81rem)] leading-snug text-muted">
         {event.description} {t("events.back.moreInfo")}
       </p>
-      <dl className="mt-1 flex flex-col gap-0.5 text-[clamp(0.58rem,0.85vw,0.7rem)]">
+      <dl className="mt-1 flex flex-col gap-0.5 text-[clamp(0.65rem,0.95vw,0.78rem)]">
         <div className="flex gap-1">
           <dt className="shrink-0 font-medium text-[rgb(var(--accent-text-rgb))]">{t("events.back.timeLabel")}:</dt>
           <dd className="truncate text-muted">{t("events.back.timeValue")}</dd>

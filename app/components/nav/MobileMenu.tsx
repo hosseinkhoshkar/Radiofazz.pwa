@@ -51,7 +51,7 @@ export default function MobileMenu() {
         aria-label={t("nav.openMenu")}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className="fixed top-4 left-4 z-[60] flex h-11 w-11 items-center justify-center rounded-full border border-[rgb(var(--accent-from-rgb)/20%)] bg-background-elevated/80 text-foreground/80 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-colors hover:text-[rgb(var(--accent-text-rgb))] lg:hidden"
+        className="fixed top-4 left-4 z-[60] flex h-11 w-11 items-center justify-center rounded-full border border-[rgb(var(--accent-from-rgb)/25%)] bg-background-elevated/55 text-foreground/80 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-colors hover:text-[rgb(var(--accent-text-rgb))] lg:hidden"
       >
         <MenuIcon className="h-5 w-5" />
       </button>
@@ -116,7 +116,7 @@ export default function MobileMenu() {
                     setOpen(false);
                   }}
                   aria-current={view === item.view ? "page" : undefined}
-                  className="flex min-h-10 w-full items-center gap-3 rounded-2xl px-4 text-xs font-medium text-foreground/80 transition-colors aria-[current=page]:bg-[rgb(var(--accent-from-rgb))] aria-[current=page]:text-white"
+                  className="flex min-h-10 w-full items-center gap-3 rounded-2xl px-4 text-sm font-medium text-foreground/80 transition-colors aria-[current=page]:bg-[rgb(var(--accent-from-rgb))] aria-[current=page]:text-white"
                 >
                   <item.icon className="h-5 w-5 shrink-0" />
                   {t(item.labelKey)}
@@ -156,7 +156,7 @@ function LanguageMenuItem() {
         type="button"
         onClick={() => setLangOpen((prev) => !prev)}
         aria-expanded={langOpen}
-        className="flex min-h-10 w-full items-center gap-3 rounded-2xl px-4 text-xs font-medium text-foreground/80 transition-colors hover:bg-foreground/5"
+        className="flex min-h-10 w-full items-center gap-3 rounded-2xl px-4 text-sm font-medium text-foreground/80 transition-colors hover:bg-foreground/5"
       >
         <GlobeIcon className="h-5 w-5 shrink-0" />
         {t("nav.languageLabel")}
@@ -182,9 +182,9 @@ function LanguageMenuItem() {
                 setLang(code);
                 setLangOpen(false);
               }}
-              className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-start text-xs text-foreground/70 transition-colors hover:bg-foreground/5 aria-[selected=true]:text-[rgb(var(--accent-text-rgb))]"
+              className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-start text-sm text-foreground/70 transition-colors hover:bg-foreground/5 aria-[selected=true]:text-[rgb(var(--accent-text-rgb))]"
             >
-              <span className="text-[0.65rem] font-semibold text-muted">{code.toUpperCase()}</span>
+              <span className="text-[0.73rem] font-semibold text-muted">{code.toUpperCase()}</span>
               {nativeName}
               {lang === code && <CheckIcon className="ms-auto h-4 w-4 text-[rgb(var(--accent-text-rgb))]" />}
             </button>
