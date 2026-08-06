@@ -13,7 +13,7 @@ import { DEFAULT_COVER_ART, getCoverArt } from "@/lib/itunes";
 import { ACCENT_PALETTES, hexToRgb, pickPalette, type AccentPalette, type RGB } from "@/lib/accentPalettes";
 import { useLanguage } from "./LanguageContext";
 
-const STREAM_URL = "http://www.radiofaaz.com:8000/radiofaaz";
+const STREAM_URL = "/api/stream";
 const NOWPLAYING_URL = "/api/nowplaying";
 const ADS_URL = "/data/ads.json";
 const POLL_INTERVAL_MS = 15000;
