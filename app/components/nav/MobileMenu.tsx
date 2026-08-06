@@ -51,7 +51,11 @@ export default function MobileMenu() {
         aria-label={t("nav.openMenu")}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className="fixed top-4 left-4 z-[60] flex h-11 w-11 items-center justify-center rounded-full border border-[rgb(var(--accent-from-rgb)/25%)] bg-background-elevated/55 text-foreground/80 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-colors hover:text-[rgb(var(--accent-text-rgb))] lg:hidden"
+        // Checked against MiniPlayer.tsx's glass treatment (border/60,
+        // bg/65, backdrop-blur-3xl) — this was noticeably weaker
+        // (blur-2xl, bg/55, border/25), so bumped to match: more
+        // translucent surface, stronger blur, more visible accent border.
+        className="fixed top-4 left-4 z-[60] flex h-11 w-11 items-center justify-center rounded-full border border-[rgb(var(--accent-from-rgb)/45%)] bg-background-elevated/40 text-foreground/80 shadow-[0_0_20px_-6px_rgb(var(--accent-from-rgb)/60%),0_8px_24px_-8px_rgba(0,0,0,0.6)] backdrop-blur-3xl transition-colors hover:text-[rgb(var(--accent-text-rgb))] lg:hidden"
       >
         <MenuIcon className="h-5 w-5" />
       </button>

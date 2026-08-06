@@ -4,9 +4,20 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { usePlayer } from "../context/PlayerContext";
 import { useLanguage } from "../context/LanguageContext";
 import { DEFAULT_COVER_ART } from "@/lib/itunes";
+import { useIsMobileViewport } from "@/lib/useIsMobileViewport";
 import PlayButton from "./PlayButton";
 import HomeWaveform from "./HomeWaveform";
 import MarqueeText from "./MarqueeText";
+
+// Splits a tagline into "up to, and including, the first comma" / "rest" —
+// works across all three languages since every one of them happens to use
+// a comma-like character (",", or the Persian "،") at the same clause
+// break. Used only to force a two-line mobile layout (see HomeHero below);
+// desktop renders the tagline as one unbroken string, untouched.
+function splitTaglineAtComma(text: string): [string, string] | null {
+  const match = text.match(/^(.*?[,،])\s*(.+)$/);
+  return match ? [match[1], match[2]] : null;
+}
 
 // Local hero background — replaced the canvas/SVG generative experiments
 // (both abandoned; static photo again). Also the fallback for sponsor mode
@@ -23,6 +34,10 @@ export default function HomeHero() {
   const { track, artist, isPlaying, listeners, isAd, adLink, adImage, coverArt } = usePlayer();
   const { t, lang } = useLanguage();
   const prefersReducedMotion = useReducedMotion();
+  const isMobile = useIsMobileViewport();
+
+  const tagline = t("home.tagline");
+  const taglineSplit = splitTaglineAtComma(tagline);
 
   const listenersCount = new Intl.NumberFormat(NUMBER_LOCALES[lang] ?? "en-US").format(listeners);
 
@@ -164,13 +179,21 @@ export default function HomeHero() {
             h-[70dvh] fixed box, and the outer hero div's own justify-end
             bottom-anchors this whole content block within that fixed
             budget naturally, no hand-tuned px/vh guess required. */}
-        <div className="flex w-full min-w-0 flex-1 flex-col items-start gap-[clamp(0.1rem,0.3vh,0.3rem)] md:gap-[clamp(0.2rem,0.7vh,0.5rem)]">
+        {/* translate-x-[1%]: shifts this text/controls column only — not
+            the cover art (its own sibling) or the hero background image
+            (a separate absolutely-positioned layer above) — 1% to the
+            right of its own width. */}
+        <div className="flex w-full min-w-0 flex-1 translate-x-[1%] flex-col items-start gap-[clamp(0.1rem,0.3vh,0.3rem)] md:gap-[clamp(0.2rem,0.7vh,0.5rem)]">
           <div
             className={`-mt-1 flex flex-wrap items-center gap-2 transition-[padding-right] ${collapseDurationClass} ease-out md:-mt-1.5 md:pr-0 ${
               hasCoverArt ? "pr-[12.75rem]" : "pr-0"
             }`}
           >
-            <div className="relative flex items-center gap-2 rounded-full border border-[rgb(var(--accent-from-rgb)/40%)] bg-white/10 px-2.5 py-1 shadow-[0_0_24px_-4px_rgb(var(--accent-from-rgb)/80%),0_0_12px_-2px_rgb(var(--accent-to-rgb)/60%)] backdrop-blur-md md:px-3 md:py-1.5">
+            {/* Glassy background — accent-tinted translucent fill (was a
+                neutral bg-white/10) + a stronger backdrop-blur, so it
+                actually reads as frosted glass rather than a flat tinted
+                pill. */}
+            <div className="relative flex items-center gap-2 rounded-full border border-[rgb(var(--accent-from-rgb)/40%)] bg-[rgb(var(--accent-from-rgb)/16%)] px-2.5 py-1 shadow-[0_0_24px_-4px_rgb(var(--accent-from-rgb)/80%),0_0_12px_-2px_rgb(var(--accent-to-rgb)/60%)] backdrop-blur-lg md:px-3 md:py-1.5">
               <span
                 className={`h-2 w-2 rounded-full bg-success ${
                   isPlaying && !prefersReducedMotion ? "animate-pulse" : ""
@@ -189,7 +212,10 @@ export default function HomeHero() {
           </div>
 
           <div
-            className={`max-w-full transition-[padding-right] ${collapseDurationClass} ease-out md:pr-0 ${
+            // mt-3 md:mt-0: clearly noticeable extra gap between the ON AIR
+            // badge above and the track title here, mobile-only — desktop's
+            // spacing (already fine) stays exactly as before.
+            className={`mt-3 max-w-full transition-[padding-right] md:mt-0 ${collapseDurationClass} ease-out md:pr-0 ${
               hasCoverArt ? "pr-[12.75rem]" : "pr-0"
             }`}
           >
@@ -229,8 +255,22 @@ export default function HomeHero() {
           </div>
 
           {!isAd && (
-            <p className="max-w-full truncate text-[clamp(0.73rem,1.8vw,1.12rem)] text-foreground/60 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] md:text-[clamp(0.85rem,1.8vw,1.12rem)]">
-              {t("home.tagline")}
+            // Mobile-only: forced two-line break right at the tagline's
+            // comma (explicit <br>, not natural wrapping — stays consistent
+            // regardless of exact mobile viewport width) via an
+            // md:truncate/no-truncate swap, since `truncate`'s
+            // white-space:nowrap would otherwise suppress the <br>. Desktop
+            // keeps the exact original single-line truncating behavior.
+            <p className="max-w-full text-[clamp(0.73rem,1.8vw,1.12rem)] text-foreground/60 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] md:truncate md:text-[clamp(0.85rem,1.8vw,1.12rem)]">
+              {isMobile && taglineSplit ? (
+                <>
+                  {taglineSplit[0]}
+                  <br />
+                  {taglineSplit[1]}
+                </>
+              ) : (
+                tagline
+              )}
             </p>
           )}
 
@@ -341,20 +381,22 @@ export default function HomeHero() {
               <>
                 {/* Wide blurred glow — the halo spread. Negative inset +
                     overflow-visible lets it bleed past the image on mobile;
-                    inset-0 fills the md:p-3 padding gap on desktop instead. */}
+                    inset-0 fills the md:p-3 padding gap on desktop instead.
+                    Toned down (opacity/gradient stops/blur all reduced) —
+                    was reading as too strong/blown-out. */}
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute -inset-4 rounded-[2rem] opacity-80 blur-xl md:inset-0 md:rounded-3xl"
+                  className="pointer-events-none absolute -inset-4 rounded-[2rem] opacity-45 blur-lg md:inset-0 md:rounded-3xl"
                   style={{
                     background:
-                      "radial-gradient(circle, rgb(var(--accent-from-rgb)/65%), rgb(var(--accent-to-rgb)/35%) 55%, transparent 78%)",
+                      "radial-gradient(circle, rgb(var(--accent-from-rgb)/38%), rgb(var(--accent-to-rgb)/18%) 55%, transparent 75%)",
                   }}
                 />
                 {/* Thin glassy ring right at the image's edge — backdrop-blur
                     + tinted translucent fill, not just a hard border. */}
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute -inset-1.5 rounded-[1.75rem] border border-[rgb(var(--accent-from-rgb)/50%)] bg-[rgb(var(--accent-from-rgb)/12%)] backdrop-blur-md md:-inset-1 md:rounded-[1.6rem]"
+                  className="pointer-events-none absolute -inset-1.5 rounded-[1.75rem] border border-[rgb(var(--accent-from-rgb)/35%)] bg-[rgb(var(--accent-from-rgb)/8%)] backdrop-blur-md md:-inset-1 md:rounded-[1.6rem]"
                 />
               </>
             )}
@@ -368,7 +410,7 @@ export default function HomeHero() {
                 animate={{ opacity: hasCoverArt ? 1 : 0, scale: 1 }}
                 exit={prefersReducedMotion ? undefined : { opacity: 0 }}
                 transition={{ duration: prefersReducedMotion ? 0 : 0.4 }}
-                className="relative h-[clamp(7rem,18vh,11rem)] w-[clamp(7rem,18vh,11rem)] shrink-0 rounded-3xl border-2 border-[rgb(var(--accent-from-rgb)/70%)] object-cover shadow-[0_0_32px_-6px_rgb(var(--accent-from-rgb)/70%),0_12px_28px_-8px_rgba(0,0,0,0.6)] md:h-[clamp(11rem,32vh,20rem)] md:w-[clamp(11rem,32vh,20rem)]"
+                className="relative h-[clamp(7rem,18vh,11rem)] w-[clamp(7rem,18vh,11rem)] shrink-0 rounded-3xl border-2 border-[rgb(var(--accent-from-rgb)/50%)] object-cover shadow-[0_0_18px_-6px_rgb(var(--accent-from-rgb)/45%),0_12px_28px_-8px_rgba(0,0,0,0.6)] md:h-[clamp(11rem,32vh,20rem)] md:w-[clamp(11rem,32vh,20rem)]"
               />
             </AnimatePresence>
           </div>
