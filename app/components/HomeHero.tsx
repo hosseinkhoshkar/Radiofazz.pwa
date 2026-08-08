@@ -377,29 +377,6 @@ export default function HomeHero() {
               hasCoverArt ? "md:w-[clamp(12.5rem,32vh,21.5rem)] md:p-3" : "md:w-0 md:p-0"
             }`}
           >
-            {hasCoverArt && (
-              <>
-                {/* Wide blurred glow — the halo spread. Negative inset +
-                    overflow-visible lets it bleed past the image on mobile;
-                    inset-0 fills the md:p-3 padding gap on desktop instead.
-                    Toned down (opacity/gradient stops/blur all reduced) —
-                    was reading as too strong/blown-out. */}
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute -inset-4 rounded-[2rem] opacity-45 blur-lg md:inset-0 md:rounded-3xl"
-                  style={{
-                    background:
-                      "radial-gradient(circle, rgb(var(--accent-from-rgb)/38%), rgb(var(--accent-to-rgb)/18%) 55%, transparent 75%)",
-                  }}
-                />
-                {/* Thin glassy ring right at the image's edge — backdrop-blur
-                    + tinted translucent fill, not just a hard border. */}
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute -inset-1.5 rounded-[1.75rem] border border-[rgb(var(--accent-from-rgb)/35%)] bg-[rgb(var(--accent-from-rgb)/8%)] backdrop-blur-md md:-inset-1 md:rounded-[1.6rem]"
-                />
-              </>
-            )}
             <AnimatePresence mode="wait">
               <motion.img
                 key={coverArt}
@@ -410,7 +387,7 @@ export default function HomeHero() {
                 animate={{ opacity: hasCoverArt ? 1 : 0, scale: 1 }}
                 exit={prefersReducedMotion ? undefined : { opacity: 0 }}
                 transition={{ duration: prefersReducedMotion ? 0 : 0.4 }}
-                className="relative h-[clamp(7rem,18vh,11rem)] w-[clamp(7rem,18vh,11rem)] shrink-0 rounded-3xl border-2 border-[rgb(var(--accent-from-rgb)/50%)] object-cover shadow-[0_0_18px_-6px_rgb(var(--accent-from-rgb)/45%),0_12px_28px_-8px_rgba(0,0,0,0.6)] md:h-[clamp(11rem,32vh,20rem)] md:w-[clamp(11rem,32vh,20rem)]"
+                className="relative h-[clamp(7rem,18vh,11rem)] w-[clamp(7rem,18vh,11rem)] shrink-0 rounded-3xl object-cover md:h-[clamp(11rem,32vh,20rem)] md:w-[clamp(11rem,32vh,20rem)]"
               />
             </AnimatePresence>
           </div>
