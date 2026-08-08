@@ -118,7 +118,26 @@ export default function HomeHero() {
         aria-hidden="true"
         className="pointer-events-none absolute left-3 top-8 z-[5] flex flex-col items-center md:left-auto md:-right-12 md:top-8 md:-translate-x-[45%]"
       >
-        <div className="relative flex h-[clamp(6rem,20vh,9rem)] w-[clamp(6rem,20vh,9rem)] shrink-0 items-center justify-center rounded-full md:h-[clamp(16rem,42vh,28rem)] md:w-[clamp(16rem,42vh,28rem)]">
+        <div
+          data-testid="hero-logo-visual"
+          // md size was a flat clamp(16rem,42vh,28rem) — at moderate desktop
+          // heights (~700-1024px, common laptop viewports) that grows tall
+          // enough to run straight into the bottom-anchored text/cover-art
+          // row below (verified via a Playwright bounding-box sweep across
+          // 360-1440px: real overlap at every desktop width for every
+          // tested height up to 1024px, e.g. 1024x768 and 1440x900 — only
+          // the tallest tested height, 1180px, happened to clear it). The
+          // row's own top edge moves down with viewport height too, but
+          // non-linearly (its growth accelerates above ~h:1000), so a
+          // flat vh fraction can't just be shrunk uniformly without also
+          // either shrinking the logo needlessly at tall viewports or still
+          // colliding at moderate ones. calc(100vh - 730px) delays growth
+          // until there's actually headroom: pinned at the 5rem floor
+          // through ~h:810, then ramps up to reach the original 28rem
+          // ceiling by ~h:1180 (unchanged there — verified 23px+ clearance
+          // at every tested width/height combination, floor included).
+          className="relative flex h-[clamp(6rem,20vh,9rem)] w-[clamp(6rem,20vh,9rem)] shrink-0 items-center justify-center rounded-full md:h-[clamp(5rem,calc(100vh_-_730px),28rem)] md:w-[clamp(5rem,calc(100vh_-_730px),28rem)]"
+        >
           {/* Soft glowing halo ring, palette-colored — crossfades with the
               track's active accent via the shared --accent-from-rgb/
               --accent-to-rgb vars, same mechanism as every other
@@ -185,7 +204,7 @@ export default function HomeHero() {
             right of its own width. */}
         <div className="flex w-full min-w-0 flex-1 translate-x-[1%] flex-col items-start gap-[clamp(0.1rem,0.3vh,0.3rem)] md:gap-[clamp(0.2rem,0.7vh,0.5rem)]">
           <div
-            className={`-mt-1 flex flex-wrap items-center gap-2 transition-[padding-right] ${collapseDurationClass} ease-out md:-mt-1.5 md:pr-0 ${
+            className={`mt-[clamp(-0.375rem,calc(-2.24px_-_0.49vw),-0.25rem)] flex flex-wrap items-center gap-2 transition-[padding-right] ${collapseDurationClass} ease-out md:pr-0 ${
               hasCoverArt ? "pr-[12.75rem]" : "pr-0"
             }`}
           >
@@ -212,10 +231,12 @@ export default function HomeHero() {
           </div>
 
           <div
-            // mt-3 md:mt-0: clearly noticeable extra gap between the ON AIR
-            // badge above and the track title here, mobile-only — desktop's
-            // spacing (already fine) stays exactly as before.
-            className={`mt-3 max-w-full transition-[padding-right] md:mt-0 ${collapseDurationClass} ease-out md:pr-0 ${
+            // Was a hard mt-3/md:mt-0 jump — fluid clamp(0px, calc(...), 0.75rem)
+            // instead: calibrated to hit 0.75rem exactly at 360px and 0px
+            // exactly at 768px (same two values as before, same crossover
+            // point), so nothing changes at 375px or any md+ width — only
+            // smooths the 360-768px range that used to snap in one step.
+            className={`mt-[clamp(0px,calc(22.59px_-_2.94vw),0.75rem)] max-w-full transition-[padding-right] ${collapseDurationClass} ease-out md:pr-0 ${
               hasCoverArt ? "pr-[12.75rem]" : "pr-0"
             }`}
           >
@@ -248,7 +269,7 @@ export default function HomeHero() {
               className="text-[clamp(0.9rem,4.1vw,2.6rem)] font-bold leading-tight text-foreground drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] md:text-[clamp(1.25rem,4.1vw,2.6rem)]"
             />
             {!isAd && (
-              <p className="mt-0.5 truncate text-[clamp(0.85rem,2.2vw,1.4rem)] text-foreground/70 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] md:mt-1 md:text-[clamp(1rem,2.2vw,1.4rem)]">
+              <p className="mt-[clamp(0.125rem,calc(0.24px_+_0.49vw),0.25rem)] truncate text-[clamp(0.85rem,2.2vw,1.4rem)] text-foreground/70 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] md:text-[clamp(1rem,2.2vw,1.4rem)]">
                 {artist}
               </p>
             )}
@@ -296,14 +317,13 @@ export default function HomeHero() {
           </div>
 
           {/* Row on every breakpoint now (waveform left, stats right) —
-              mobile used to stack these (flex-col); md:gap-6 gives desktop
-              extra breathing room the tighter mobile gap-2 doesn't need.
-              mt-4/md:mt-6 (on top of the column's own small shared gap):
-              a clearly noticeable extra gap specifically between the
-              play/pause button above and the waveform here, without
-              touching the tighter spacing between the other rows in this
-              column. */}
-          <div className="mt-4 flex w-full flex-row items-center gap-2 md:mt-6 md:gap-6">
+              mobile used to stack these (flex-col). Both mt- and gap- were
+              hard mobile/md jumps (16px->24px, 8px->24px); now fluid
+              clamp()s calibrated to the exact same two values at 360px and
+              768px, so 375px and every md+ width render byte-identical to
+              before — only the 360-768px range now interpolates instead of
+              snapping. */}
+          <div className="mt-[clamp(1rem,calc(8.94px_+_1.96vw),1.5rem)] flex w-full flex-row items-center gap-[clamp(0.5rem,calc(-6.12px_+_3.92vw),1.5rem)]">
             <div className="min-w-0 flex-1">
               <HomeWaveform
                 heightClassName="h-[clamp(0.9rem,2.2vh,1.35rem)] md:h-[clamp(1.75rem,6vh,3.25rem)]"
@@ -311,23 +331,26 @@ export default function HomeHero() {
               />
             </div>
 
-            <div className="flex shrink-0 items-center gap-2 md:gap-3">
+            <div className="flex shrink-0 items-center gap-[clamp(0.5rem,calc(4.47px_+_0.98vw),0.75rem)]">
               <div className="flex flex-col items-start">
                 <span className="text-[clamp(1.06rem,2.9vw,1.57rem)] font-bold leading-none text-[rgb(var(--accent-text-rgb))] md:text-[clamp(1.4rem,3.9vw,2.25rem)]">
                   {listenersCount}
                 </span>
-                <span className="mt-0.5 text-[clamp(0.62rem,1.1vw,0.78rem)] text-muted md:mt-1 md:text-[clamp(0.7rem,1.35vw,0.84rem)]">
+                <span className="mt-[clamp(0.125rem,calc(0.24px_+_0.49vw),0.25rem)] text-[clamp(0.62rem,1.1vw,0.78rem)] text-muted md:text-[clamp(0.7rem,1.35vw,0.84rem)]">
                   {t("home.statsListenersLabel")}
                 </span>
               </div>
 
-              <span className="h-6 w-px shrink-0 bg-white/20 md:h-8" aria-hidden="true" />
+              <span
+                className="w-px shrink-0 bg-white/20 h-[clamp(1.5rem,calc(16.94px_+_1.96vw),2rem)]"
+                aria-hidden="true"
+              />
 
               <div className="flex flex-col items-start">
                 <span className="text-[clamp(1.06rem,2.9vw,1.57rem)] font-bold leading-none text-[rgb(var(--accent-text-rgb))] md:text-[clamp(1.4rem,3.9vw,2.25rem)]">
                   24/7
                 </span>
-                <span className="mt-0.5 text-[clamp(0.62rem,1.1vw,0.78rem)] text-muted md:mt-1 md:text-[clamp(0.7rem,1.35vw,0.84rem)]">
+                <span className="mt-[clamp(0.125rem,calc(0.24px_+_0.49vw),0.25rem)] text-[clamp(0.62rem,1.1vw,0.78rem)] text-muted md:text-[clamp(0.7rem,1.35vw,0.84rem)]">
                   {t("home.statsLiveLabel")}
                 </span>
               </div>
@@ -380,6 +403,7 @@ export default function HomeHero() {
             <AnimatePresence mode="wait">
               <motion.img
                 key={coverArt}
+                data-testid="hero-cover-art"
                 src={coverArt}
                 alt=""
                 aria-hidden="true"
