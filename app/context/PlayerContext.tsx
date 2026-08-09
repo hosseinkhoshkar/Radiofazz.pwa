@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { useReducedMotion } from "framer-motion";
-import { DEFAULT_COVER_ART, getCoverArt } from "@/lib/itunes";
+import { DEFAULT_COVER_ART } from "@/lib/itunes";
 import { ACCENT_PALETTES, hexToRgb, pickPalette, type AccentPalette, type RGB } from "@/lib/accentPalettes";
 import { useLanguage } from "./LanguageContext";
 
@@ -98,6 +98,7 @@ interface NowPlayingSource {
   artist: string | null;
   track: string | null;
   listeners: number;
+  coverArt: string;
 }
 
 interface PlayerContextValue {
@@ -219,18 +220,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    let cancelled = false;
-
-    getCoverArt(nowPlaying?.artist ?? null, nowPlaying?.track ?? null).then(
-      (url) => {
-        if (!cancelled) setCoverArt(url);
-      }
-    );
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isAd, activeAd, nowPlaying?.artist, nowPlaying?.track]);
+    setCoverArt(nowPlaying?.coverArt || DEFAULT_COVER_ART);
+  }, [isAd, activeAd, nowPlaying?.coverArt]);
 
   useEffect(() => {
     if (audioRef.current) {

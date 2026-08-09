@@ -1,3 +1,5 @@
+import { getCoverArt } from "@/lib/itunes";
+
 const STATUS_URL = "http://www.radiofaaz.com:8000/status-json.xsl";
 const CORS_HEADERS = { "Access-Control-Allow-Origin": "*" };
 
@@ -44,15 +46,22 @@ export async function GET() {
         ? [rawSource]
         : [];
 
-    const nowPlaying = sources.map((source) => {
-      const { artist, track } = splitTitle(source.title);
-      return {
-        mount: source.listenurl ?? null,
-        artist,
-        track,
-        listeners: source.listeners ?? 0,
-      };
-    });
+    // Cover art lookups for each source run concurrently (not chained after
+    // one another) — getCoverArt itself has its own timeout + cache so a
+    // slow/unresponsive iTunes call can't stall this response either.
+    const nowPlaying = await Promise.all(
+      sources.map(async (source) => {
+        const { artist, track } = splitTitle(source.title);
+        const coverArt = await getCoverArt(artist, track);
+        return {
+          mount: source.listenurl ?? null,
+          artist,
+          track,
+          listeners: source.listeners ?? 0,
+          coverArt,
+        };
+      })
+    );
 
     return Response.json({ sources: nowPlaying }, { headers: CORS_HEADERS });
   } catch {
