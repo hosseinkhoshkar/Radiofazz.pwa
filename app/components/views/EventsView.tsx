@@ -33,37 +33,39 @@ export default function EventsView() {
   }, []);
 
   return (
-    <div className="flex min-h-full w-full flex-col gap-[clamp(0.75rem,2vh,1.5rem)] overflow-visible px-[clamp(1rem,3vw,2.5rem)] py-[clamp(1rem,3vh,2rem)] md:h-full md:overflow-hidden">
-      <div className="shrink-0 text-center">
-        <h1 className="text-[clamp(1.4rem,2.8vw,1.95rem)] font-bold text-foreground">
-          {t("events.pageTitle")}
-        </h1>
-        <p className="mt-1 text-[clamp(0.78rem,1.7vw,0.95rem)] text-muted">
-          {t("events.pageSubtitle")}
-        </p>
-      </div>
+    <div className="flex min-h-full w-full items-center justify-center overflow-visible px-[clamp(1rem,3vw,2.5rem)] py-[clamp(1rem,3vh,2rem)] md:h-full md:overflow-hidden">
+      <div className="flex w-full flex-col gap-[clamp(0.75rem,2vh,1.5rem)]">
+        <div className="shrink-0 text-center">
+          <h1 className="text-[clamp(1.4rem,2.8vw,1.95rem)] font-bold text-foreground">
+            {t("events.pageTitle")}
+          </h1>
+          <p className="mt-1 text-[clamp(0.78rem,1.7vw,0.95rem)] text-muted">
+            {t("events.pageSubtitle")}
+          </p>
+        </div>
 
-      {upcoming.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-base text-muted">{t("events.empty")}</p>
-        </div>
-      ) : (
-        <div className="grid min-h-0 flex-1 auto-rows-max content-center grid-cols-1 gap-[clamp(0.75rem,1.5vw,1.25rem)] sm:grid-cols-2 lg:grid-cols-3">
-          {upcoming.map((event, index) => (
-            <div
-              key={`${event.title}-${event.date}`}
-              className={
-                // Below `sm` the grid is single-column, so more than 3 stacked
-                // full cards would overflow the no-scroll viewport — cap what's
-                // shown there; sm+ has room via 2-3 columns, so all render.
-                index >= 3 ? "hidden sm:block" : "block"
-              }
-            >
-              <EventCard event={event} />
-            </div>
-          ))}
-        </div>
-      )}
+        {upcoming.length === 0 ? (
+          <div className="flex items-center justify-center">
+            <p className="text-base text-muted">{t("events.empty")}</p>
+          </div>
+        ) : (
+          <div className="grid min-h-0 auto-rows-max content-center grid-cols-1 gap-[clamp(0.75rem,1.5vw,1.25rem)] sm:grid-cols-2 lg:grid-cols-3">
+            {upcoming.map((event, index) => (
+              <div
+                key={`${event.title}-${event.date}`}
+                className={
+                  // Below `sm` the grid is single-column, so more than 3 stacked
+                  // full cards would overflow the no-scroll viewport — cap what's
+                  // shown there; sm+ has room via 2-3 columns, so all render.
+                  index >= 3 ? "hidden sm:block" : "block"
+                }
+              >
+                <EventCard event={event} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

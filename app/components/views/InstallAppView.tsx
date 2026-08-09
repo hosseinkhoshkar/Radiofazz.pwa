@@ -58,73 +58,75 @@ export default function InstallAppView() {
   const installed = isInstalled || outcome === "accepted";
 
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col justify-center gap-[clamp(0.75rem,2vh,1.5rem)] overflow-visible px-[clamp(1rem,3vw,2.5rem)] py-[clamp(0.5rem,1.5vh,2rem)] md:h-full md:overflow-hidden">
-      <div className="w-full shrink-0 text-center">
-        <h1 className="text-[clamp(1.4rem,2.8vw,1.95rem)] font-bold text-foreground">
-          {t("install.title")}
-        </h1>
-        <p className="mx-auto mt-2 w-full max-w-md text-[clamp(0.84rem,1.7vw,0.98rem)] leading-snug text-muted">
-          {t("install.subtitle")}
-        </p>
-      </div>
-
-      <ul className="mx-auto flex w-full max-w-md shrink-0 flex-col gap-1.5">
-        {BENEFITS.map((key) => (
-          <li
-            key={key}
-            className="flex items-center gap-2 text-[clamp(0.78rem,1.45vw,0.91rem)] text-foreground/80"
-          >
-            <CheckCircleIcon className="h-4 w-4 shrink-0 text-[rgb(var(--accent-text-rgb))]" />
-            {t(key)}
-          </li>
-        ))}
-      </ul>
-
-      {/* Dynamic action: a real "Install Now" once Chrome/Edge/Android has
-          actually captured a beforeinstallprompt event (see
-          InstallPromptContext) and .prompt() is available to call, a
-          confirmation once installed (either detected via
-          display-mode:standalone on mount, or just accepted this session),
-          or nothing at all — no button shown — when neither applies (iOS
-          Safari, or a browser that never fires the event), since there's no
-          working .prompt() to wire up there; those users rely entirely on
-          the manual steps below instead. */}
-      <div className="mx-auto w-full max-w-md shrink-0">
-        {installed ? (
-          <div className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border border-success/40 bg-success/10 px-4 text-base font-semibold text-success">
-            <CheckCircleIcon className="h-5 w-5" />
-            {t("install.installedTitle")}
-          </div>
-        ) : canPromptInstall ? (
-          <button
-            type="button"
-            onClick={handleInstallClick}
-            className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border border-[rgb(var(--accent-from-rgb)/40%)] bg-[rgb(var(--accent-from-rgb)/15%)] px-4 text-base font-semibold text-foreground shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-colors hover:bg-[rgb(var(--accent-from-rgb)/25%)]"
-          >
-            <DownloadIcon className="h-5 w-5" />
-            {t("install.installNow")}
-          </button>
-        ) : null}
-
-        {installed && (
-          <p className="mt-1 text-center text-[clamp(0.73rem,1.35vw,0.84rem)] text-muted">
-            {t("install.installedBody")}
+    <div className="flex min-h-full w-full items-center justify-center overflow-visible px-[clamp(1rem,3vw,2.5rem)] py-[clamp(0.5rem,1.5vh,2rem)] md:h-full md:overflow-hidden">
+      <div className="flex w-full max-w-2xl flex-col gap-[clamp(0.75rem,2vh,1.5rem)]">
+        <div className="w-full shrink-0 text-center">
+          <h1 className="text-[clamp(1.4rem,2.8vw,1.95rem)] font-bold text-foreground">
+            {t("install.title")}
+          </h1>
+          <p className="mx-auto mt-2 w-full max-w-md text-[clamp(0.84rem,1.7vw,0.98rem)] leading-snug text-muted">
+            {t("install.subtitle")}
           </p>
-        )}
-        {outcome === "dismissed" && (
-          <p className="mt-2 text-center text-[clamp(0.73rem,1.35vw,0.84rem)] text-muted">
-            {t("install.dismissedHint")}
-          </p>
-        )}
-      </div>
+        </div>
 
-      {/* Both platforms' manual steps are always shown — the "Your device"
-          badge just highlights whichever one real-time detection thinks
-          applies; the other stays visible as reference (e.g. installing on
-          someone else's phone, or detection being wrong). */}
-      <div className="grid w-full max-w-2xl min-h-0 shrink grid-cols-1 gap-[clamp(0.5rem,1.5vw,1rem)] sm:grid-cols-2">
-        <PlatformCard titleKey="install.android.title" detected={!isIOS} steps={ANDROID_STEPS} />
-        <PlatformCard titleKey="install.ios.title" detected={isIOS} steps={IOS_STEPS} />
+        <ul className="mx-auto flex w-full max-w-md shrink-0 flex-col gap-1.5">
+          {BENEFITS.map((key) => (
+            <li
+              key={key}
+              className="flex items-center gap-2 text-[clamp(0.78rem,1.45vw,0.91rem)] text-foreground/80"
+            >
+              <CheckCircleIcon className="h-4 w-4 shrink-0 text-[rgb(var(--accent-text-rgb))]" />
+              {t(key)}
+            </li>
+          ))}
+        </ul>
+
+        {/* Dynamic action: a real "Install Now" once Chrome/Edge/Android has
+            actually captured a beforeinstallprompt event (see
+            InstallPromptContext) and .prompt() is available to call, a
+            confirmation once installed (either detected via
+            display-mode:standalone on mount, or just accepted this session),
+            or nothing at all — no button shown — when neither applies (iOS
+            Safari, or a browser that never fires the event), since there's no
+            working .prompt() to wire up there; those users rely entirely on
+            the manual steps below instead. */}
+        <div className="mx-auto w-full max-w-md shrink-0">
+          {installed ? (
+            <div className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border border-success/40 bg-success/10 px-4 text-base font-semibold text-success">
+              <CheckCircleIcon className="h-5 w-5" />
+              {t("install.installedTitle")}
+            </div>
+          ) : canPromptInstall ? (
+            <button
+              type="button"
+              onClick={handleInstallClick}
+              className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border border-[rgb(var(--accent-from-rgb)/40%)] bg-[rgb(var(--accent-from-rgb)/15%)] px-4 text-base font-semibold text-foreground shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-colors hover:bg-[rgb(var(--accent-from-rgb)/25%)]"
+            >
+              <DownloadIcon className="h-5 w-5" />
+              {t("install.installNow")}
+            </button>
+          ) : null}
+
+          {installed && (
+            <p className="mt-1 text-center text-[clamp(0.73rem,1.35vw,0.84rem)] text-muted">
+              {t("install.installedBody")}
+            </p>
+          )}
+          {outcome === "dismissed" && (
+            <p className="mt-2 text-center text-[clamp(0.73rem,1.35vw,0.84rem)] text-muted">
+              {t("install.dismissedHint")}
+            </p>
+          )}
+        </div>
+
+        {/* Both platforms' manual steps are always shown — the "Your device"
+            badge just highlights whichever one real-time detection thinks
+            applies; the other stays visible as reference (e.g. installing on
+            someone else's phone, or detection being wrong). */}
+        <div className="grid w-full max-w-2xl min-h-0 shrink grid-cols-1 gap-[clamp(0.5rem,1.5vw,1rem)] sm:grid-cols-2">
+          <PlatformCard titleKey="install.android.title" detected={!isIOS} steps={ANDROID_STEPS} />
+          <PlatformCard titleKey="install.ios.title" detected={isIOS} steps={IOS_STEPS} />
+        </div>
       </div>
     </div>
   );
