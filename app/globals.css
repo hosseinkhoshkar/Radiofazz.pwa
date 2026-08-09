@@ -157,28 +157,3 @@ body {
   outline-offset: 3px;
   border-radius: 6px;
 }
-
-/* Phone-landscape "orientation lock" simulation — true OS-level orientation
-   lock isn't available to a web page in Safari/iOS, so this is the standard
-   CSS fallback: rotate the whole app -90deg so it keeps rendering in its
-   normal portrait layout/proportions no matter how the phone is physically
-   held. max-height:500px is the same threshold the app already used
-   elsewhere to distinguish a landscape PHONE (tallest is ~430px) from a
-   landscape TABLET (shortest, iPad mini, is 768px tall) — tablets never
-   match this query and keep their normal responsive landscape layout
-   (hamburger menu, etc) completely untouched.
-   !important throughout: this must win over the html element's own
-   Tailwind h-[100dvh] utility class (see layout.tsx), which otherwise beats
-   a plain type-selector rule on specificity regardless of source order. */
-@media screen and (orientation: landscape) and (max-height: 500px) {
-  html {
-    transform: rotate(-90deg) !important;
-    transform-origin: left top !important;
-    width: 100vh !important;
-    height: 100vw !important;
-    overflow-x: hidden !important;
-    position: absolute !important;
-    top: 100% !important;
-    left: 0 !important;
-  }
-}

@@ -32,14 +32,16 @@ const AD_IMAGE_URL =
 // the one remaining lever to keep it fully clear of the fixed mini-player
 // bar without touching the hero's own height or the cover art inside it.
 // md: restores the exact original clamp, desktop unaffected.
-// The compact phone-landscape variant that used to live here (a
-// max-height:500px arbitrary-variant override) is gone — the app now
-// simulates a permanent portrait orientation lock on phones instead (see
-// the `html { transform: rotate(-90deg) }` rule in globals.css, gated on
-// that exact same media condition), so this row always renders its normal
-// portrait layout and never needs its own compact landscape treatment.
+// min-h (not h) + a much lower md floor (12.5rem -> 4rem) — phone-landscape
+// viewports (short and wide, e.g. 812x375) give this row very little
+// vertical budget; min-h lets it shrink down toward that floor there while
+// still growing to fit its own content (title/description/cta) rather than
+// clipping it, which a fixed h- would. Normal taller viewports are
+// unaffected either way since their vh-preferred value already clears the
+// floor. CardBody's description line collapses away below ~480px of
+// viewport height for the same reason (see its own comment).
 const CARD_CLASSES =
-  "group relative isolate flex h-[clamp(7rem,18vh,9.5rem)] w-[92%] shrink-0 snap-center flex-col justify-end overflow-hidden rounded-3xl border border-white/10 text-start shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.08)] [clip-path:inset(0_round_1.5rem)] transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02] md:h-[clamp(9rem,22vh,12.5rem)] md:w-auto";
+  "group relative isolate flex min-h-[clamp(7rem,18vh,9.5rem)] w-[92%] shrink-0 snap-center flex-col justify-end overflow-hidden rounded-3xl border border-white/10 text-start shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.08)] [clip-path:inset(0_round_1.5rem)] transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02] md:min-h-[clamp(2.5rem,22vh,12.5rem)] md:w-auto";
 
 function CardImage({ src }: { src: string }) {
   return (
@@ -117,14 +119,20 @@ function CardBody({
   const { t } = useLanguage();
 
   return (
-    <div className="relative z-10 flex flex-col gap-1 p-[clamp(1rem,2.2vw,1.4rem)]">
-      <p className="truncate text-[clamp(1.18rem,2vw,1.45rem)] font-bold text-foreground">
+    <div className="relative z-10 flex flex-col gap-1 p-[clamp(0.35rem,min(2.2vw,3.5vh),1.4rem)]">
+      <p className="truncate text-[clamp(0.95rem,min(2vw,3.2vh),1.45rem)] font-bold text-foreground">
         {title}
       </p>
-      <p className="line-clamp-2 text-[clamp(0.84rem,1.45vw,1rem)] text-muted">
+      {/* Both drop away on very short viewports (phone landscape, e.g.
+          812x375) where this row has almost no vertical budget — the title
+          alone still communicates what the card links to (it's a single
+          clickable card either way), and description/CTA are the least
+          essential lines to lose first. Portrait phones/tablets/desktop are
+          all comfortably taller than this threshold, so unaffected. */}
+      <p className="line-clamp-2 text-[clamp(0.84rem,1.45vw,1rem)] text-muted [@media(max-height:480px)]:hidden">
         {description}
       </p>
-      <span className="mt-1 text-[clamp(0.84rem,1.45vw,1rem)] font-semibold text-[rgb(var(--accent-text-rgb))]">
+      <span className="mt-1 text-[clamp(0.84rem,1.45vw,1rem)] font-semibold text-[rgb(var(--accent-text-rgb))] [@media(max-height:480px)]:hidden">
         {t(ctaKey)}
       </span>
     </div>
@@ -154,7 +162,16 @@ export default function HomeQuickLinks() {
   }, []);
 
   return (
-    <div className="flex w-full gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] snap-x snap-mandatory md:grid md:grid-cols-3 md:gap-2 md:overflow-visible md:pb-0">
+    // Hidden entirely in phone landscape (orientation:landscape,
+    // max-height:500px — same threshold the old rotation hack used) — that
+    // range has almost no vertical room, and the hero (giant disc + track
+    // info + play button) is the essential content; this row is secondary
+    // navigation, not core to "now playing". Hero expands into the freed
+    // space instead (see its own [@media(orientation:landscape)...] rules
+    // in HomeHero.tsx). Every other breakpoint/orientation, including
+    // tablet landscape (shortest is ~768px tall, well outside this query),
+    // is completely unaffected.
+    <div className="flex w-full gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] snap-x snap-mandatory [@media(orientation:landscape)_and_(max-height:500px)]:hidden md:grid md:grid-cols-3 md:gap-2 md:overflow-visible md:pb-0">
       {/* Opens DJ Majid's own site in a new tab — a deliberate exception to
           this row's other two cards, which switch the internal view. The
           internal "DJ Majid" view is still reachable via the sidebar/tab-bar

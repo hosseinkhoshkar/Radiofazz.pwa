@@ -66,7 +66,14 @@ export default function HomeHero() {
     // justify-end lives on the z-10 wrapper below now, not here — see that
     // element's own comment for why (content-independent positioning anchor
     // for the absolutely-positioned mobile cover art).
-    <div className="relative isolate flex h-[63dvh] w-full flex-col overflow-hidden rounded-3xl border border-foreground/10 [clip-path:inset(0_round_1.5rem)] md:h-auto md:min-h-0 md:flex-1">
+    // Phone-landscape (orientation:landscape, max-height:500px — same
+    // threshold the old rotation hack used, tallest phone landscape is
+    // ~430px, shortest tablet landscape is ~768px, wide safety margin
+    // either side) — the three-card row is hidden entirely there (see
+    // HomeQuickLinks.tsx) for lack of vertical room, so the hero switches
+    // to the same flex-1/auto-height behavior md+ already uses, expanding
+    // to fill whatever it would otherwise have shared with that row.
+    <div className="relative isolate flex h-[63dvh] w-full flex-col overflow-hidden rounded-3xl border border-foreground/10 [clip-path:inset(0_round_1.5rem)] [@media(orientation:landscape)_and_(max-height:500px)]:h-auto [@media(orientation:landscape)_and_(max-height:500px)]:min-h-0 [@media(orientation:landscape)_and_(max-height:500px)]:flex-1 md:h-auto md:min-h-0 md:flex-1">
       <AnimatePresence mode="wait">
         <motion.img
           key={heroImageSrc}
@@ -113,10 +120,22 @@ export default function HomeHero() {
           regardless, this offset is purely about not visually crowding it)
           at a noticeably smaller clamp() than desktop; md: restores the
           exact original right-side position/size (-right-12 top-8,
-          translate, 28rem max) unchanged. */}
+          translate, 28rem max) unchanged.
+          Hidden outright in phone-landscape (orientation:landscape,
+          max-height:500px), forced with `!` since it overlaps the md:
+          media query at 768px+ widths (812/896/932) and needs to reliably
+          win: at md+ this glyph normally shares the RIGHT side with the
+          cover art (safe only because a tall hero keeps them far apart
+          vertically — logo pinned near the top, cover art bottom-anchored).
+          Once the hero is this short there's no corner genuinely clear of
+          both the cover art AND the now-much-closer text column (tried
+          moving it to the mobile-style left position first — it ended up
+          sitting behind the artist-name line instead, just a different
+          collision) — it's purely decorative, so dropping it here entirely
+          is the clean fix, same treatment as the three-card row. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-3 top-8 z-[5] flex flex-col items-center md:left-auto md:-right-12 md:top-8 md:-translate-x-[45%]"
+        className="pointer-events-none absolute left-3 top-8 z-[5] flex flex-col items-center md:left-auto md:-right-12 md:top-8 md:-translate-x-[45%] [@media(orientation:landscape)_and_(max-height:500px)]:!hidden"
       >
         <div
           data-testid="hero-logo-visual"
@@ -136,7 +155,11 @@ export default function HomeHero() {
           // through ~h:810, then ramps up to reach the original 28rem
           // ceiling by ~h:1180 (unchanged there — verified 23px+ clearance
           // at every tested width/height combination, floor included).
-          className="relative flex h-[clamp(6rem,20vh,9rem)] w-[clamp(6rem,20vh,9rem)] shrink-0 items-center justify-center rounded-full md:h-[clamp(5rem,calc(100vh_-_730px),28rem)] md:w-[clamp(5rem,calc(100vh_-_730px),28rem)]"
+          // Phone-landscape forces it down to a small fixed 3rem (also `!`,
+          // same reason as the wrapper's position above) — small and
+          // top-left is enough to stay clearly separate from the cover art
+          // at this height without needing its own bespoke clamp.
+          className="relative flex h-[clamp(6rem,20vh,9rem)] w-[clamp(6rem,20vh,9rem)] shrink-0 items-center justify-center rounded-full md:h-[clamp(5rem,calc(100vh_-_730px),28rem)] md:w-[clamp(5rem,calc(100vh_-_730px),28rem)] [@media(orientation:landscape)_and_(max-height:500px)]:!h-12 [@media(orientation:landscape)_and_(max-height:500px)]:!w-12"
         >
           {/* Soft glowing halo ring, palette-colored — crossfades with the
               track's active accent via the shared --accent-from-rgb/
@@ -181,7 +204,7 @@ export default function HomeHero() {
           reliable anchor: its nearest positioned ancestor (this element)
           always has the same top edge (the hero's own), never shifted
           around by content height the way an auto-height wrapper would be. */}
-      <div className="relative z-10 flex h-full w-full flex-col justify-end p-[clamp(0.35rem,1.2vw,0.75rem)] md:p-[clamp(0.5rem,2vw,1.25rem)]">
+      <div className="relative z-10 flex h-full w-full flex-col justify-end p-[clamp(0.35rem,1.2vw,0.75rem)] md:p-[clamp(0.5rem,min(2vw,3vh),1.25rem)]">
       {/* Mobile: flex-col-reverse stacks the (later-in-DOM) cover above the
           text column. Desktop: md:flex-row puts it back in DOM order — text
           left, cover right — opposite the text block, in the empty space the
@@ -266,10 +289,10 @@ export default function HomeHero() {
                 actually drops. */}
             <MarqueeText
               text={track}
-              className="text-[clamp(0.9rem,4.1vw,2.6rem)] font-bold leading-tight text-foreground drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] md:text-[clamp(1.25rem,4.1vw,2.6rem)]"
+              className="text-[clamp(0.9rem,4.1vw,2.6rem)] font-bold leading-tight text-foreground drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] md:text-[clamp(1.1rem,min(4.1vw,5.5vh),2.6rem)]"
             />
             {!isAd && (
-              <p className="mt-[clamp(0.125rem,calc(0.24px_+_0.49vw),0.25rem)] truncate text-[clamp(0.85rem,2.2vw,1.4rem)] text-foreground/70 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] md:text-[clamp(1rem,2.2vw,1.4rem)]">
+              <p className="mt-[clamp(0.125rem,calc(0.24px_+_0.49vw),0.25rem)] truncate text-[clamp(0.85rem,2.2vw,1.4rem)] text-foreground/70 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] md:text-[clamp(1rem,min(2.2vw,5vh),1.4rem)]">
                 {artist}
               </p>
             )}
@@ -300,7 +323,7 @@ export default function HomeHero() {
                 the WCAG minimum tap target, never smaller. md: restores the
                 original (larger) clamp values, desktop unchanged. */}
             <PlayButton
-              className="h-[clamp(2.75rem,4vh,3rem)] px-[clamp(0.9rem,3vw,1.5rem)] text-[clamp(0.85rem,1.6vw,1.02rem)] md:h-[clamp(3rem,7vh,4rem)] md:px-[clamp(1.5rem,4vw,2.25rem)] md:text-[clamp(1.02rem,1.8vw,1.18rem)]"
+              className="h-[clamp(2.75rem,4vh,3rem)] px-[clamp(0.9rem,3vw,1.5rem)] text-[clamp(0.85rem,1.6vw,1.02rem)] md:h-[clamp(2.75rem,7vh,4rem)] md:px-[clamp(1.5rem,4vw,2.25rem)] md:text-[clamp(1.02rem,1.8vw,1.18rem)]"
               iconClassName="h-5 w-5"
             />
 
@@ -323,7 +346,7 @@ export default function HomeHero() {
               768px, so 375px and every md+ width render byte-identical to
               before — only the 360-768px range now interpolates instead of
               snapping. */}
-          <div className="mt-[clamp(1rem,calc(8.94px_+_1.96vw),1.5rem)] flex w-full flex-row items-center gap-[clamp(0.5rem,calc(-6.12px_+_3.92vw),1.5rem)]">
+          <div className="mt-[clamp(1rem,min(calc(8.94px_+_1.96vw),3vh),1.5rem)] flex w-full flex-row items-center gap-[clamp(0.5rem,calc(-6.12px_+_3.92vw),1.5rem)]">
             <div className="min-w-0 flex-1">
               <HomeWaveform
                 heightClassName="h-[clamp(0.9rem,2.2vh,1.35rem)] md:h-[clamp(1.75rem,6vh,3.25rem)]"
@@ -333,7 +356,7 @@ export default function HomeHero() {
 
             <div className="flex shrink-0 items-center gap-[clamp(0.5rem,calc(4.47px_+_0.98vw),0.75rem)]">
               <div className="flex flex-col items-start">
-                <span className="text-[clamp(1.06rem,2.9vw,1.57rem)] font-bold leading-none text-[rgb(var(--accent-text-rgb))] md:text-[clamp(1.4rem,3.9vw,2.25rem)]">
+                <span className="text-[clamp(1.06rem,2.9vw,1.57rem)] font-bold leading-none text-[rgb(var(--accent-text-rgb))] md:text-[clamp(1.1rem,min(3.9vw,5.5vh),2.25rem)]">
                   {listenersCount}
                 </span>
                 <span className="mt-[clamp(0.125rem,calc(0.24px_+_0.49vw),0.25rem)] text-[clamp(0.62rem,1.1vw,0.78rem)] text-muted md:text-[clamp(0.7rem,1.35vw,0.84rem)]">
@@ -347,7 +370,7 @@ export default function HomeHero() {
               />
 
               <div className="flex flex-col items-start">
-                <span className="text-[clamp(1.06rem,2.9vw,1.57rem)] font-bold leading-none text-[rgb(var(--accent-text-rgb))] md:text-[clamp(1.4rem,3.9vw,2.25rem)]">
+                <span className="text-[clamp(1.06rem,2.9vw,1.57rem)] font-bold leading-none text-[rgb(var(--accent-text-rgb))] md:text-[clamp(1.1rem,min(3.9vw,5.5vh),2.25rem)]">
                   24/7
                 </span>
                 <span className="mt-[clamp(0.125rem,calc(0.24px_+_0.49vw),0.25rem)] text-[clamp(0.62rem,1.1vw,0.78rem)] text-muted md:text-[clamp(0.7rem,1.35vw,0.84rem)]">
@@ -396,8 +419,17 @@ export default function HomeHero() {
           // + the wider md:w-[...] give that clip room for the glow ring to
           // actually render instead of being clipped at zero headroom too.
           <div
-            className={`absolute top-[calc(10rem+10vh)] right-4 flex shrink-0 items-center justify-center overflow-visible transition-[width] ${collapseDurationClass} ease-out md:static md:top-auto md:right-auto md:overflow-hidden ${
-              hasCoverArt ? "md:w-[clamp(12.5rem,32vh,21.5rem)] md:p-3" : "md:w-0 md:p-0"
+            // top offset: min() caps the normal tuned formula (10rem+10vh,
+            // right for tall portrait phones) against the hero's own actual
+            // height (63dvh) minus the art's max size + margin (11rem+1rem)
+            // — on very short landscape phones the uncapped formula would
+            // push the art's bottom edge past the hero's own bottom edge,
+            // clipped by the hero's overflow-hidden (violates the "cover art
+            // must never be clipped" constraint). Only binds when the hero
+            // is too short for the tuned value to fit; tall viewports are
+            // unaffected since the tuned formula stays smaller there.
+            className={`absolute top-[min(calc(10rem+10vh),calc(63dvh_-_12rem))] right-4 flex shrink-0 items-center justify-center overflow-visible transition-[width] ${collapseDurationClass} ease-out md:static md:top-auto md:right-auto md:overflow-hidden ${
+              hasCoverArt ? "md:w-[clamp(6rem,32vh,21.5rem)] md:p-3" : "md:w-0 md:p-0"
             }`}
           >
             <AnimatePresence mode="wait">
@@ -411,7 +443,14 @@ export default function HomeHero() {
                 animate={{ opacity: hasCoverArt ? 1 : 0, scale: 1 }}
                 exit={prefersReducedMotion ? undefined : { opacity: 0 }}
                 transition={{ duration: prefersReducedMotion ? 0 : 0.4 }}
-                className="relative h-[clamp(7rem,18vh,11rem)] w-[clamp(7rem,18vh,11rem)] shrink-0 rounded-3xl object-cover md:h-[clamp(11rem,32vh,20rem)] md:w-[clamp(11rem,32vh,20rem)]"
+                // md floor lowered 11rem -> 4.5rem: on phone-landscape
+                // viewports (e.g. 812x375) the hero's own flex-1 height
+                // shrinks a lot, and 11rem was tall enough to force an
+                // overflow/clip there. The 32vh preferred term already
+                // exceeds even the old floor above ~550px of height, so
+                // normal portrait/tablet/desktop sizing is unchanged —
+                // this only takes effect on genuinely short viewports.
+                className="relative h-[clamp(7rem,18vh,11rem)] w-[clamp(7rem,18vh,11rem)] shrink-0 rounded-3xl object-cover md:h-[clamp(4.5rem,32vh,20rem)] md:w-[clamp(4.5rem,32vh,20rem)]"
               />
             </AnimatePresence>
           </div>

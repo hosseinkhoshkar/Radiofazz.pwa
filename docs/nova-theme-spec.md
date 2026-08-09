@@ -87,6 +87,7 @@ General animations (must work on all devices, lightweight, no performance hit):
 
 ## 8. Responsiveness and PWA
 
+- **Phone-landscape orientation** (`orientation: landscape` combined with a phone-range `max-height: 500px` — tallest phone landscape is ~430px, shortest tablet landscape is ~768px, so tablets are never caught by this and keep their normal landscape layout unaffected): the Home view's three-card section (Meet DJ Majid / Next Event / Advertise with Us) is hidden entirely — there's too little vertical room for it alongside the hero — and the hero expands to fill the freed height, same `flex-1`/auto-height behavior the `md+` layout already uses. No rotation/transform trick — this is a plain responsive breakpoint, and the hero's own `clamp()` values still handle its internal sizing fluidly within that expanded space.
 - Fully responsive down to mobile; on mobile:
   - The sidebar becomes a bottom tab bar
   - Mouse-driven effects are fully disabled

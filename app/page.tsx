@@ -152,7 +152,17 @@ export default function Home() {
           // (its own height + floating margin) is the entire offset
           // needed, same on every breakpoint — mobile no longer has a
           // separate bottom tab bar to additionally clear (see MobileMenu.tsx).
-          className="min-h-full w-full pb-[var(--mini-player-height)] md:h-full"
+          // Phone-landscape gets the same real h-full as md+ (not just
+          // min-h-full) — a prerequisite for HomeView's hero to flex-1
+          // expand into the space freed by hiding the three-card row there
+          // (percentage/flex sizing needs a definite height up the chain).
+          // Harmless for every other view: their own containers still only
+          // switch to a hard md:overflow-hidden clip at md+ widths, so at
+          // narrower phone-landscape widths (e.g. 667x375) they simply gain
+          // the same natural-centering benefit Home does, with the outer
+          // page container's overflow-y-auto still there as a scroll
+          // fallback if content ever needs more room than that.
+          className="min-h-full w-full pb-[var(--mini-player-height)] [@media(orientation:landscape)_and_(max-height:500px)]:h-full md:h-full"
         >
           <ActiveView />
         </motion.div>
