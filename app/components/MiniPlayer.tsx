@@ -58,7 +58,7 @@ import MarqueeText from "./MarqueeText";
 // the middle grid track from the template on mobile — not just hiding its
 // content — is what makes this reliable.
 export default function MiniPlayer() {
-  const { artist, track, coverArt } = usePlayer();
+  const { artist, track, coverArt, isOffline } = usePlayer();
   const { t } = useLanguage();
   const prefersReducedMotion = useReducedMotion();
   const isMobile = useIsMobileViewport();
@@ -135,7 +135,7 @@ export default function MiniPlayer() {
             place, matching the 2-column grid-cols-[1fr_auto] chosen above. */}
         {!isMobile && (
           <div className="flex items-center gap-3 justify-self-center">
-            <PlayButton className="h-12 w-12" iconClassName="h-5 w-5" showLabel={false} />
+            <PlayButton className="h-12 w-12" iconClassName="h-5 w-5" showLabel={false} disabled={isOffline} />
             <VolumeControl />
           </div>
         )}
@@ -154,8 +154,8 @@ export default function MiniPlayer() {
             <div className="w-20">
               <HomeWaveform heightClassName="h-4" barCountDesktop={20} barCountMobile={14} />
             </div>
-            <span className="text-[11px] font-bold tracking-wide text-danger">
-              • {t("home.statsLiveLabel")}
+            <span className={`text-[11px] font-bold tracking-wide ${isOffline ? "text-muted" : "text-danger"}`}>
+              • {isOffline ? t("player.offlineBadge") : t("home.statsLiveLabel")}
             </span>
           </div>
 
@@ -163,7 +163,7 @@ export default function MiniPlayer() {
 
           <div className="flex items-center gap-2 md:hidden">
             <VolumeControl />
-            <PlayButton className="h-12 w-12" iconClassName="h-5 w-5" showLabel={false} />
+            <PlayButton className="h-12 w-12" iconClassName="h-5 w-5" showLabel={false} disabled={isOffline} />
           </div>
         </div>
       </div>

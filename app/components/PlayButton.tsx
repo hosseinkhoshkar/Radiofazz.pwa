@@ -10,9 +10,13 @@ interface PlayButtonProps {
   // Compact contexts (e.g. the mini-player) render icon-only — the hero's
   // text label would overflow a 44px pill.
   showLabel?: boolean;
+  // Set while the stream is known to be offline — blocks the click (on top
+  // of PlayerContext's own togglePlay guard) and visually communicates
+  // there's nothing to attempt playback against right now.
+  disabled?: boolean;
 }
 
-export default function PlayButton({ className, iconClassName, showLabel = true }: PlayButtonProps) {
+export default function PlayButton({ className, iconClassName, showLabel = true, disabled = false }: PlayButtonProps) {
   const { isPlaying, isLoading, togglePlay } = usePlayer();
   const { t } = useLanguage();
   const prefersReducedMotion = useReducedMotion();
@@ -22,14 +26,17 @@ export default function PlayButton({ className, iconClassName, showLabel = true 
     : isPlaying
       ? t("home.ctaPause")
       : t("home.ctaListenLive");
+  const accessibleLabel = disabled ? `${label} — ${t("player.offlineMessage")}` : label;
 
   return (
     <motion.button
       type="button"
-      onClick={togglePlay}
-      whileTap={{ scale: 0.96 }}
-      aria-label={showLabel ? undefined : label}
-      className={`relative flex shrink-0 items-center justify-center gap-2.5 overflow-hidden rounded-full border border-white/25 text-[rgb(var(--accent-on-rgb))] shadow-[0_10px_32px_-8px_rgb(var(--accent-from-rgb)/60%),inset_0_1px_0_0_rgba(255,255,255,0.4),inset_0_-6px_10px_-8px_rgba(0,0,0,0.35)] ${className}`}
+      onClick={disabled ? undefined : togglePlay}
+      disabled={disabled}
+      whileTap={disabled ? undefined : { scale: 0.96 }}
+      aria-label={showLabel ? undefined : accessibleLabel}
+      title={disabled ? t("player.offlineMessage") : undefined}
+      className={`relative flex shrink-0 items-center justify-center gap-2.5 overflow-hidden rounded-full border border-white/25 text-[rgb(var(--accent-on-rgb))] shadow-[0_10px_32px_-8px_rgb(var(--accent-from-rgb)/60%),inset_0_1px_0_0_rgba(255,255,255,0.4),inset_0_-6px_10px_-8px_rgba(0,0,0,0.35)] ${disabled ? "cursor-not-allowed opacity-50 grayscale" : ""} ${className}`}
       style={{
         backgroundImage:
           "linear-gradient(135deg, rgb(var(--accent-from-rgb)), rgb(var(--accent-to-rgb)))",

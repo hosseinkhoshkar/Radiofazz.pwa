@@ -31,7 +31,7 @@ const NUMBER_LOCALES: Record<string, string> = {
 };
 
 export default function HomeHero() {
-  const { track, artist, isPlaying, listeners, isAd, adLink, adImage, coverArt } = usePlayer();
+  const { track, artist, isPlaying, listeners, isAd, adLink, adImage, coverArt, isOffline } = usePlayer();
   const { t, lang } = useLanguage();
   const prefersReducedMotion = useReducedMotion();
   const isMobile = useIsMobileViewport();
@@ -234,15 +234,31 @@ export default function HomeHero() {
             {/* Glassy background — accent-tinted translucent fill (was a
                 neutral bg-white/10) + a stronger backdrop-blur, so it
                 actually reads as frosted glass rather than a flat tinted
-                pill. */}
-            <div className="relative flex items-center gap-2 rounded-full border border-[rgb(var(--accent-from-rgb)/40%)] bg-[rgb(var(--accent-from-rgb)/16%)] px-2.5 py-1 shadow-[0_0_24px_-4px_rgb(var(--accent-from-rgb)/80%),0_0_12px_-2px_rgb(var(--accent-to-rgb)/60%)] backdrop-blur-lg md:px-3 md:py-1.5">
+                pill. Offline: flips to a neutral gray glass instead of the
+                accent tint — a deliberately "quiet" look, distinct from
+                every other (accent-colored) state in the app, rather than
+                a jarring danger-red alarm for what's framed as a transient,
+                auto-recovering condition. */}
+            <div
+              className={`relative flex items-center gap-2 rounded-full border px-2.5 py-1 backdrop-blur-lg md:px-3 md:py-1.5 ${
+                isOffline
+                  ? "border-white/15 bg-white/10"
+                  : "border-[rgb(var(--accent-from-rgb)/40%)] bg-[rgb(var(--accent-from-rgb)/16%)] shadow-[0_0_24px_-4px_rgb(var(--accent-from-rgb)/80%),0_0_12px_-2px_rgb(var(--accent-to-rgb)/60%)]"
+              }`}
+            >
               <span
-                className={`h-2 w-2 rounded-full bg-success ${
-                  isPlaying && !prefersReducedMotion ? "animate-pulse" : ""
+                className={`h-2 w-2 rounded-full ${
+                  isOffline
+                    ? "bg-muted"
+                    : `bg-success ${isPlaying && !prefersReducedMotion ? "animate-pulse" : ""}`
                 }`}
               />
-              <span className="text-[clamp(0.7rem,1.6vw,0.85rem)] font-semibold tracking-wide text-[rgb(var(--accent-text-rgb))]">
-                {t("home.onAirBadge")}
+              <span
+                className={`text-[clamp(0.7rem,1.6vw,0.85rem)] font-semibold tracking-wide ${
+                  isOffline ? "text-muted" : "text-[rgb(var(--accent-text-rgb))]"
+                }`}
+              >
+                {isOffline ? t("player.offlineBadge") : t("home.onAirBadge")}
               </span>
             </div>
 
@@ -291,7 +307,13 @@ export default function HomeHero() {
               text={track}
               className="text-[clamp(0.9rem,4.1vw,2.6rem)] font-bold leading-tight text-foreground drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] md:text-[clamp(1.1rem,min(4.1vw,5.5vh),2.6rem)]"
             />
-            {!isAd && (
+            {/* Offline: skip this line entirely rather than showing the
+                tagline here too — offline's fallback `artist` value is the
+                same tagline string the block below already renders (kept
+                that way for the mini-player, which has no separate tagline
+                line of its own), so showing both here would just repeat
+                the same sentence twice in a row. */}
+            {!isAd && !isOffline && (
               <p className="mt-[clamp(0.125rem,calc(0.24px_+_0.49vw),0.25rem)] truncate text-[clamp(0.85rem,2.2vw,1.4rem)] text-foreground/70 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] md:text-[clamp(1rem,min(2.2vw,5vh),1.4rem)]">
                 {artist}
               </p>
@@ -325,6 +347,7 @@ export default function HomeHero() {
             <PlayButton
               className="h-[clamp(2.75rem,4vh,3rem)] px-[clamp(0.9rem,3vw,1.5rem)] text-[clamp(0.85rem,1.6vw,1.02rem)] md:h-[clamp(2.75rem,7vh,4rem)] md:px-[clamp(1.5rem,4vw,2.25rem)] md:text-[clamp(1.02rem,1.8vw,1.18rem)]"
               iconClassName="h-5 w-5"
+              disabled={isOffline}
             />
 
             {isAd && adLink && (
@@ -338,6 +361,12 @@ export default function HomeHero() {
               </a>
             )}
           </div>
+
+          {isOffline && (
+            <p className="max-w-full text-[clamp(0.7rem,1.6vw,0.85rem)] text-muted">
+              {t("player.offlineMessage")}
+            </p>
+          )}
 
           {/* Row on every breakpoint now (waveform left, stats right) —
               mobile used to stack these (flex-col). Both mt- and gap- were

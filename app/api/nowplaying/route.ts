@@ -2,6 +2,9 @@ import { getCoverArt } from "@/lib/itunes";
 
 const STATUS_URL = "http://www.radiofaaz.com:8000/status-json.xsl";
 const CORS_HEADERS = { "Access-Control-Allow-Origin": "*" };
+// A hung Icecast origin must never block this route indefinitely — abort
+// and fall back to the offline response instead.
+const STATUS_TIMEOUT_MS = 5000;
 
 interface IcecastSource {
   title?: string;
@@ -27,15 +30,22 @@ function splitTitle(title?: string) {
   };
 }
 
+// Icecast unreachable, slow, or erroring — the frontend polls this route
+// continuously, so it must always get a fast, parseable response (200 +
+// isOffline) rather than a 500/502 it has to special-case, and never hang.
+function offlineResponse() {
+  return Response.json({ isOffline: true, sources: [] }, { headers: CORS_HEADERS });
+}
+
 export async function GET() {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), STATUS_TIMEOUT_MS);
+
   try {
-    const res = await fetch(STATUS_URL, { cache: "no-store" });
+    const res = await fetch(STATUS_URL, { cache: "no-store", signal: controller.signal });
 
     if (!res.ok) {
-      return Response.json(
-        { error: "Failed to fetch stream status" },
-        { status: 502, headers: CORS_HEADERS }
-      );
+      return offlineResponse();
     }
 
     const data = await res.json();
@@ -63,11 +73,11 @@ export async function GET() {
       })
     );
 
-    return Response.json({ sources: nowPlaying }, { headers: CORS_HEADERS });
+    return Response.json({ isOffline: false, sources: nowPlaying }, { headers: CORS_HEADERS });
   } catch {
-    return Response.json(
-      { error: "Unable to reach stream server" },
-      { status: 502, headers: CORS_HEADERS }
-    );
+    // Network error, DNS failure, or the abort from the timeout above.
+    return offlineResponse();
+  } finally {
+    clearTimeout(timeout);
   }
 }

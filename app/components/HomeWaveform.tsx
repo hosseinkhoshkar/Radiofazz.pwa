@@ -56,7 +56,7 @@ export default function HomeWaveform({
   barCountDesktop = BAR_COUNT_DESKTOP,
   barCountMobile = BAR_COUNT_MOBILE,
 }: HomeWaveformProps = {}) {
-  const { isPlaying } = usePlayer();
+  const { isPlaying, isOffline } = usePlayer();
   const isMobile = useIsMobileViewport();
   const prefersReducedMotion = useReducedMotion();
   const barCount = isMobile ? barCountMobile : barCountDesktop;
@@ -72,7 +72,12 @@ export default function HomeWaveform({
   }
 
   useEffect(() => {
-    if (prefersReducedMotion) {
+    // Offline: same frozen, minimal, non-animating state as reduced-motion
+    // — there's no live audio to visualize, so no envelope easing either,
+    // straight to the static floor.
+    if (prefersReducedMotion || isOffline) {
+      envelopeRef.current = 0;
+      lastTimeRef.current = null;
       barsRef.current.forEach((el) => {
         if (el) el.style.height = `${MIN_SCALE * 100}%`;
       });
@@ -112,7 +117,7 @@ export default function HomeWaveform({
 
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [isPlaying, prefersReducedMotion, barCount]);
+  }, [isPlaying, isOffline, prefersReducedMotion, barCount]);
 
   return (
     <div

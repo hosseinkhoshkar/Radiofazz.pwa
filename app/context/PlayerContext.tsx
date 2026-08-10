@@ -17,6 +17,13 @@ const STREAM_URL = "/api/stream";
 const NOWPLAYING_URL = "/api/nowplaying";
 const ADS_URL = "/data/ads.json";
 const POLL_INTERVAL_MS = 15000;
+// Defense in depth on top of the API route's own 5s Icecast timeout — a
+// hung/broken fetch to our own route (bad network, cold serverless start)
+// must not block a poll cycle indefinitely either.
+const NOWPLAYING_TIMEOUT_MS = 8000;
+// Grace period after a "stalled" audio event before treating it as a real
+// interruption rather than a normal, brief buffering blip.
+const STALL_GRACE_MS = 4000;
 
 // Icecast now-playing titles announce sponsored content with this prefix,
 // e.g. "AD: sponsor-one" — the remainder is the slug looked up in ads.json.
@@ -118,6 +125,10 @@ interface PlayerContextValue {
   adLink: string | null;
   adImage: string | null;
   listeners: number;
+  isOffline: boolean;
+  streamInterrupted: boolean;
+  retryPlayback: () => void;
+  dismissStreamInterrupted: () => void;
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -133,6 +144,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [volume, setVolumeState] = useState(1);
   const [ads, setAds] = useState<AdsMap>({});
   const [testAdSlug, setTestAdSlug] = useState<string | null>(null);
+  const [isOffline, setIsOffline] = useState(false);
+  const [streamInterrupted, setStreamInterrupted] = useState(false);
+
+  // Tracks whether the user currently *wants* playback (vs. having
+  // deliberately paused) so an error/stalled audio event can tell "the
+  // connection dropped mid-playback" apart from "the user hit pause" —
+  // both fire similar events on the <audio> element otherwise.
+  const playIntentRef = useRef(false);
+  const statusRef = useRef<PlayerStatus>("idle");
+  const stalledTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const themeFromRef = useRef<ThemeColors>(DEFAULT_THEME);
   const themeTargetRef = useRef<ThemeColors>(DEFAULT_THEME);
@@ -145,10 +166,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   // An "AD:"-prefixed title means sponsor mode even if the slug isn't in
   // ads.json yet — falls back to a generic sponsored state below instead of
-  // silently reverting to normal-track display.
+  // silently reverting to normal-track display. Forced off while offline —
+  // a stale ad-flagged title from before the stream dropped must never
+  // display as sponsored content once the stream itself is confirmed down.
   const adSlug = testAdSlug ?? parseAdSlug(nowPlaying?.track ?? null);
-  const isAd = adSlug != null;
-  const activeAd = adSlug ? (ads[adSlug] ?? null) : null;
+  const isAd = !isOffline && adSlug != null;
+  const activeAd = isAd && adSlug ? (ads[adSlug] ?? null) : null;
   const adAdvertiser = isAd ? (activeAd?.advertiser ?? t("player.sponsorLabel")) : null;
   const adLink = activeAd?.link ?? null;
   const adImage = activeAd?.image ?? null;
@@ -156,12 +179,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const paletteKey = `${nowPlaying?.artist ?? ""}::${nowPlaying?.track ?? ""}`;
   const palette = isAd ? SPONSOR_PALETTE : pickPalette(paletteKey);
 
-  const artist = isAd
-    ? t("player.sponsorLabel")
-    : (nowPlaying?.artist ?? t("brand.name"));
-  const track = isAd
-    ? (adAdvertiser ?? t("player.sponsorLabel"))
-    : (nowPlaying?.track ?? t("player.statusPlaying"));
+  // Offline takes priority over everything else — a static "Radio Faaz" +
+  // tagline pair instead of stale/last-known track info.
+  const artist = isOffline
+    ? t("home.tagline")
+    : isAd
+      ? t("player.sponsorLabel")
+      : (nowPlaying?.artist ?? t("brand.name"));
+  const track = isOffline
+    ? t("brand.name")
+    : isAd
+      ? (adAdvertiser ?? t("player.sponsorLabel"))
+      : (nowPlaying?.track ?? t("player.statusPlaying"));
 
   useEffect(() => {
     let cancelled = false;
@@ -191,17 +220,42 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
 
     async function fetchNowPlaying() {
-      try {
-        const res = await fetch(NOWPLAYING_URL);
-        if (!res.ok) return;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), NOWPLAYING_TIMEOUT_MS);
 
-        const data: { sources: NowPlayingSource[] } = await res.json();
+      try {
+        const res = await fetch(NOWPLAYING_URL, { signal: controller.signal });
+        if (cancelled) return;
+
+        if (!res.ok) {
+          setIsOffline(true);
+          return;
+        }
+
+        const data: { isOffline?: boolean; sources: NowPlayingSource[] } = await res.json();
+        if (cancelled) return;
+
+        if (data.isOffline) {
+          setIsOffline(true);
+          return;
+        }
+
         const primary = data.sources?.[0] ?? null;
-        if (!cancelled && primary) {
+        if (primary) {
           setNowPlaying(primary);
+          setIsOffline(false);
+        } else {
+          // Reachable, but reporting no live mount — same "nothing to
+          // play" state as unreachable, from the listener's perspective.
+          setIsOffline(true);
         }
       } catch {
-        // stream metadata is best-effort; keep showing the last known track
+        // Network error, or the abort from the timeout above — the site
+        // must recover automatically on the next poll once reachable
+        // again, so this never throws further or stops the interval.
+        if (!cancelled) setIsOffline(true);
+      } finally {
+        clearTimeout(timeout);
       }
     }
 
@@ -215,13 +269,28 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (isOffline) {
+      setCoverArt(DEFAULT_COVER_ART);
+      return;
+    }
+
     if (isAd) {
       if (activeAd) setCoverArt(activeAd.image);
       return;
     }
 
     setCoverArt(nowPlaying?.coverArt || DEFAULT_COVER_ART);
-  }, [isAd, activeAd, nowPlaying?.coverArt]);
+  }, [isOffline, isAd, activeAd, nowPlaying?.coverArt]);
+
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
+
+  useEffect(() => {
+    return () => {
+      if (stalledTimerRef.current != null) clearTimeout(stalledTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -299,17 +368,38 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const togglePlay = () => {
     const audio = audioRef.current;
-    if (!audio) return;
+    // No point attempting playback against a stream we already know is
+    // down — the Play button is disabled in the UI for this same reason,
+    // but guard here too against any other caller.
+    if (!audio || isOffline) return;
 
     if (isPlaying || isLoading) {
+      playIntentRef.current = false;
       audio.pause();
       setStatus("paused");
       return;
     }
 
+    playIntentRef.current = true;
+    setStreamInterrupted(false);
     setStatus("loading");
     audio.play().catch(() => setStatus("paused"));
   };
+
+  // Forces a fresh connection (not just resuming a dead one) — .load()
+  // resets the element before .play() reconnects to the stream URL.
+  const retryPlayback = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    setStreamInterrupted(false);
+    playIntentRef.current = true;
+    setStatus("loading");
+    audio.load();
+    audio.play().catch(() => setStatus("paused"));
+  };
+
+  const dismissStreamInterrupted = () => setStreamInterrupted(false);
 
   const toggleMute = () => setIsMuted((prev) => !prev);
 
@@ -340,16 +430,45 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         adLink,
         adImage,
         listeners: nowPlaying?.listeners ?? 0,
+        isOffline,
+        streamInterrupted,
+        retryPlayback,
+        dismissStreamInterrupted,
       }}
     >
       <audio
         ref={audioRef}
         src={STREAM_URL}
         preload="none"
-        onPlaying={() => setStatus("playing")}
+        onPlaying={() => {
+          setStatus("playing");
+          setStreamInterrupted(false);
+          if (stalledTimerRef.current != null) {
+            clearTimeout(stalledTimerRef.current);
+            stalledTimerRef.current = null;
+          }
+        }}
         onWaiting={() => setStatus("loading")}
         onPause={() => setStatus("paused")}
-        onError={() => setStatus("paused")}
+        onError={() => {
+          setStatus("paused");
+          // Only a real mid-playback drop if the user actually wanted
+          // playback running — a deliberate pause() doesn't set this.
+          if (playIntentRef.current) setStreamInterrupted(true);
+          playIntentRef.current = false;
+        }}
+        onStalled={() => {
+          // "stalled" fires for normal brief buffering too — wait out a
+          // grace period and only flag it as a real interruption if
+          // playback still hasn't recovered by then.
+          if (!playIntentRef.current || stalledTimerRef.current != null) return;
+          stalledTimerRef.current = setTimeout(() => {
+            stalledTimerRef.current = null;
+            if (playIntentRef.current && statusRef.current !== "playing") {
+              setStreamInterrupted(true);
+            }
+          }, STALL_GRACE_MS);
+        }}
       />
       {children}
     </PlayerContext.Provider>
