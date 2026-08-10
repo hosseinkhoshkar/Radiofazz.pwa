@@ -14,10 +14,10 @@ export default function ContactView() {
           <h1 className="text-[clamp(1.4rem,2.8vw,1.68rem)] font-bold text-foreground">
             {t("contact.title")}
           </h1>
-          <p className="mt-2 text-[clamp(0.84rem,1.7vw,0.98rem)] text-muted">
+          <p className="mt-[clamp(0.375rem,1vh,0.5rem)] text-[clamp(0.84rem,1.7vw,0.98rem)] text-muted">
             {t("contact.subtitle")}
           </p>
-          <p className="mt-2 text-[clamp(0.84rem,1.7vw,0.91rem)] leading-snug text-muted">
+          <p className="mt-[clamp(0.375rem,1vh,0.5rem)] text-[clamp(0.84rem,1.7vw,0.91rem)] leading-snug text-muted">
             {t("contact.about")}
           </p>
         </div>

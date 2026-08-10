@@ -104,8 +104,8 @@ export default function ContactForm() {
       noValidate
       className="relative flex flex-col gap-[clamp(0.5rem,1.5vh,1.25rem)]"
     >
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="name" className="text-base text-muted">
+      <div className="flex flex-col gap-[clamp(0.25rem,0.8vh,0.375rem)]">
+        <label htmlFor="name" className="text-[clamp(0.8rem,1.6vh,1rem)] text-muted">
           {t("contact.form.nameLabel")}
         </label>
         <input
@@ -121,8 +121,8 @@ export default function ContactForm() {
         {errors.name && <p className="text-sm text-danger">{errors.name}</p>}
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="email" className="text-base text-muted">
+      <div className="flex flex-col gap-[clamp(0.25rem,0.8vh,0.375rem)]">
+        <label htmlFor="email" className="text-[clamp(0.8rem,1.6vh,1rem)] text-muted">
           {t("contact.form.emailLabel")}
         </label>
         <input
@@ -139,8 +139,8 @@ export default function ContactForm() {
         {errors.email && <p className="text-sm text-danger">{errors.email}</p>}
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="message" className="text-base text-muted">
+      <div className="flex flex-col gap-[clamp(0.25rem,0.8vh,0.375rem)]">
+        <label htmlFor="message" className="text-[clamp(0.8rem,1.6vh,1rem)] text-muted">
           {t("contact.form.messageLabel")}
         </label>
         <textarea
@@ -150,7 +150,7 @@ export default function ContactForm() {
           onChange={handleChange}
           disabled={isSending}
           placeholder={t("contact.form.messagePlaceholder")}
-          className="h-[clamp(3.5rem,11vh,6rem)] resize-none rounded-xl border border-[rgb(var(--accent-from-rgb)/30%)] bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-[rgb(var(--accent-from-rgb))] focus:outline-none disabled:opacity-50"
+          className="h-[clamp(2.75rem,11vh,6rem)] resize-none rounded-xl border border-[rgb(var(--accent-from-rgb)/30%)] bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-[rgb(var(--accent-from-rgb))] focus:outline-none disabled:opacity-50"
         />
         {errors.message && (
           <p className="text-sm text-danger">{errors.message}</p>
@@ -184,7 +184,7 @@ export default function ContactForm() {
         style={{
           backgroundImage: "linear-gradient(to left, rgb(var(--accent-from-rgb)), rgb(var(--accent-to-rgb)))",
         }}
-        className="mt-2 rounded-xl px-6 py-3 font-semibold text-[rgb(var(--accent-on-rgb))] transition-opacity disabled:opacity-60"
+        className="mt-[clamp(0.375rem,1vh,0.5rem)] rounded-xl px-6 py-3 font-semibold text-[rgb(var(--accent-on-rgb))] transition-opacity disabled:opacity-60"
       >
         {isSending ? t("contact.form.submitting") : t("contact.form.submit")}
       </button>
