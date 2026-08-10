@@ -28,24 +28,31 @@ interface FormErrors {
 
 const initialForm: FormState = { name: "", email: "", message: "", website: "" };
 
+function validateField(
+  field: keyof FormErrors,
+  values: FormState,
+  t: (key: TranslationKey) => string
+): string | undefined {
+  switch (field) {
+    case "name":
+      return !values.name.trim() ? t("contact.form.errors.name") : undefined;
+    case "email":
+      if (!values.email.trim()) return t("contact.form.errors.email");
+      if (!EMAIL_REGEX.test(values.email.trim())) return t("contact.form.errors.emailInvalid");
+      return undefined;
+    case "message":
+      return !values.message.trim() ? t("contact.form.errors.message") : undefined;
+    default:
+      return undefined;
+  }
+}
+
 function validate(values: FormState, t: (key: TranslationKey) => string): FormErrors {
-  const errors: FormErrors = {};
-
-  if (!values.name.trim()) {
-    errors.name = t("contact.form.errors.name");
-  }
-
-  if (!values.email.trim()) {
-    errors.email = t("contact.form.errors.email");
-  } else if (!EMAIL_REGEX.test(values.email.trim())) {
-    errors.email = t("contact.form.errors.emailInvalid");
-  }
-
-  if (!values.message.trim()) {
-    errors.message = t("contact.form.errors.message");
-  }
-
-  return errors;
+  return {
+    name: validateField("name", values, t),
+    email: validateField("email", values, t),
+    message: validateField("message", values, t),
+  };
 }
 
 export default function ContactForm() {
@@ -62,6 +69,15 @@ export default function ContactForm() {
     if (status === "success" || status === "error") setStatus("idle");
   }
 
+  function handleBlur(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    const { name, value } = e.target;
+    const field = name as keyof FormErrors;
+    setErrors((prev) => ({
+      ...prev,
+      [field]: validateField(field, { ...form, [field]: value }, t),
+    }));
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
@@ -73,7 +89,8 @@ export default function ContactForm() {
 
     const validationErrors = validate(form, t);
     setErrors(validationErrors);
-    if (Object.keys(validationErrors).length > 0) return;
+    const hasErrors = Object.values(validationErrors).some(Boolean);
+    if (hasErrors) return;
 
     setStatus("sending");
 
@@ -114,6 +131,7 @@ export default function ContactForm() {
           type="text"
           value={form.name}
           onChange={handleChange}
+          onBlur={handleBlur}
           disabled={isSending}
           placeholder={t("contact.form.namePlaceholder")}
           className="min-h-11 rounded-xl border border-[rgb(var(--accent-from-rgb)/30%)] bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-[rgb(var(--accent-from-rgb))] focus:outline-none disabled:opacity-50"
@@ -132,9 +150,10 @@ export default function ContactForm() {
           dir="ltr"
           value={form.email}
           onChange={handleChange}
+          onBlur={handleBlur}
           disabled={isSending}
           placeholder="you@example.com"
-          className="min-h-11 rounded-xl border border-[rgb(var(--accent-from-rgb)/30%)] bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-end text-foreground placeholder:text-muted/60 focus:border-[rgb(var(--accent-from-rgb))] focus:outline-none disabled:opacity-50"
+          className="min-h-11 rounded-xl border border-[rgb(var(--accent-from-rgb)/30%)] bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-left text-foreground placeholder:text-muted/60 focus:border-[rgb(var(--accent-from-rgb))] focus:outline-none disabled:opacity-50"
         />
         {errors.email && <p className="text-sm text-danger">{errors.email}</p>}
       </div>
@@ -148,6 +167,7 @@ export default function ContactForm() {
           name="message"
           value={form.message}
           onChange={handleChange}
+          onBlur={handleBlur}
           disabled={isSending}
           placeholder={t("contact.form.messagePlaceholder")}
           className="h-[clamp(2.75rem,11vh,6rem)] resize-none rounded-xl border border-[rgb(var(--accent-from-rgb)/30%)] bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-[rgb(var(--accent-from-rgb))] focus:outline-none disabled:opacity-50"
