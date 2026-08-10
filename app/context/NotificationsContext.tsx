@@ -25,6 +25,20 @@ interface OneSignalSdk {
   Notifications: {
     requestPermission: () => Promise<void>;
   };
+  User: {
+    PushSubscription: {
+      id: string | null | undefined;
+      optedIn: boolean;
+      addEventListener: (
+        event: "change",
+        listener: (event: { current: { id: string | null | undefined; optedIn: boolean } }) => void
+      ) => void;
+      removeEventListener: (
+        event: "change",
+        listener: (event: { current: { id: string | null | undefined; optedIn: boolean } }) => void
+      ) => void;
+    };
+  };
 }
 
 declare global {
@@ -51,21 +65,46 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.OneSignalDeferred.push(async (OneSignal) => {
-      await OneSignal.init({
-        appId: ONESIGNAL_APP_ID,
-        // Points at the app's own service worker (public/sw.js), which
-        // importScripts()'s the OneSignal worker in — see that file.
-        serviceWorkerPath: "sw.js",
-        serviceWorkerParam: { scope: "/" },
-      });
+      try {
+        await OneSignal.init({
+          appId: ONESIGNAL_APP_ID,
+          // Points at the app's own service worker (public/sw.js), which
+          // importScripts()'s the OneSignal worker in — see that file.
+          serviceWorkerPath: "sw.js",
+          serviceWorkerParam: { scope: "/" },
+        });
+        // TEMPORARY DEBUG LOGGING — remove once the subscription flow is
+        // confirmed end-to-end.
+        console.log("[OneSignal debug] init() resolved");
+      } catch (err) {
+        console.error("[OneSignal debug] init() failed:", err);
+      }
     });
   }, []);
 
   function requestPermission() {
     if (!ONESIGNAL_APP_ID || !window.OneSignalDeferred) return;
     window.OneSignalDeferred.push(async (OneSignal) => {
-      await OneSignal.Notifications.requestPermission();
-      setStatus(Notification.permission as PermissionStatus);
+      try {
+        await OneSignal.Notifications.requestPermission();
+        setStatus(Notification.permission as PermissionStatus);
+
+        // TEMPORARY DEBUG LOGGING — remove once the subscription flow is
+        // confirmed end-to-end. Notification.permission === "granted" only
+        // means the browser-level prompt was accepted; it says nothing about
+        // whether OneSignal's servers actually issued a subscription id.
+        console.log("[OneSignal debug] browser Notification.permission:", Notification.permission);
+        console.log("[OneSignal debug] PushSubscription immediately after requestPermission:", {
+          id: OneSignal.User.PushSubscription.id,
+          optedIn: OneSignal.User.PushSubscription.optedIn,
+        });
+
+        OneSignal.User.PushSubscription.addEventListener("change", (event) => {
+          console.log("[OneSignal debug] PushSubscription change event:", event.current);
+        });
+      } catch (err) {
+        console.error("[OneSignal debug] requestPermission/subscription failed:", err);
+      }
     });
   }
 
