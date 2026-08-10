@@ -28,17 +28,33 @@ interface OneSignalSdk {
   User: {
     PushSubscription: {
       id: string | null | undefined;
+      token: string | null | undefined;
       optedIn: boolean;
+      optIn: () => Promise<void>;
       addEventListener: (
         event: "change",
-        listener: (event: { current: { id: string | null | undefined; optedIn: boolean } }) => void
+        listener: (event: {
+          current: { id: string | null | undefined; token: string | null | undefined; optedIn: boolean };
+        }) => void
       ) => void;
       removeEventListener: (
         event: "change",
-        listener: (event: { current: { id: string | null | undefined; optedIn: boolean } }) => void
+        listener: (event: {
+          current: { id: string | null | undefined; token: string | null | undefined; optedIn: boolean };
+        }) => void
       ) => void;
     };
   };
+}
+
+// TEMPORARY DEBUG LOGGING helper — remove once the subscription flow is
+// confirmed end-to-end.
+function logSubscriptionState(label: string, OneSignal: OneSignalSdk) {
+  console.log(`[OneSignal debug] ${label}`, {
+    id: OneSignal.User.PushSubscription.id,
+    token: OneSignal.User.PushSubscription.token,
+    optedIn: OneSignal.User.PushSubscription.optedIn,
+  });
 }
 
 declare global {
@@ -73,9 +89,12 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
           serviceWorkerPath: "sw.js",
           serviceWorkerParam: { scope: "/" },
         });
-        // TEMPORARY DEBUG LOGGING — remove once the subscription flow is
-        // confirmed end-to-end.
         console.log("[OneSignal debug] init() resolved");
+        logSubscriptionState("PushSubscription state at page load (post-init):", OneSignal);
+
+        OneSignal.User.PushSubscription.addEventListener("change", (event) => {
+          console.log("[OneSignal debug] PushSubscription change event:", event.current);
+        });
       } catch (err) {
         console.error("[OneSignal debug] init() failed:", err);
       }
@@ -89,21 +108,20 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         await OneSignal.Notifications.requestPermission();
         setStatus(Notification.permission as PermissionStatus);
 
-        // TEMPORARY DEBUG LOGGING — remove once the subscription flow is
-        // confirmed end-to-end. Notification.permission === "granted" only
-        // means the browser-level prompt was accepted; it says nothing about
-        // whether OneSignal's servers actually issued a subscription id.
+        // Notification.permission === "granted" only means the browser-level
+        // prompt was accepted — it does NOT create a subscription with
+        // OneSignal's servers. That's a separate step (optIn()) which was
+        // previously missing entirely, which is why the OneSignal dashboard
+        // showed 0 subscribers despite the browser prompt working.
         console.log("[OneSignal debug] browser Notification.permission:", Notification.permission);
-        console.log("[OneSignal debug] PushSubscription immediately after requestPermission:", {
-          id: OneSignal.User.PushSubscription.id,
-          optedIn: OneSignal.User.PushSubscription.optedIn,
-        });
+        logSubscriptionState("PushSubscription state right after requestPermission (before optIn):", OneSignal);
 
-        OneSignal.User.PushSubscription.addEventListener("change", (event) => {
-          console.log("[OneSignal debug] PushSubscription change event:", event.current);
-        });
+        if (Notification.permission === "granted") {
+          await OneSignal.User.PushSubscription.optIn();
+          logSubscriptionState("PushSubscription state after optIn():", OneSignal);
+        }
       } catch (err) {
-        console.error("[OneSignal debug] requestPermission/subscription failed:", err);
+        console.error("[OneSignal debug] requestPermission/optIn failed:", err);
       }
     });
   }
