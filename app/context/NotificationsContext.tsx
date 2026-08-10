@@ -17,11 +17,7 @@ const NotificationsContext = createContext<NotificationsContextValue | null>(nul
 // Minimal typing for the slice of the OneSignal Web SDK v16 this app calls —
 // the real SDK surface is much larger, no need to model all of it.
 interface OneSignalSdk {
-  init: (options: {
-    appId: string;
-    serviceWorkerPath?: string;
-    serviceWorkerParam?: { scope: string };
-  }) => Promise<void>;
+  init: (options: { appId: string }) => Promise<void>;
   Notifications: {
     requestPermission: () => Promise<void>;
   };
@@ -82,13 +78,10 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.OneSignalDeferred.push(async (OneSignal) => {
       try {
-        await OneSignal.init({
-          appId: ONESIGNAL_APP_ID,
-          // Points at the app's own service worker (public/sw.js), which
-          // importScripts()'s the OneSignal worker in — see that file.
-          serviceWorkerPath: "sw.js",
-          serviceWorkerParam: { scope: "/" },
-        });
+        // No serviceWorkerPath/serviceWorkerParam override — OneSignal's
+        // default already expects /OneSignalSDKWorker.js at root scope,
+        // which is exactly what public/OneSignalSDKWorker.js serves.
+        await OneSignal.init({ appId: ONESIGNAL_APP_ID });
         console.log("[OneSignal debug] init() resolved");
         logSubscriptionState("PushSubscription state at page load (post-init):", OneSignal);
 
