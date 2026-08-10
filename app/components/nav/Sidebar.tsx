@@ -6,6 +6,7 @@ import { navItems } from "./navItems";
 import { socialLinks } from "./socialLinks";
 import SocialIcon from "./SocialIcon";
 import Logo from "./Logo";
+import NotificationButton from "./NotificationButton";
 
 export default function Sidebar() {
   const { view, setView } = useView();
@@ -54,6 +55,9 @@ export default function Sidebar() {
                 </button>
               </li>
             ))}
+            <li>
+              <NotificationButton variant="sidebar" />
+            </li>
           </ul>
         </nav>
       </div>

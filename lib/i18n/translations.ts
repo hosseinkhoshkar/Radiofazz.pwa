@@ -16,6 +16,9 @@ const fa = {
   "nav.socialComingSoon": "به زودی",
   "nav.openMenu": "باز کردن منو",
   "nav.closeMenu": "بستن منو",
+  "nav.notificationsEnable": "فعال‌سازی اعلان‌ها",
+  "nav.notificationsEnabled": "اعلان‌ها فعال است",
+  "nav.notificationsBlocked": "اعلان‌ها مسدود شده",
 
   "player.play": "شروع پخش",
   "player.pause": "توقف پخش",
@@ -135,6 +138,9 @@ const en: Dictionary = {
   "nav.socialComingSoon": "Coming soon",
   "nav.openMenu": "Open menu",
   "nav.closeMenu": "Close menu",
+  "nav.notificationsEnable": "Enable notifications",
+  "nav.notificationsEnabled": "Notifications enabled",
+  "nav.notificationsBlocked": "Notifications blocked",
 
   "player.play": "Start playback",
   "player.pause": "Stop playback",
@@ -251,6 +257,9 @@ const de: Dictionary = {
   "nav.socialComingSoon": "Demnächst",
   "nav.openMenu": "Menü öffnen",
   "nav.closeMenu": "Menü schließen",
+  "nav.notificationsEnable": "Benachrichtigungen aktivieren",
+  "nav.notificationsEnabled": "Benachrichtigungen aktiviert",
+  "nav.notificationsBlocked": "Benachrichtigungen blockiert",
 
   "player.play": "Wiedergabe starten",
   "player.pause": "Wiedergabe stoppen",

@@ -7,6 +7,7 @@ import { navItems } from "./navItems";
 import { socialLinks } from "./socialLinks";
 import SocialIcon from "./SocialIcon";
 import Logo from "./Logo";
+import NotificationButton from "./NotificationButton";
 import type { Lang } from "@/lib/i18n/translations";
 
 const LANGS: { code: Lang; nativeName: string }[] = [
@@ -128,6 +129,7 @@ export default function MobileMenu() {
               ))}
 
               <LanguageMenuItem />
+              <NotificationButton variant="menu" />
             </nav>
 
             <div className="flex shrink-0 flex-col items-center gap-4 px-6 pb-[calc(2rem+env(safe-area-inset-bottom))]">

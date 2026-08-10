@@ -1,3 +1,9 @@
+// Merges the OneSignal push worker into this app-shell worker (rather than
+// registering a second worker at the same "/" scope, which the browser
+// would treat as competing controllers) — see NotificationsContext.tsx,
+// which points OneSignal's init at this file via serviceWorkerPath.
+importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDKWorker.js");
+
 const CACHE_NAME = "radiofaaz-shell-v2";
 
 // Requests that must always hit the network fresh: live now-playing

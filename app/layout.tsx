@@ -14,6 +14,7 @@ import { PlayerProvider } from "./context/PlayerContext";
 import { ViewProvider } from "./context/ViewContext";
 import { LanguageProvider } from "./context/LanguageContext";
 import { InstallPromptProvider } from "./context/InstallPromptContext";
+import { NotificationsProvider } from "./context/NotificationsContext";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -83,6 +84,7 @@ export default function RootLayout({
         <ParticleNetwork />
         <LanguageProvider>
           <ViewProvider>
+          <NotificationsProvider>
           <InstallPromptProvider>
             <PlayerProvider>
               <Sidebar />
@@ -112,6 +114,7 @@ export default function RootLayout({
               <MobileMenu />
             </PlayerProvider>
           </InstallPromptProvider>
+          </NotificationsProvider>
           </ViewProvider>
         </LanguageProvider>
       </body>
