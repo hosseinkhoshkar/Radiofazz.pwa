@@ -1,16 +1,7 @@
 {
   "sponsor-one": {
-    "image": "/ads/ad-placeholder-1.svg",
-    "advertiser": "Sponsor One",
-    "link": "#"
-  },
-  "sponsor-two": {
     "image": "/ads/ad-placeholder-2.svg",
     "advertiser": "Sponsor Two",
-    "link": "#"
-  },
-  "sponsor-three": {
-    "image": "/ads/ad-placeholder-3.svg",
-    "advertiser": "Sponsor Three"
+    "link": "https://www.google.com"
   }
 }

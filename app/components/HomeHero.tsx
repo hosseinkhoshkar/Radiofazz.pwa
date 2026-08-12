@@ -31,7 +31,7 @@ const NUMBER_LOCALES: Record<string, string> = {
 };
 
 export default function HomeHero() {
-  const { track, artist, isPlaying, listeners, isAd, adLink, adImage, coverArt, isOffline } = usePlayer();
+  const { track, artist, isPlaying, listeners, isAd, adLink, coverArt, isOffline } = usePlayer();
   const { t, lang } = useLanguage();
   const prefersReducedMotion = useReducedMotion();
   const isMobile = useIsMobileViewport();
@@ -49,7 +49,12 @@ export default function HomeHero() {
   // 400ms timing as the image's own crossfade below, so the collapse and
   // the fade read as one motion.
   const hasCoverArt = coverArt !== DEFAULT_COVER_ART;
-  const heroImageSrc = isAd ? (adImage ?? HERO_IMAGE_URL) : HERO_IMAGE_URL;
+  // Background photo is always the static hero image, ad mode included — the
+  // ad's own image belongs in the cover-art slot below (same box a track's
+  // art renders in), not stretched full-bleed here. ads.json images are wide
+  // banner-shaped placeholders (600x150); object-cover-ing one across the
+  // whole hero card blows it up into an illegible crop.
+  const heroImageSrc = HERO_IMAGE_URL;
   const collapseDurationClass = prefersReducedMotion ? "duration-0" : "duration-[400ms]";
 
   return (
@@ -410,10 +415,13 @@ export default function HomeHero() {
           </div>
         </div>
 
-        {/* Large cover art, opposite the text column — only for real tracks.
-            In ad mode the hero background is already the ad's own image
-            (and the mini-player's thumbnail shows it too), so a second copy
-            here would just be redundant.
+        {/* Large cover art, opposite the text column — renders for both real
+            tracks and ad mode (coverArt already resolves to the ad's own
+            image via PlayerContext when isAd is true, same as a track's
+            artwork). ads.json images are wide banner-shaped placeholders, not
+            square art, but this box's object-cover crop reads fine at this
+            size — unlike stretching one across the full hero background,
+            which is illegible (see heroImageSrc above).
             Mobile: position:absolute, anchored to the z-10 content wrapper
             above (`relative z-10 ...`) — its NEAREST positioned ancestor,
             physically unchanged from before. What changed is making that
@@ -434,7 +442,7 @@ export default function HomeHero() {
             normal static flex child — desktop's own position (flex-row,
             opposite the text column) is completely unaffected, never
             touches position:absolute at all. */}
-        {!isAd && (
+        {
           // overflow-visible on mobile (was overflow-hidden on every
           // breakpoint) — mobile never actually collapses this wrapper's
           // width (the hasCoverArt width classes below are md:-only), so
@@ -483,7 +491,7 @@ export default function HomeHero() {
               />
             </AnimatePresence>
           </div>
-        )}
+        }
       </div>
       </div>
     </div>
