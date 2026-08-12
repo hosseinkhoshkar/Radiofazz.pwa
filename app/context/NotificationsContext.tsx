@@ -17,7 +17,11 @@ const NotificationsContext = createContext<NotificationsContextValue | null>(nul
 // Minimal typing for the slice of the OneSignal Web SDK v16 this app calls —
 // the real SDK surface is much larger, no need to model all of it.
 interface OneSignalSdk {
-  init: (options: { appId: string }) => Promise<void>;
+  init: (options: {
+    appId: string;
+    notifyButton?: { enable: boolean };
+    welcomeNotification?: { icon?: string };
+  }) => Promise<void>;
   Notifications: {
     requestPermission: () => Promise<void>;
   };
@@ -41,16 +45,6 @@ interface OneSignalSdk {
       ) => void;
     };
   };
-}
-
-// TEMPORARY DEBUG LOGGING helper — remove once the subscription flow is
-// confirmed end-to-end.
-function logSubscriptionState(label: string, OneSignal: OneSignalSdk) {
-  console.log(`[OneSignal debug] ${label}`, {
-    id: OneSignal.User.PushSubscription.id,
-    token: OneSignal.User.PushSubscription.token,
-    optedIn: OneSignal.User.PushSubscription.optedIn,
-  });
 }
 
 declare global {
@@ -81,15 +75,14 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         // No serviceWorkerPath/serviceWorkerParam override — OneSignal's
         // default already expects /OneSignalSDKWorker.js at root scope,
         // which is exactly what public/OneSignalSDKWorker.js serves.
-        await OneSignal.init({ appId: ONESIGNAL_APP_ID });
-        console.log("[OneSignal debug] init() resolved");
-        logSubscriptionState("PushSubscription state at page load (post-init):", OneSignal);
-
-        OneSignal.User.PushSubscription.addEventListener("change", (event) => {
-          console.log("[OneSignal debug] PushSubscription change event:", event.current);
+        // welcomeNotification.icon avoids OneSignal falling back to a
+        // nonexistent default icon (was 404ing) — reuses the PWA icon.
+        await OneSignal.init({
+          appId: ONESIGNAL_APP_ID,
+          welcomeNotification: { icon: "/icons/icon-192.png" },
         });
       } catch (err) {
-        console.error("[OneSignal debug] init() failed:", err);
+        console.error("[OneSignal] init() failed:", err);
       }
     });
   }, []);
@@ -106,15 +99,11 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         // OneSignal's servers. That's a separate step (optIn()) which was
         // previously missing entirely, which is why the OneSignal dashboard
         // showed 0 subscribers despite the browser prompt working.
-        console.log("[OneSignal debug] browser Notification.permission:", Notification.permission);
-        logSubscriptionState("PushSubscription state right after requestPermission (before optIn):", OneSignal);
-
         if (Notification.permission === "granted") {
           await OneSignal.User.PushSubscription.optIn();
-          logSubscriptionState("PushSubscription state after optIn():", OneSignal);
         }
       } catch (err) {
-        console.error("[OneSignal debug] requestPermission/optIn failed:", err);
+        console.error("[OneSignal] requestPermission/optIn failed:", err);
       }
     });
   }
