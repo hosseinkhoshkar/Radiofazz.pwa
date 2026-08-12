@@ -8,6 +8,7 @@ import { socialLinks } from "./socialLinks";
 import SocialIcon from "./SocialIcon";
 import Logo from "./Logo";
 import NotificationButton from "./NotificationButton";
+import PrivacyPolicyLink from "./PrivacyPolicyLink";
 import type { Lang } from "@/lib/i18n/translations";
 
 const LANGS: { code: Lang; nativeName: string }[] = [
@@ -132,12 +133,13 @@ export default function MobileMenu() {
               <NotificationButton variant="menu" />
             </nav>
 
-            <div className="flex shrink-0 flex-col items-center gap-4 px-6 pb-[calc(2rem+env(safe-area-inset-bottom))]">
+            <div className="flex shrink-0 flex-col items-center gap-2 px-6 pb-[calc(2rem+env(safe-area-inset-bottom))]">
               <div className="flex flex-wrap items-center justify-center gap-1">
                 {socialLinks.map((link) => (
                   <SocialIcon key={link.labelKey} {...link} />
                 ))}
               </div>
+              <PrivacyPolicyLink onNavigate={() => setOpen(false)} />
             </div>
           </div>
         </>

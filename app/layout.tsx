@@ -7,6 +7,7 @@ import LanguageSwitcher from "./components/nav/LanguageSwitcher";
 import InstallAppButton from "./components/nav/InstallAppButton";
 import MiniPlayer from "./components/MiniPlayer";
 import StreamStatusToast from "./components/StreamStatusToast";
+import ConsentBanner from "./components/ConsentBanner";
 import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
 import GradientBlobs from "./components/effects/GradientBlobs";
 import ParticleNetwork from "./components/effects/ParticleNetwork";
@@ -111,6 +112,7 @@ export default function RootLayout({
               </div>
               <MiniPlayer />
               <StreamStatusToast />
+              <ConsentBanner />
               <MobileMenu />
             </PlayerProvider>
           </InstallPromptProvider>

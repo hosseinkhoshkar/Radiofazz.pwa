@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, type ReactNode } from "react";
 
-export type View = "home" | "about" | "events" | "contact" | "install";
+export type View = "home" | "about" | "events" | "contact" | "install" | "privacy";
 
 interface ViewContextValue {
   view: View;

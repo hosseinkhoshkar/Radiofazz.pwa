@@ -8,6 +8,7 @@ import AboutView from "./components/views/AboutView";
 import EventsView from "./components/views/EventsView";
 import ContactView from "./components/views/ContactView";
 import InstallAppView from "./components/views/InstallAppView";
+import PrivacyView from "./components/views/PrivacyView";
 import { navItems } from "./components/nav/navItems";
 import { useIsMobileViewport } from "@/lib/useIsMobileViewport";
 
@@ -17,6 +18,7 @@ const viewComponents = {
   events: EventsView,
   contact: ContactView,
   install: InstallAppView,
+  privacy: PrivacyView,
 } as const;
 
 // Scroll/swipe navigation follows the same order as the sidebar/tab bar.

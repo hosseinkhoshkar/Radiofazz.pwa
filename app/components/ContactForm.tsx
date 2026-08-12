@@ -3,6 +3,7 @@
 import emailjs from "@emailjs/browser";
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useLanguage } from "../context/LanguageContext";
+import { useView } from "../context/ViewContext";
 import type { TranslationKey } from "@/lib/i18n/translations";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -57,6 +58,7 @@ function validate(values: FormState, t: (key: TranslationKey) => string): FormEr
 
 export default function ContactForm() {
   const { t } = useLanguage();
+  const { setView } = useView();
   const [form, setForm] = useState<FormState>(initialForm);
   const [errors, setErrors] = useState<FormErrors>({});
   const [status, setStatus] = useState<Status>("idle");
@@ -192,6 +194,18 @@ export default function ContactForm() {
           onChange={handleChange}
         />
       </div>
+
+      <p className="text-[11px] leading-snug text-muted/70">
+        {t("contact.privacyNoticeBefore")}
+        <button
+          type="button"
+          onClick={() => setView("privacy")}
+          className="underline underline-offset-2 hover:text-[rgb(var(--accent-text-rgb))]"
+        >
+          {t("nav.privacyPolicy")}
+        </button>
+        {t("contact.privacyNoticeAfter")}
+      </p>
 
       <button
         type="submit"

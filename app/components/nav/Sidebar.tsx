@@ -7,6 +7,7 @@ import { socialLinks } from "./socialLinks";
 import SocialIcon from "./SocialIcon";
 import Logo from "./Logo";
 import NotificationButton from "./NotificationButton";
+import PrivacyPolicyLink from "./PrivacyPolicyLink";
 
 export default function Sidebar() {
   const { view, setView } = useView();
@@ -62,10 +63,15 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1 px-1 drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
-        {socialLinks.map((link) => (
-          <SocialIcon key={link.labelKey} {...link} />
-        ))}
+      <div className="flex flex-col gap-2 drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
+        <div className="flex flex-wrap items-center gap-1 px-1">
+          {socialLinks.map((link) => (
+            <SocialIcon key={link.labelKey} {...link} />
+          ))}
+        </div>
+        <div className="px-2">
+          <PrivacyPolicyLink />
+        </div>
       </div>
     </aside>
   );
