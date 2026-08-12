@@ -152,7 +152,7 @@ export default function ContactForm() {
           onChange={handleChange}
           onBlur={handleBlur}
           disabled={isSending}
-          placeholder="you@example.com"
+          placeholder={t("contact.form.emailPlaceholder")}
           className="min-h-11 rounded-xl border border-[rgb(var(--accent-from-rgb)/30%)] bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-left text-foreground placeholder:text-muted/60 focus:border-[rgb(var(--accent-from-rgb))] focus:outline-none disabled:opacity-50"
         />
         {errors.email && <p className="text-sm text-danger">{errors.email}</p>}
