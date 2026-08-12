@@ -19,6 +19,8 @@ const NotificationsContext = createContext<NotificationsContextValue | null>(nul
 interface OneSignalSdk {
   init: (options: {
     appId: string;
+    serviceWorkerPath?: string;
+    serviceWorkerParam?: { scope: string };
     notifyButton?: { enable: boolean };
     welcomeNotification?: { icon?: string };
   }) => Promise<void>;
@@ -72,13 +74,16 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.OneSignalDeferred.push(async (OneSignal) => {
       try {
-        // No serviceWorkerPath/serviceWorkerParam override — OneSignal's
-        // default already expects /OneSignalSDKWorker.js at root scope,
-        // which is exactly what public/OneSignalSDKWorker.js serves.
+        // Points at the app's own service worker (public/sw.js), which
+        // importScripts()'s the OneSignal worker in — see that file. Without
+        // this override, OneSignal registers a second worker at the same
+        // "/" scope as sw.js, and the two fight over control.
         // welcomeNotification.icon avoids OneSignal falling back to a
         // nonexistent default icon (was 404ing) — reuses the PWA icon.
         await OneSignal.init({
           appId: ONESIGNAL_APP_ID,
+          serviceWorkerPath: "sw.js",
+          serviceWorkerParam: { scope: "/" },
           welcomeNotification: { icon: "/icons/icon-192.png" },
         });
       } catch (err) {
