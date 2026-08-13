@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { usePlayer } from "../context/PlayerContext";
 import { useLanguage } from "../context/LanguageContext";
@@ -9,6 +10,7 @@ import { trackEvent } from "@/lib/analytics";
 import PlayButton from "./PlayButton";
 import HomeWaveform from "./HomeWaveform";
 import MarqueeText from "./MarqueeText";
+import Skeleton from "./Skeleton";
 
 // Splits a tagline into "up to, and including, the first comma" / "rest" —
 // works across all three languages since every one of them happens to use
@@ -32,10 +34,22 @@ const NUMBER_LOCALES: Record<string, string> = {
 };
 
 export default function HomeHero() {
-  const { track, artist, isPlaying, listeners, isAd, adSlug, adLink, coverArt, isOffline } = usePlayer();
+  const { track, artist, isPlaying, listeners, isAd, adSlug, adLink, coverArt, isOffline, isInitialLoading } =
+    usePlayer();
   const { t, lang } = useLanguage();
   const prefersReducedMotion = useReducedMotion();
   const isMobile = useIsMobileViewport();
+
+  // Tracks whether the browser has actually finished downloading the
+  // *current* coverArt src — reset on every track change so a skeleton
+  // shows again for each new image, not just the very first one. The
+  // existing AnimatePresence crossfade below still runs regardless; this
+  // just fills the gap (mode="wait" briefly unmounts the old image before
+  // the new one paints) with a shimmer instead of empty space.
+  const [coverLoaded, setCoverLoaded] = useState(false);
+  useEffect(() => {
+    setCoverLoaded(false);
+  }, [coverArt]);
 
   const tagline = t("home.tagline");
   const taglineSplit = splitTaglineAtComma(tagline);
@@ -232,6 +246,10 @@ export default function HomeHero() {
             (a separate absolutely-positioned layer above) — 1% to the
             right of its own width. */}
         <div className="flex w-full min-w-0 flex-1 translate-x-[1%] flex-col items-start gap-[clamp(0.1rem,0.3vh,0.3rem)] md:gap-[clamp(0.2rem,0.7vh,0.5rem)]">
+          {isInitialLoading ? (
+            <HeroTextSkeleton />
+          ) : (
+            <>
           <div
             className={`mt-[clamp(-0.375rem,calc(-2.24px_-_0.49vw),-0.25rem)] flex flex-wrap items-center gap-2 transition-[padding-right] ${collapseDurationClass} ease-out md:pr-0 ${
               hasCoverArt ? "pr-[12.75rem]" : "pr-0"
@@ -428,6 +446,8 @@ export default function HomeHero() {
               </div>
             </div>
           </div>
+            </>
+          )}
         </div>
 
         {/* Large cover art, opposite the text column — renders for both real
@@ -484,6 +504,16 @@ export default function HomeHero() {
               hasCoverArt ? "md:w-[clamp(6rem,32vh,21.5rem)] md:p-3" : "md:w-0 md:p-0"
             }`}
           >
+            {/* Shimmer stand-in for the frame below — same box, absolutely
+                stacked underneath it — visible during the very first load
+                (isInitialLoading) and again whenever a new track's artwork
+                is still downloading (!coverLoaded); fades out once the real
+                <img> below fires onLoad. Not shown for the local
+                DEFAULT_COVER_ART placeholder itself (loads instantly,
+                nothing to shimmer for). */}
+            {(isInitialLoading || (!coverLoaded && hasCoverArt)) && (
+              <Skeleton className="absolute h-[clamp(7rem,18vh,11rem)] w-[clamp(7rem,18vh,11rem)] rounded-3xl md:h-[clamp(4.5rem,32vh,20rem)] md:w-[clamp(4.5rem,32vh,20rem)]" />
+            )}
             <AnimatePresence mode="wait">
               <motion.img
                 key={coverArt}
@@ -491,6 +521,7 @@ export default function HomeHero() {
                 src={coverArt}
                 alt=""
                 aria-hidden="true"
+                onLoad={() => setCoverLoaded(true)}
                 initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.95 }}
                 animate={{ opacity: hasCoverArt ? 1 : 0, scale: 1 }}
                 exit={prefersReducedMotion ? undefined : { opacity: 0 }}
@@ -508,6 +539,52 @@ export default function HomeHero() {
           </div>
         }
       </div>
+      </div>
+    </div>
+  );
+}
+
+// Fixed pattern (not Math.random()) — a server-rendered skeleton must match
+// the client's first render exactly, or React flags a hydration mismatch.
+// Values are just relative heights (%) for a plausible, non-uniform
+// waveform silhouette; nothing here needs to be truly random.
+const WAVEFORM_SKELETON_HEIGHTS = [35, 60, 25, 80, 45, 90, 30, 55, 70, 40, 85, 50, 65, 30, 75, 45];
+
+// Stand-in for the whole badge-through-stats block while isInitialLoading
+// (see HomeHero above) — same shell (gap/margins) as the real content so
+// swapping between the two never shifts anything else in the layout, and
+// each shape's own size roughly matches what it stands in for.
+function HeroTextSkeleton() {
+  const { t } = useLanguage();
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex w-full flex-col items-start gap-[clamp(0.1rem,0.3vh,0.3rem)] md:gap-[clamp(0.2rem,0.7vh,0.5rem)]"
+    >
+      <span className="sr-only">{t("home.loadingLabel")}</span>
+
+      <Skeleton className="mt-[clamp(-0.375rem,calc(-2.24px_-_0.49vw),-0.25rem)] h-[clamp(1.3rem,3vw,1.6rem)] w-24 rounded-full" />
+
+      <Skeleton className="mt-[clamp(0px,calc(22.59px_-_2.94vw),0.75rem)] h-[clamp(1.1rem,4.1vw,2.6rem)] w-[70%] md:h-[clamp(1.3rem,min(4.1vw,5.5vh),2.6rem)]" />
+      <Skeleton className="mt-[clamp(0.125rem,calc(0.24px_+_0.49vw),0.25rem)] h-[clamp(0.9rem,2.2vw,1.4rem)] w-[45%] md:h-[clamp(1rem,min(2.2vw,5vh),1.4rem)]" />
+      <Skeleton className="h-[clamp(0.8rem,1.8vw,1.12rem)] w-[60%]" />
+
+      <Skeleton className="mt-[clamp(0.375rem,1vh,0.75rem)] h-[clamp(2.75rem,4vh,3rem)] w-36 rounded-full md:h-[clamp(2.75rem,7vh,4rem)]" />
+
+      <div className="mt-[clamp(1rem,min(calc(8.94px_+_1.96vw),3vh),1.5rem)] flex w-full flex-row items-end gap-[clamp(0.5rem,calc(-6.12px_+_3.92vw),1.5rem)]">
+        <div className="flex min-w-0 flex-1 items-end gap-[1.5px] h-[clamp(0.9rem,2.2vh,1.35rem)] md:h-[clamp(1.75rem,6vh,3.25rem)]">
+          {WAVEFORM_SKELETON_HEIGHTS.map((height, i) => (
+            <Skeleton key={i} className="min-w-0 flex-1 rounded-full" style={{ height: `${height}%` }} />
+          ))}
+        </div>
+
+        <div className="flex shrink-0 items-center gap-[clamp(0.5rem,calc(4.47px_+_0.98vw),0.75rem)]">
+          <Skeleton className="h-[clamp(1.06rem,2.9vw,1.57rem)] w-10 md:h-[clamp(1.1rem,min(3.9vw,5.5vh),2.25rem)]" />
+          <span className="w-px shrink-0 bg-white/10 h-[clamp(1.5rem,calc(16.94px_+_1.96vw),2rem)]" />
+          <Skeleton className="h-[clamp(1.06rem,2.9vw,1.57rem)] w-10 md:h-[clamp(1.1rem,min(3.9vw,5.5vh),2.25rem)]" />
+        </div>
       </div>
     </div>
   );

@@ -89,7 +89,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#a855f7",
+  // Fixed black (matches --background in globals.css), same reasoning as
+  // manifest.ts's theme_color — the desktop title bar / Android chrome bar
+  // this drives must never shift with the per-track accent palette.
+  themeColor: "#06060c",
   colorScheme: "dark",
 };
 

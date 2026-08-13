@@ -28,9 +28,12 @@ const VIEW_ORDER: View[] = navItems.map((item) => item.view);
 // Elements with their own native wheel behavior — don't hijack scroll there.
 const SCROLLABLE_SELECTOR = "textarea, select, input";
 
-const WHEEL_DELTA_THRESHOLD = 60;
+// Doubled from 60 — the original threshold fired on small/accidental
+// scroll input; debounce/cooldown timing and the transition animation
+// below are untouched, only how big a gesture has to be to trigger at all.
+const WHEEL_DELTA_THRESHOLD = 120;
 const WHEEL_ACCUMULATOR_RESET_MS = 150;
-const SWIPE_DISTANCE_THRESHOLD = 60;
+const SWIPE_DISTANCE_THRESHOLD = 120;
 // A full wheel/swipe gesture can keep emitting events for a few hundred ms;
 // lock out further triggers for one gesture-and-transition cycle so a single
 // scroll only ever changes the view once.

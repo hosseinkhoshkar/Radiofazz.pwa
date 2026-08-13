@@ -69,7 +69,7 @@ export default function Sidebar() {
             <SocialIcon key={link.labelKey} {...link} />
           ))}
         </div>
-        <div className="px-2">
+        <div className="px-2 text-center">
           <PrivacyPolicyLink />
         </div>
       </div>

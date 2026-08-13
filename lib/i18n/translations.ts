@@ -38,6 +38,7 @@ const fa = {
   "player.dismiss": "بستن",
 
   "home.onAirBadge": "درحال پخش زنده",
+  "home.loadingLabel": "در حال بارگذاری اطلاعات پخش زنده…",
   "home.listenersLabel": "{count} شنونده",
   "home.tagline": "بهترین آهنگ‌های فارسی، از کلاسیک تا امروز",
   "home.ctaListenLive": "پخش زنده",
@@ -181,6 +182,7 @@ const en: Dictionary = {
   "player.dismiss": "Dismiss",
 
   "home.onAirBadge": "ON AIR NOW",
+  "home.loadingLabel": "Loading live player info…",
   "home.listenersLabel": "{count} listening",
   "home.tagline": "Persian Hits & Classics, from classics to today",
   "home.ctaListenLive": "Listen Live",
@@ -321,6 +323,7 @@ const de: Dictionary = {
   "player.dismiss": "Schließen",
 
   "home.onAirBadge": "JETZT ON AIR",
+  "home.loadingLabel": "Live-Player-Infos werden geladen…",
   "home.listenersLabel": "{count} Hörer",
   "home.tagline": "Persische Hits & Klassiker, von Klassikern bis heute",
   "home.ctaListenLive": "Jetzt hören",

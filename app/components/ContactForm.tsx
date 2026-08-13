@@ -236,8 +236,16 @@ export default function ContactForm() {
         style={{
           backgroundImage: "linear-gradient(to left, rgb(var(--accent-from-rgb)), rgb(var(--accent-to-rgb)))",
         }}
-        className="mt-[clamp(0.375rem,1vh,0.5rem)] rounded-xl px-6 py-3 font-semibold text-[rgb(var(--accent-on-rgb))] transition-opacity disabled:opacity-60"
+        className="mt-[clamp(0.375rem,1vh,0.5rem)] flex items-center justify-center gap-2 rounded-xl px-6 py-3 font-semibold text-[rgb(var(--accent-on-rgb))] transition-opacity disabled:opacity-60"
       >
+        {isSending && (
+          // Same spinner treatment as PlayButton.tsx's own loading state —
+          // consistent "something's in flight" language across the app.
+          <span
+            aria-hidden="true"
+            className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-[rgb(var(--accent-on-rgb))]/70 border-t-transparent"
+          />
+        )}
         {isSending ? t("contact.form.submitting") : t("contact.form.submit")}
       </button>
 

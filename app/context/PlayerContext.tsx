@@ -126,6 +126,12 @@ interface PlayerContextValue {
   adLink: string | null;
   adImage: string | null;
   listeners: number;
+  // True only until the very first /api/nowplaying response (success,
+  // failure, or offline — any outcome) — lets the UI show layout-matched
+  // skeletons instead of the generic "Playing..."/brand-name fallback text
+  // during that first window, without also re-triggering on every later
+  // 15s poll. See HomeHero.tsx.
+  isInitialLoading: boolean;
   isOffline: boolean;
   streamInterrupted: boolean;
   retryPlayback: () => void;
@@ -146,6 +152,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [ads, setAds] = useState<AdsMap>({});
   const [testAdSlug, setTestAdSlug] = useState<string | null>(null);
   const [isOffline, setIsOffline] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [streamInterrupted, setStreamInterrupted] = useState(false);
 
   // Tracks whether the user currently *wants* playback (vs. having
@@ -257,6 +264,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         if (!cancelled) setIsOffline(true);
       } finally {
         clearTimeout(timeout);
+        // Idempotent after the first call — every later poll cycle also
+        // hits this, harmlessly re-setting the same `false`.
+        if (!cancelled) setIsInitialLoading(false);
       }
     }
 
@@ -432,6 +442,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         adLink,
         adImage,
         listeners: nowPlaying?.listeners ?? 0,
+        isInitialLoading,
         isOffline,
         streamInterrupted,
         retryPlayback,

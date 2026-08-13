@@ -157,3 +157,49 @@ body {
   outline-offset: 3px;
   border-radius: 6px;
 }
+
+/* Skeleton loaders (see Skeleton.tsx) — a light gradient sweep across a
+   dim glass tile, colored from the same --accent-*-rgb vars every other
+   crossfading surface in the app uses, so a skeleton always matches
+   whatever palette the last-known track assigned rather than reading as a
+   generic gray placeholder. */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 150% 0;
+  }
+  100% {
+    background-position: -50% 0;
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.skeleton {
+  background-color: rgb(var(--accent-from-rgb) / 10%);
+  background-image: linear-gradient(
+    100deg,
+    transparent 35%,
+    rgb(var(--accent-from-rgb) / 22%) 48%,
+    rgb(var(--accent-to-rgb) / 26%) 52%,
+    transparent 65%
+  );
+  background-size: 250% 100%;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+}
+
+/* Sweeping background-position is the "moving" motion; the reduced-motion
+   fallback keeps a loading cue (a frozen sweep would look broken/stuck)
+   but swaps it for a plain, non-positional opacity pulse instead. */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: skeleton-pulse 2.2s ease-in-out infinite;
+  }
+}

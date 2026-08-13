@@ -6,6 +6,7 @@ import { useView } from "../context/ViewContext";
 import { getUpcomingEvents, type EventItem } from "@/lib/events";
 import { formatEventDate } from "@/lib/i18n/format";
 import { trackEvent } from "@/lib/analytics";
+import Skeleton from "./Skeleton";
 import type { TranslationKey } from "@/lib/i18n/translations";
 
 const EVENTS_URL = "/data/events.json";
@@ -44,15 +45,26 @@ const AD_IMAGE_URL =
 const CARD_CLASSES =
   "group relative isolate flex min-h-[clamp(7rem,18vh,9.5rem)] w-[92%] shrink-0 snap-center flex-col justify-end overflow-hidden rounded-3xl border border-white/10 text-start shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.08)] [clip-path:inset(0_round_1.5rem)] transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02] md:min-h-[clamp(2.5rem,22vh,12.5rem)] md:w-auto";
 
+// These are remote Unsplash URLs (not local assets), so on a slow
+// connection the card would otherwise show bare background for a beat
+// before the photo pops in. Skeleton sits in the same absolute box,
+// underneath the <img>, and only stops rendering once the real photo has
+// actually finished downloading (onLoad) — not just once the src is set.
 function CardImage({ src }: { src: string }) {
+  const [loaded, setLoaded] = useState(false);
+
   return (
-    <img
-      src={src}
-      alt=""
-      aria-hidden="true"
-      loading="lazy"
-      className="absolute inset-0 h-full w-full rounded-3xl object-cover"
-    />
+    <>
+      {!loaded && <Skeleton className="absolute inset-0 h-full w-full rounded-3xl" />}
+      <img
+        src={src}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        onLoad={() => setLoaded(true)}
+        className="absolute inset-0 h-full w-full rounded-3xl object-cover"
+      />
+    </>
   );
 }
 
@@ -77,33 +89,6 @@ function CardGlow() {
         }}
       />
       <div className="pointer-events-none absolute inset-0 rounded-3xl bg-white/0 transition-colors duration-300 group-hover:bg-white/5" />
-    </>
-  );
-}
-
-// True letter-by-letter neon-sign look — each character gets its own
-// multi-layer text-shadow stack (tight white-hot core -> accent-from glow
-// -> wider accent-to bloom), rather than one soft shadow blurred behind the
-// whole string. Consecutive space characters are rendered as
-// (non-breaking space): normal HTML whitespace collapsing rules treat a run
-// of space-only text nodes/inline elements as a single collapsible space,
-// which would otherwise eat every space beyond the first once each
-// character is its own <span>.
-function NeonText({ text, className }: { text: string; className?: string }) {
-  return (
-    <>
-      {[...text].map((char, i) => (
-        <span
-          key={i}
-          className={className}
-          style={{
-            textShadow:
-              "0 0 2px rgb(255 255 255/90%), 0 0 6px rgb(var(--accent-from-rgb)/95%), 0 0 12px rgb(var(--accent-from-rgb)/80%), 0 0 22px rgb(var(--accent-to-rgb)/70%), 0 0 36px rgb(var(--accent-to-rgb)/45%)",
-          }}
-        >
-          {char === " " ? " " : char}
-        </span>
-      ))}
     </>
   );
 }
@@ -189,12 +174,11 @@ export default function HomeQuickLinks() {
         <CardBody
           title={
             <>
-              <NeonText text={t("home.cards.djTitleBefore")} />
-              <NeonText
-                text={t("home.cards.djTitleName")}
-                className="text-[rgb(var(--accent-text-rgb))]"
-              />
-              <NeonText text={t("home.cards.djTitleAfter")} />
+              {t("home.cards.djTitleBefore")}
+              <span className="text-[rgb(var(--accent-text-rgb))]">
+                {t("home.cards.djTitleName")}
+              </span>
+              {t("home.cards.djTitleAfter")}
             </>
           }
           description={t("about.subtitle")}
@@ -212,7 +196,7 @@ export default function HomeQuickLinks() {
         <CardImage src={EVENT_IMAGE_URL} />
         <CardGlow />
         <CardBody
-          title={<NeonText text={t("home.cards.eventsTitle")} />}
+          title={t("home.cards.eventsTitle")}
           description={
             nextEvent
               ? `${nextEvent.title} — ${formatEventDate(nextEvent.date, lang)}`
@@ -232,7 +216,7 @@ export default function HomeQuickLinks() {
         <CardImage src={AD_IMAGE_URL} />
         <CardGlow />
         <CardBody
-          title={<NeonText text={t("home.cards.adTitle")} />}
+          title={t("home.cards.adTitle")}
           description={t("home.cards.adSubtitle")}
           ctaKey="home.cards.adCta"
         />

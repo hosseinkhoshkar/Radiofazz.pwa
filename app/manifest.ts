@@ -11,7 +11,11 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "en",
     dir: "ltr",
     background_color: "#05010f",
-    theme_color: "#a855f7",
+    // Fixed black (matches --background in globals.css) — the Android
+    // status/task-switcher bar this drives must never shift with the
+    // per-track accent palette, unlike everything else that intentionally
+    // crossfades with it.
+    theme_color: "#06060c",
     icons: [
       {
         src: "/icons/icon-192.png",
