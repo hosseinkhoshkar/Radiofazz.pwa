@@ -23,10 +23,18 @@ const vazirmatn = Vazirmatn({
   subsets: ["arabic", "latin"],
 });
 
+// TODO: swap for the real https://radiofaaz.com once that domain is
+// connected — this is the current Vercel deployment URL.
+const SITE_URL = "https://radiofazz-pwa.vercel.app";
+const OG_IMAGE_PATH = "/og-image.png";
+const SITE_TITLE = "Radio Faaz — Persian Hits & Classics, 24/7 from Hamburg";
+const SITE_DESCRIPTION =
+  "Radio Faaz — 24/7 Persian and Iranian internet radio broadcasting live from Hamburg, Germany since 2010, curated by DJ Majid. Tune in and listen live now.";
+
 export const metadata: Metadata = {
-  title: "رادیو فاز | Radio Faaz — Persian Hits & Classics",
-  description:
-    "رادیو فاز، رادیوی اینترنتی فارسی و ایرانی، ۲۴ ساعته از هامبورگ با اجرای دی‌جی مجید. Radio Faaz — 24/7 Persian & Iranian internet radio broadcasting from Hamburg since 2010, curated by DJ Majid. Persisches und iranisches Internetradio aus Hamburg.",
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
   keywords: [
     "رادیو فارسی",
     "رادیو ایرانی",
@@ -37,11 +45,38 @@ export const metadata: Metadata = {
     "Iranian radio",
     "Radio Faaz",
     "Persian music online",
+    "Hamburg Persian radio",
     "persisches Radio",
     "iranisches Radio",
     "Radio Hamburg persisch",
   ],
   manifest: "/manifest.webmanifest",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    siteName: "Radio Faaz",
+    type: "website",
+    locale: "en_US",
+    alternateLocale: ["de_DE", "fa_IR"],
+    images: [
+      {
+        url: OG_IMAGE_PATH,
+        width: 1200,
+        height: 630,
+        alt: "Radio Faaz",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE_PATH],
+  },
   appleWebApp: {
     title: "رادیو فاز",
     statusBarStyle: "black-translucent",
