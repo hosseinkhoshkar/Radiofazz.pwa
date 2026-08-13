@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useView } from "../../context/ViewContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { navItems } from "./navItems";
@@ -29,16 +29,65 @@ const LANGS: { code: Lang; nativeName: string }[] = [
 // fixed Sidebar + LanguageSwitcher, completely unaffected by anything in
 // this file. Drawer width/bg step up at md: (768-1024, tablet) to their
 // own values, independent of the phone-tier (<768) ones on the base class.
+// Focusable-element selector used by the drawer's own focus trap below —
+// deliberately excludes disabled controls and explicit tabindex="-1"
+// (e.g. the volume slider when its popup is collapsed elsewhere in the
+// app; nothing in this drawer currently does that, but staying consistent
+// with the pattern costs nothing).
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export default function MobileMenu() {
   const { view, setView } = useView();
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Standard dialog focus contract: move focus into the drawer as soon as
+  // it opens (screen reader / keyboard users otherwise stay "behind" it,
+  // on whatever page content the trigger button sat in front of), and
+  // return it to the trigger button on close — whichever of the several
+  // close paths (Escape, backdrop click, close button, picking a nav item)
+  // fired, since none of them individually re-focus anything today.
+  useEffect(() => {
+    if (!open) return;
+    const trigger = triggerRef.current;
+    closeButtonRef.current?.focus();
+    return () => {
+      trigger?.focus();
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setOpen(false);
+        return;
+      }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+
+      // Focus trap: while open, Tab/Shift+Tab must cycle within the drawer
+      // only — without this, tabbing past the last item would otherwise
+      // escape into content underneath that's still technically in the DOM
+      // (just visually covered by the backdrop), a common modal-a11y bug.
+      const focusables = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     }
 
     document.addEventListener("keydown", handleKeyDown);
@@ -48,6 +97,7 @@ export default function MobileMenu() {
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
         aria-label={t("nav.openMenu")}
@@ -88,6 +138,7 @@ export default function MobileMenu() {
               since every control underneath reads live shared state (view,
               language, player) rather than anything this component owns. */}
           <div
+            ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-label={t("nav.openMenu")}
@@ -100,6 +151,7 @@ export default function MobileMenu() {
                   one implementation for both to render. */}
               <Logo />
               <button
+                ref={closeButtonRef}
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label={t("nav.closeMenu")}
@@ -157,10 +209,24 @@ export default function MobileMenu() {
 function LanguageMenuItem() {
   const { lang, setLang, t } = useLanguage();
   const [langOpen, setLangOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  // Same reasoning as LanguageSwitcher.tsx: the option list unmounts on
+  // close, so picking a language would otherwise drop focus to <body>.
+  // Only fires when langOpen was actually true (effect returns early
+  // otherwise), so it never steals focus on mount.
+  useEffect(() => {
+    if (!langOpen) return;
+    const trigger = triggerRef.current;
+    return () => {
+      trigger?.focus();
+    };
+  }, [langOpen]);
 
   return (
     <div>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setLangOpen((prev) => !prev)}
         aria-expanded={langOpen}

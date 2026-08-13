@@ -136,9 +136,15 @@ export default function ContactForm() {
           onBlur={handleBlur}
           disabled={isSending}
           placeholder={t("contact.form.namePlaceholder")}
+          aria-invalid={errors.name ? true : undefined}
+          aria-describedby={errors.name ? "name-error" : undefined}
           className="min-h-11 rounded-xl border border-[rgb(var(--accent-from-rgb)/30%)] bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-[rgb(var(--accent-from-rgb))] focus:outline-none disabled:opacity-50"
         />
-        {errors.name && <p className="text-sm text-danger">{errors.name}</p>}
+        {errors.name && (
+          <p id="name-error" role="alert" className="text-sm text-danger">
+            {errors.name}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-[clamp(0.25rem,0.8vh,0.375rem)]">
@@ -155,9 +161,15 @@ export default function ContactForm() {
           onBlur={handleBlur}
           disabled={isSending}
           placeholder={t("contact.form.emailPlaceholder")}
+          aria-invalid={errors.email ? true : undefined}
+          aria-describedby={errors.email ? "email-error" : undefined}
           className="min-h-11 rounded-xl border border-[rgb(var(--accent-from-rgb)/30%)] bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-left text-foreground placeholder:text-muted/60 focus:border-[rgb(var(--accent-from-rgb))] focus:outline-none disabled:opacity-50"
         />
-        {errors.email && <p className="text-sm text-danger">{errors.email}</p>}
+        {errors.email && (
+          <p id="email-error" role="alert" className="text-sm text-danger">
+            {errors.email}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-[clamp(0.25rem,0.8vh,0.375rem)]">
@@ -172,10 +184,14 @@ export default function ContactForm() {
           onBlur={handleBlur}
           disabled={isSending}
           placeholder={t("contact.form.messagePlaceholder")}
+          aria-invalid={errors.message ? true : undefined}
+          aria-describedby={errors.message ? "message-error" : undefined}
           className="h-[clamp(2.75rem,11vh,6rem)] resize-none rounded-xl border border-[rgb(var(--accent-from-rgb)/30%)] bg-background px-4 py-[clamp(0.5rem,1.5vh,0.625rem)] text-foreground placeholder:text-muted/60 focus:border-[rgb(var(--accent-from-rgb))] focus:outline-none disabled:opacity-50"
         />
         {errors.message && (
-          <p className="text-sm text-danger">{errors.message}</p>
+          <p id="message-error" role="alert" className="text-sm text-danger">
+            {errors.message}
+          </p>
         )}
       </div>
 
@@ -224,12 +240,15 @@ export default function ContactForm() {
       </button>
 
       {status === "success" && (
-        <p className="rounded-xl border border-success/40 bg-success/10 px-4 py-3 text-base text-success">
+        <p
+          role="status"
+          className="rounded-xl border border-success/40 bg-success/10 px-4 py-3 text-base text-success"
+        >
           {t("contact.form.success")}
         </p>
       )}
       {status === "error" && (
-        <p className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-base text-danger">
+        <p role="alert" className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-base text-danger">
           {t("contact.form.error")}
         </p>
       )}

@@ -308,7 +308,16 @@ export default function HomeHero() {
                 visibly shrank last time. This pass touches all three
                 numbers in both clamps so every breakpoint's rendered size
                 actually drops. */}
+            {/* This view's only heading — the live track title IS Home's
+                actual primary content, so it doubles as the page's h1
+                rather than a separate, redundant "Now Playing" label
+                (screen-reader users navigating by heading otherwise found
+                no heading at all on this view). Not aria-live: it changes
+                every ~15s with the stream, and announcing every track
+                change would be noise, not help — see the offline message
+                below for the one Home-view state that does get announced. */}
             <MarqueeText
+              as="h1"
               text={track}
               className="text-[clamp(0.9rem,4.1vw,2.6rem)] font-bold leading-tight text-foreground drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] md:text-[clamp(1.1rem,min(4.1vw,5.5vh),2.6rem)]"
             />
@@ -368,7 +377,11 @@ export default function HomeHero() {
           </div>
 
           {isOffline && (
-            <p className="max-w-full text-[clamp(0.7rem,1.6vw,0.85rem)] text-muted">
+            // Rare, meaningful state change (unlike the track title above,
+            // which changes constantly and is deliberately not live) — worth
+            // announcing to screen reader users who aren't looking at the
+            // screen when the stream drops.
+            <p role="status" aria-live="polite" className="max-w-full text-[clamp(0.7rem,1.6vw,0.85rem)] text-muted">
               {t("player.offlineMessage")}
             </p>
           )}

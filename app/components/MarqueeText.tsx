@@ -20,8 +20,18 @@ import { useReducedMotion } from "framer-motion";
 // Shared by the Home hero's track title and the mini-player's title/artist
 // lines — same overflow-detection logic, same scroll behavior, just a
 // different container width/font size via className each time.
-export default function MarqueeText({ text, className }: { text: string; className: string }) {
-  const containerRef = useRef<HTMLDivElement>(null);
+interface MarqueeTextProps {
+  text: string;
+  className: string;
+  // Lets the Home hero render the live track title as the view's h1 (its
+  // actual primary content — see HomeHero.tsx) while every other caller
+  // (mini-player title/artist, both non-heading chrome) keeps the plain div
+  // default.
+  as?: "div" | "h1";
+}
+
+export default function MarqueeText({ text, className, as: Tag = "div" }: MarqueeTextProps) {
+  const containerRef = useRef<HTMLElement>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const prefersReducedMotion = useReducedMotion();
@@ -39,8 +49,8 @@ export default function MarqueeText({ text, className }: { text: string; classNa
 
   const shouldScroll = isOverflowing && !prefersReducedMotion;
 
-  return (
-    <div ref={containerRef} className={`relative overflow-hidden ${className}`}>
+  const content = (
+    <>
       <span ref={measureRef} aria-hidden="true" className="invisible absolute whitespace-nowrap">
         {text}
       </span>
@@ -55,6 +65,18 @@ export default function MarqueeText({ text, className }: { text: string; classNa
       ) : (
         <span className="block truncate whitespace-nowrap">{text}</span>
       )}
+    </>
+  );
+
+  const mergedClassName = `relative overflow-hidden ${className}`;
+
+  return Tag === "h1" ? (
+    <h1 ref={containerRef as React.RefObject<HTMLHeadingElement | null>} className={mergedClassName}>
+      {content}
+    </h1>
+  ) : (
+    <div ref={containerRef as React.RefObject<HTMLDivElement | null>} className={mergedClassName}>
+      {content}
     </div>
   );
 }

@@ -85,8 +85,14 @@ function EventCard({ event }: { event: EventItem }) {
           transition: prefersReducedMotion ? "none" : "transform 0.55s cubic-bezier(0.4, 0.1, 0.2, 1)",
         }}
       >
-        <EventCardFront event={event} imageUrl={imageUrl} lang={lang} onFlip={() => setFlipped(true)} />
-        <EventCardBack event={event} t={t} onFlip={() => setFlipped(false)} />
+        <EventCardFront
+          event={event}
+          imageUrl={imageUrl}
+          lang={lang}
+          onFlip={() => setFlipped(true)}
+          isVisible={!flipped}
+        />
+        <EventCardBack event={event} t={t} onFlip={() => setFlipped(false)} isVisible={flipped} />
       </div>
     </div>
   );
@@ -100,24 +106,26 @@ function EventCardFront({
   imageUrl,
   lang,
   onFlip,
+  isVisible,
 }: {
   event: EventItem;
   imageUrl: string;
   lang: Lang;
   onFlip: () => void;
+  isVisible: boolean;
 }) {
   const { t } = useLanguage();
 
   return (
-    <article className={GLASS_CARD_CLASSES}>
+    <article className={GLASS_CARD_CLASSES} aria-hidden={!isVisible} inert={!isVisible}>
       <img src={imageUrl} alt="" className="h-[42%] w-full shrink-0 object-cover" />
       <div className="flex min-h-0 flex-1 flex-col gap-0.5 p-[clamp(0.5rem,1.2vw,0.85rem)]">
         <span className="text-[clamp(0.62rem,1.1vw,0.76rem)] font-medium text-[rgb(var(--accent-text-rgb))]">
           {formatEventDate(event.date, lang)}
         </span>
-        <h3 className="truncate text-[clamp(0.84rem,1.35vw,1rem)] font-semibold text-foreground">
+        <h2 className="truncate text-[clamp(0.84rem,1.35vw,1rem)] font-semibold text-foreground">
           {event.title}
-        </h3>
+        </h2>
         <p className="line-clamp-1 text-[clamp(0.67rem,1vw,0.81rem)] text-muted sm:line-clamp-2">
           {event.description}
         </p>
@@ -137,15 +145,19 @@ function EventCardBack({
   event,
   t,
   onFlip,
+  isVisible,
 }: {
   event: EventItem;
   t: (key: TranslationKey) => string;
   onFlip: () => void;
+  isVisible: boolean;
 }) {
   return (
     <article
       className={GLASS_CARD_CLASSES + " p-[clamp(0.6rem,1.4vw,1rem)]"}
       style={{ transform: "rotateY(180deg)" }}
+      aria-hidden={!isVisible}
+      inert={!isVisible}
     >
       <button
         type="button"
@@ -156,9 +168,9 @@ function EventCardBack({
         <CloseIcon className="h-3 w-3" />
       </button>
 
-      <h3 className="pe-6 text-[clamp(0.84rem,1.35vw,1rem)] font-semibold text-foreground">
+      <h2 className="pe-6 text-[clamp(0.84rem,1.35vw,1rem)] font-semibold text-foreground">
         {event.title}
-      </h3>
+      </h2>
       <p className="mt-1 line-clamp-3 flex-1 text-[clamp(0.67rem,1vw,0.81rem)] leading-snug text-muted">
         {event.description} {t("events.back.moreInfo")}
       </p>
