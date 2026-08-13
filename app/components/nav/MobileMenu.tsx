@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 import { useView } from "../../context/ViewContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { navItems } from "./navItems";
@@ -100,17 +101,17 @@ export default function MobileMenu() {
       <button
         ref={triggerRef}
         type="button"
-        onClick={() => setOpen(true)}
-        aria-label={t("nav.openMenu")}
+        onClick={() => setOpen((prev) => !prev)}
+        aria-label={open ? t("nav.closeMenu") : t("nav.openMenu")}
         aria-haspopup="dialog"
         aria-expanded={open}
-        // Checked against MiniPlayer.tsx's glass treatment (border/60,
-        // bg/65, backdrop-blur-3xl) — this was noticeably weaker
-        // (blur-2xl, bg/55, border/25), so bumped to match: more
-        // translucent surface, stronger blur, more visible accent border.
-        className="fixed top-4 left-4 z-[60] flex h-11 w-11 items-center justify-center rounded-full border border-[rgb(var(--accent-from-rgb)/45%)] bg-background-elevated/40 text-foreground/80 shadow-[0_0_20px_-6px_rgb(var(--accent-from-rgb)/60%),0_8px_24px_-8px_rgba(0,0,0,0.6)] backdrop-blur-3xl transition-colors hover:text-[rgb(var(--accent-text-rgb))] lg:hidden"
+        // No enclosing circle/border anymore — just the icon itself,
+        // sitting directly on whatever's behind it. h-11 w-11 stays as the
+        // tap target (unchanged, still the 44px touch-target minimum), it's
+        // just invisible now instead of drawing a background.
+        className="fixed top-4 left-4 z-[60] flex h-11 w-11 items-center justify-center text-foreground/80 transition-colors hover:text-[rgb(var(--accent-text-rgb))] lg:hidden"
       >
-        <MenuIcon className="h-5 w-5" />
+        <HamburgerIcon open={open} className="h-5 w-5" />
       </button>
 
       {open && (
@@ -271,11 +272,28 @@ function LanguageMenuItem() {
   );
 }
 
-function MenuIcon(props: React.SVGProps<SVGSVGElement>) {
+// Three independently-transformable bars (not an SVG path — a single path
+// can't animate its segments separately) so the top/bottom bars can rotate
+// into an X while the middle one fades out, the standard hamburger<->close
+// morph. bg-current mirrors the old SVG's stroke="currentColor" — still
+// just inherits the button's own text color/hover state, nothing new.
+function HamburgerIcon({ open, className }: { open: boolean; className?: string }) {
+  const prefersReducedMotion = useReducedMotion();
+  const morph = prefersReducedMotion ? "" : "transition-transform duration-200 ease-in-out";
+  const fade = prefersReducedMotion ? "" : "transition-opacity duration-200 ease-in-out";
+
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
+    <span className={`flex flex-col items-center justify-center gap-[5px] ${className ?? ""}`}>
+      <span
+        className={`block h-0.5 w-5 rounded-full bg-current ${morph}`}
+        style={open ? { transform: "translateY(7px) rotate(45deg)" } : undefined}
+      />
+      <span className={`block h-0.5 w-5 rounded-full bg-current ${fade}`} style={open ? { opacity: 0 } : undefined} />
+      <span
+        className={`block h-0.5 w-5 rounded-full bg-current ${morph}`}
+        style={open ? { transform: "translateY(-7px) rotate(-45deg)" } : undefined}
+      />
+    </span>
   );
 }
 
