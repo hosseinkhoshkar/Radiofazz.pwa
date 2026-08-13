@@ -15,7 +15,7 @@ export default function AboutView() {
   ] as const;
 
   return (
-    <div className="flex min-h-full w-full flex-col items-center justify-center gap-[clamp(0.5rem,1.8vh,1.5rem)] overflow-visible px-[clamp(1rem,3vw,2.5rem)] py-[clamp(0.5rem,1.5vh,1.5rem)] md:h-full md:overflow-hidden">
+    <div className="flex min-h-full w-full flex-col items-center justify-center gap-[clamp(0.5rem,1.8vh,1.5rem)] overflow-visible px-[clamp(1rem,3vw,2.5rem)] py-[clamp(0.5rem,1.5vh,1.5rem)]">
       <img
         src={AVATAR_PLACEHOLDER}
         alt={t("about.avatarAlt")}

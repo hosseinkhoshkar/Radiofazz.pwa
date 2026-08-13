@@ -8,7 +8,7 @@ import { useLanguage } from "../../context/LanguageContext";
 // shared-component reasoning as Logo.tsx: one implementation so the two
 // surfaces can't drift apart. Deliberately not in navItems.tsx — it's a
 // footnote, not a primary nav destination, so it stays out of the main
-// nav list and the swipe/scroll view order.
+// nav list.
 export default function PrivacyPolicyLink({ onNavigate }: { onNavigate?: () => void }) {
   const { setView } = useView();
   const { t } = useLanguage();
