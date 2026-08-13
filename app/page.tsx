@@ -1,13 +1,16 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useView } from "./context/ViewContext";
+import { useRef, type TouchEvent, type WheelEvent } from "react";
+import { useView, type View } from "./context/ViewContext";
 import HomeView from "./components/views/HomeView";
 import AboutView from "./components/views/AboutView";
 import EventsView from "./components/views/EventsView";
 import ContactView from "./components/views/ContactView";
 import InstallAppView from "./components/views/InstallAppView";
 import PrivacyView from "./components/views/PrivacyView";
+import { navItems } from "./components/nav/navItems";
+import { useIsMobileViewport } from "@/lib/useIsMobileViewport";
 
 const viewComponents = {
   home: HomeView,
@@ -18,19 +21,126 @@ const viewComponents = {
   privacy: PrivacyView,
 } as const;
 
-// View switching happens only via explicit clicks on the sidebar/hamburger
-// nav items (see Sidebar.tsx / MobileMenu.tsx) — no wheel or swipe gesture
-// triggers a view change, on any breakpoint. This container's own
-// overflow-y-auto is ordinary content scrolling, nothing more: a view whose
-// content is taller than the viewport (Contact, Install App, Privacy
-// Policy, ...) just scrolls, on desktop now too, not only mobile.
+// Scroll/swipe navigation follows the same order as the sidebar/tab bar.
+const VIEW_ORDER: View[] = navItems.map((item) => item.view);
+
+// Elements with their own native wheel behavior — don't hijack scroll there.
+const SCROLLABLE_SELECTOR = "textarea, select, input";
+
+const WHEEL_DELTA_THRESHOLD = 60;
+const WHEEL_ACCUMULATOR_RESET_MS = 150;
+const SWIPE_DISTANCE_THRESHOLD = 60;
+// A full wheel/swipe gesture can keep emitting events for a few hundred ms;
+// lock out further triggers for one gesture-and-transition cycle so a single
+// scroll only ever changes the view once.
+const NAV_COOLDOWN_MS = 800;
+// Tolerance for "at the scroll edge" checks — real browsers can leave a
+// sub-pixel remainder even when visually fully scrolled.
+const EDGE_EPSILON_PX = 1;
+
+function targetIsScrollable(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest(SCROLLABLE_SELECTOR) != null;
+}
+
 export default function Home() {
-  const { view } = useView();
+  const { view, setView } = useView();
   const ActiveView = viewComponents[view];
   const prefersReducedMotion = useReducedMotion();
+  const isMobile = useIsMobileViewport();
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const lockedRef = useRef(false);
+  const wheelDeltaRef = useRef(0);
+  const wheelResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+
+  function navigate(direction: 1 | -1, wrap: boolean) {
+    if (lockedRef.current) return;
+
+    const currentIndex = VIEW_ORDER.indexOf(view);
+    let nextIndex = currentIndex + direction;
+
+    if (wrap) {
+      nextIndex = (nextIndex + VIEW_ORDER.length) % VIEW_ORDER.length;
+    } else if (nextIndex < 0 || nextIndex >= VIEW_ORDER.length) {
+      return;
+    }
+
+    lockedRef.current = true;
+    setView(VIEW_ORDER[nextIndex]);
+    setTimeout(() => {
+      lockedRef.current = false;
+    }, NAV_COOLDOWN_MS);
+  }
+
+  // Desktop wheel navigation — unchanged from the original feature: fires on
+  // any accumulated scroll, no wrap-around. Desktop views never scroll
+  // internally, so there's no "edge" to gate this behind.
+  function handleWheel(event: WheelEvent<HTMLDivElement>) {
+    if (isMobile || targetIsScrollable(event.target) || lockedRef.current) return;
+
+    wheelDeltaRef.current += event.deltaY;
+
+    if (wheelResetTimerRef.current != null) clearTimeout(wheelResetTimerRef.current);
+    wheelResetTimerRef.current = setTimeout(() => {
+      wheelDeltaRef.current = 0;
+    }, WHEEL_ACCUMULATOR_RESET_MS);
+
+    if (wheelDeltaRef.current >= WHEEL_DELTA_THRESHOLD) {
+      wheelDeltaRef.current = 0;
+      navigate(1, false);
+    } else if (wheelDeltaRef.current <= -WHEEL_DELTA_THRESHOLD) {
+      wheelDeltaRef.current = 0;
+      navigate(-1, false);
+    }
+  }
+
+  function handleTouchStart(event: TouchEvent<HTMLDivElement>) {
+    touchStartYRef.current = targetIsScrollable(event.target)
+      ? null
+      : (event.touches[0]?.clientY ?? null);
+  }
+
+  function handleTouchEnd(event: TouchEvent<HTMLDivElement>) {
+    const startY = touchStartYRef.current;
+    touchStartYRef.current = null;
+    if (startY == null || lockedRef.current) return;
+
+    const endY = event.changedTouches[0]?.clientY ?? startY;
+    const delta = startY - endY;
+    if (Math.abs(delta) < SWIPE_DISTANCE_THRESHOLD) return;
+
+    if (!isMobile) {
+      // Desktop-width viewport: unchanged — any swipe navigates, no wrap.
+      navigate(delta > 0 ? 1 : -1, false);
+      return;
+    }
+
+    // Mobile: the view itself scrolls now, so a swipe should only switch
+    // views once already at the edge it's swiping past — mid-scroll swipes
+    // just scroll normally (we never preventDefault, so that already
+    // happens natively). Wraps around at both ends.
+    const container = containerRef.current;
+    const atTop = !container || container.scrollTop <= EDGE_EPSILON_PX;
+    const atBottom =
+      !container ||
+      container.scrollTop + container.clientHeight >= container.scrollHeight - EDGE_EPSILON_PX;
+
+    if (delta > 0 && atBottom) {
+      navigate(1, true);
+    } else if (delta < 0 && atTop) {
+      navigate(-1, true);
+    }
+  }
 
   return (
-    <div className="h-full w-full overflow-y-auto overscroll-y-contain">
+    <div
+      ref={containerRef}
+      className="h-full w-full overflow-y-auto overscroll-y-contain md:overflow-hidden"
+      onWheel={handleWheel}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <AnimatePresence mode="wait">
         <motion.div
           key={view}
@@ -47,10 +157,14 @@ export default function Home() {
           // Phone-landscape gets the same real h-full as md+ (not just
           // min-h-full) — a prerequisite for HomeView's hero to flex-1
           // expand into the space freed by hiding the three-card row there
-          // (percentage/flex sizing needs a definite height up the chain) —
-          // unrelated to the old scroll-nav system, purely a layout fit for
-          // that constrained viewport, so it stays.
-          className="min-h-full w-full pb-[var(--mini-player-height)] [@media(orientation:landscape)_and_(max-height:500px)]:h-full"
+          // (percentage/flex sizing needs a definite height up the chain).
+          // Harmless for every other view: their own containers still only
+          // switch to a hard md:overflow-hidden clip at md+ widths, so at
+          // narrower phone-landscape widths (e.g. 667x375) they simply gain
+          // the same natural-centering benefit Home does, with the outer
+          // page container's overflow-y-auto still there as a scroll
+          // fallback if content ever needs more room than that.
+          className="min-h-full w-full pb-[var(--mini-player-height)] [@media(orientation:landscape)_and_(max-height:500px)]:h-full md:h-full"
         >
           <ActiveView />
         </motion.div>

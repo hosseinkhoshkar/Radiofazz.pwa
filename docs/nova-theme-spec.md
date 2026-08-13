@@ -22,15 +22,18 @@ My site is an online radio station (PWA). I want its look and UX turned into a m
 - Soft, blurred gradient blobs in the background as an ambient effect — subtle, not dominant.
 - **Curated accent-palette system:** 10 hand-picked two-color gradients (`lib/accentPalettes.ts`) — vibrant, cohesive with each other and the brand's neon-dark identity (two of them intentionally reuse the exact brand accent hexes). One palette is assigned per track deterministically: a small fast hash (sum of char codes mod 10) of `artist::track` (or the ad slug, in sponsor mode) always picks the same palette for the same song/ad — no live color sampling from artwork. This is the site's active theme, not just a background tint: it drives the disc's glow, the play button's glass tint, the ambient background blob, the active-nav-item highlight, *and* the page background itself, site-wide (persists across views since playback continues). Each palette also defines a near-black background tint (`bgFrom`/`bgTo`, hue-matched to that palette — e.g. violet-fuchsia leans toward `#0a0612`) applied as a gradient on `body`; a tint shift only, never a lightness change (max channel ~20/255 across all 10, verified >7:1 WCAG contrast against both `--foreground` and `--muted` text in every case). Accent and background crossfade together over ~1s as one cohesive shift — same tween, same tick, same CSS-custom-property mechanism (`--accent-from-rgb`/`--accent-to-rgb`/`--bg-from-rgb`/`--bg-to-rgb`); applied instantly instead under `prefers-reduced-motion`.
 
-## 2. Overall page structure
+## 2. Overall page structure (no scrolling)
 
-- The site behaves like a **single-page app with view switching**, not a set of separately-scrolled routes:
+- The entire site must **fit in a single viewport, with no vertical scrolling needed** (`height: 100dvh`, `overflow: hidden`) — on desktop, unconditionally; on mobile, see the scroll/swipe exception below (content *can* scroll there, but is never left unreachable — the swipe-to-next-view gesture picks up exactly where scrolling leaves off).
+- Instead of scrolling, the site should behave like a **single-page app with view switching**:
   - **Desktop:** a fixed sidebar (like Spotify desktop) containing the logo (a typographic wordmark, "radiofaaz" in Latin letters, never translated), nav items (Home / Schedule / Events / Contact), and at the bottom of the sidebar: the language switcher.
-  - **Mobile:** the sidebar becomes a **hamburger-triggered drawer**, carrying the same nav items plus the language picker and social icons.
+  - **Mobile:** the sidebar becomes a **bottom tab bar**, just like the Spotify mobile app.
   - LTR structure always, regardless of language; Persian text renders naturally within it, no layout mirroring.
-- Each section (Home/Schedule/Events/Contact/...) is designed to fit within the viewport height where reasonably possible (`clamp()` for font sizes and spacing, relative units), so most views need no scrolling in normal use.
-- **View navigation happens only via explicit clicks on sidebar/hamburger-menu nav items.** There is no wheel, trackpad, or swipe gesture that changes the active view, on any breakpoint. Views may scroll internally via ordinary `overflow-y: auto` when their content exceeds the viewport height (e.g. a longer legal page, or the Install App view's platform instructions) — this is plain content scrolling, independent of navigation, and behaves identically on desktop and mobile. Scrolling to the top or bottom of a view's content does nothing except stop scrolling.
-- Switching between views (via nav click) uses a smooth transition (short fade), not an abrupt jump.
+- Each section (Home/Schedule/Events/Contact) must be designed so its content fits within the viewport height (use `clamp()` for font sizes and spacing, and relative units) rather than needing internal scrolling.
+- Switching between views should use a smooth transition (short fade + slide), not an abrupt jump.
+- **Scroll/swipe navigation (additive, not a replacement for sidebar/tab-bar clicks):** on the main content area, a mouse-wheel/trackpad scroll or a vertical touch swipe steps through views in nav order (Home → DJ Majid → Events → Contact). Debounced with an accumulated-delta threshold (ignore tiny/accidental input) plus an ~800ms cooldown lock after each trigger, so one physical gesture — which can keep emitting wheel/touch events for a few hundred ms — only ever changes the view once. Reuses the exact same fade transition as click-triggered switches (same `setView` call, same render path — not a separate animation), including the instant-instead-of-animated behavior under `prefers-reduced-motion`. Skipped when the gesture starts on a native-scrollable form control (`textarea`/`select`/`input`) so it doesn't fight normal scrolling/interaction there.
+  - **Desktop** (`md`+, ≥768px — same breakpoint the sidebar uses): views never scroll internally (unchanged from the no-scroll rule above). Wheel scroll down/up goes to the next/previous view; no wrap-around at either end (scrolling up on Home or down on Contact does nothing).
+  - **Mobile** (<768px) — the one exception to "no scrolling": each view's own container allows natural `overflow-y: auto` when its content is taller than the viewport (sidebar/bottom-tab-bar/mini-player stay outside this scrollable area, fixed as always). Content reserves bottom clearance equal to `--mini-player-height` so the last element is never hidden behind the mini-player once scrolled down — one shared mechanism, no per-view padding hacks. A swipe only changes views once already scrolled to the corresponding edge of the current view's content (bottom, swiping further down → next view; top, swiping further up → previous view) — mid-scroll swipes just scroll normally. Wraps around cyclically: past Contact's bottom goes to Home; past Home's top goes to Contact.
 
 ## 3. Main player (Home view)
 
@@ -86,7 +89,7 @@ General animations (must work on all devices, lightweight, no performance hit):
 
 - **Phone-landscape orientation** (`orientation: landscape` combined with a phone-range `max-height: 500px` — tallest phone landscape is ~430px, shortest tablet landscape is ~768px, so tablets are never caught by this and keep their normal landscape layout unaffected): the Home view's three-card section (Meet DJ Majid / Next Event / Advertise with Us) is hidden entirely — there's too little vertical room for it alongside the hero — and the hero expands to fill the freed height, same `flex-1`/auto-height behavior the `md+` layout already uses. No rotation/transform trick — this is a plain responsive breakpoint, and the hero's own `clamp()` values still handle its internal sizing fluidly within that expanded space.
 - Fully responsive down to mobile; on mobile:
-  - The sidebar becomes a hamburger-triggered drawer
+  - The sidebar becomes a bottom tab bar
   - Mouse-driven effects are fully disabled
   - Use `100dvh` instead of `100vh` (to account for the mobile browser's address bar)
   - Respect `env(safe-area-inset-*)` for the notch and bottom safe area (especially when installed as a PWA)
@@ -98,7 +101,7 @@ General animations (must work on all devices, lightweight, no performance hit):
 
 1. **Home** — giant centered disc player, no other widgets
 2. **DJ Majid (About)** — bio, avatar, personal site link, feature highlights
-3. **Events** — grid of glassmorphic event cards (placeholder photo via a seeded placeholder-image service, date, title, short description). "Read more" flips the card (3D transform) to a back face with fake placeholder details (longer description, time, location, organizer) and a back/close control; instant instead of animated under `prefers-reduced-motion`. Capped to 3 visible cards below the `sm` breakpoint (single-column) to stay within the viewport without scrolling; `sm`+ shows all via 2-3 columns.
+3. **Events** — grid of glassmorphic event cards (placeholder photo via a seeded placeholder-image service, date, title, short description). "Read more" flips the card (3D transform) to a back face with fake placeholder details (longer description, time, location, organizer) and a back/close control; instant instead of animated under `prefers-reduced-motion`. Capped to 3 visible cards below the `sm` breakpoint (single-column) to stay within the no-scroll viewport; `sm`+ shows all via 2-3 columns.
 4. **Contact** — email, phone, social media icons
 
 ---

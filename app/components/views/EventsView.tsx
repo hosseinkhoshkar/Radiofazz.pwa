@@ -33,7 +33,7 @@ export default function EventsView() {
   }, []);
 
   return (
-    <div className="flex min-h-full w-full items-center justify-center overflow-visible px-[clamp(1rem,3vw,2.5rem)] py-[clamp(1rem,3vh,2rem)]">
+    <div className="flex min-h-full w-full items-center justify-center overflow-visible px-[clamp(1rem,3vw,2.5rem)] py-[clamp(1rem,3vh,2rem)] md:h-full md:overflow-hidden">
       <div className="flex w-full flex-col gap-[clamp(0.75rem,2vh,1.5rem)]">
         <div className="shrink-0 text-center">
           <h1 className="text-[clamp(1.4rem,2.8vw,1.95rem)] font-bold text-foreground">
