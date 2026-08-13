@@ -5,6 +5,7 @@ import { usePlayer } from "../context/PlayerContext";
 import { useLanguage } from "../context/LanguageContext";
 import { DEFAULT_COVER_ART } from "@/lib/itunes";
 import { useIsMobileViewport } from "@/lib/useIsMobileViewport";
+import { trackEvent } from "@/lib/analytics";
 import PlayButton from "./PlayButton";
 import HomeWaveform from "./HomeWaveform";
 import MarqueeText from "./MarqueeText";
@@ -31,7 +32,7 @@ const NUMBER_LOCALES: Record<string, string> = {
 };
 
 export default function HomeHero() {
-  const { track, artist, isPlaying, listeners, isAd, adLink, coverArt, isOffline } = usePlayer();
+  const { track, artist, isPlaying, listeners, isAd, adSlug, adLink, coverArt, isOffline } = usePlayer();
   const { t, lang } = useLanguage();
   const prefersReducedMotion = useReducedMotion();
   const isMobile = useIsMobileViewport();
@@ -369,6 +370,7 @@ export default function HomeHero() {
                 href={adLink}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackEvent("sponsor_link_click", { ad_slug: adSlug ?? "unknown" })}
                 className="flex h-[clamp(3rem,7vh,4rem)] shrink-0 items-center rounded-full border border-white/25 bg-white/10 px-[clamp(1.25rem,3.5vw,1.75rem)] text-[clamp(0.95rem,1.7vw,1.12rem)] font-semibold text-foreground backdrop-blur-md transition-colors hover:bg-white/20"
               >
                 {t("player.visitSponsor")}

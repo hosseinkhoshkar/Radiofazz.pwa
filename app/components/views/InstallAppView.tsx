@@ -3,6 +3,7 @@
 import { useEffect, useState, type SVGProps } from "react";
 import { useLanguage } from "../../context/LanguageContext";
 import { useInstallPrompt } from "../../context/InstallPromptContext";
+import { trackEvent } from "@/lib/analytics";
 import type { TranslationKey } from "@/lib/i18n/translations";
 
 type IconProps = SVGProps<SVGSVGElement>;
@@ -51,8 +52,14 @@ export default function InstallAppView() {
   }, []);
 
   async function handleInstallClick() {
+    trackEvent("install_cta_click");
     const result = await promptInstall();
     if (result !== "unavailable") setOutcome(result);
+    // The definitive "install completed" signal is the browser's own
+    // appinstalled event (see InstallPromptContext.tsx) — it's the only
+    // source that also catches installs triggered outside this button
+    // (e.g. the browser's own omnibox install icon), so completion isn't
+    // tracked a second time here to avoid double-counting the same install.
   }
 
   const installed = isInstalled || outcome === "accepted";

@@ -5,6 +5,7 @@ import { useLanguage } from "../context/LanguageContext";
 import { useView } from "../context/ViewContext";
 import { getUpcomingEvents, type EventItem } from "@/lib/events";
 import { formatEventDate } from "@/lib/i18n/format";
+import { trackEvent } from "@/lib/analytics";
 import type { TranslationKey } from "@/lib/i18n/translations";
 
 const EVENTS_URL = "/data/events.json";
@@ -180,6 +181,7 @@ export default function HomeQuickLinks() {
         href="https://www.dj-majid.de"
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => trackEvent("card_click", { card: "dj_majid" })}
         className={CARD_CLASSES}
       >
         <CardImage src={DJ_IMAGE_URL} />
@@ -199,7 +201,14 @@ export default function HomeQuickLinks() {
         />
       </a>
 
-      <button type="button" onClick={() => setView("events")} className={CARD_CLASSES}>
+      <button
+        type="button"
+        onClick={() => {
+          trackEvent("card_click", { card: "events" });
+          setView("events");
+        }}
+        className={CARD_CLASSES}
+      >
         <CardImage src={EVENT_IMAGE_URL} />
         <CardGlow />
         <CardBody
@@ -212,7 +221,14 @@ export default function HomeQuickLinks() {
         />
       </button>
 
-      <button type="button" onClick={() => setView("contact")} className={CARD_CLASSES}>
+      <button
+        type="button"
+        onClick={() => {
+          trackEvent("card_click", { card: "advertise" });
+          setView("contact");
+        }}
+        className={CARD_CLASSES}
+      >
         <CardImage src={AD_IMAGE_URL} />
         <CardGlow />
         <CardBody

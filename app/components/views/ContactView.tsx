@@ -3,6 +3,7 @@
 import ContactForm from "../ContactForm";
 import { useLanguage } from "../../context/LanguageContext";
 import { WhatsAppIcon } from "../nav/socialLinks";
+import { trackEvent } from "@/lib/analytics";
 
 export default function ContactView() {
   const { t } = useLanguage();
@@ -27,6 +28,7 @@ export default function ContactView() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={t("contact.whatsapp.label")}
+          onClick={() => trackEvent("social_click", { platform: "whatsapp" })}
           className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-success/40 bg-success/10 px-4 py-3 text-base font-semibold text-success transition-opacity hover:opacity-90"
         >
           <WhatsAppIcon className="h-5 w-5" />

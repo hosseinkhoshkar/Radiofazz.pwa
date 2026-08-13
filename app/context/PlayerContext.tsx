@@ -121,6 +121,7 @@ interface PlayerContextValue {
   setVolume: (volume: number) => void;
   togglePlay: () => void;
   isAd: boolean;
+  adSlug: string | null;
   adAdvertiser: string | null;
   adLink: string | null;
   adImage: string | null;
@@ -426,6 +427,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         setVolume,
         togglePlay,
         isAd,
+        adSlug: isAd ? adSlug : null,
         adAdvertiser,
         adLink,
         adImage,

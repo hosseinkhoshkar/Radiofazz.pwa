@@ -9,6 +9,7 @@ import SocialIcon from "./SocialIcon";
 import Logo from "./Logo";
 import NotificationButton from "./NotificationButton";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
+import { trackEvent } from "@/lib/analytics";
 import type { Lang } from "@/lib/i18n/translations";
 
 const LANGS: { code: Lang; nativeName: string }[] = [
@@ -253,6 +254,7 @@ function LanguageMenuItem() {
               role="option"
               aria-selected={lang === code}
               onClick={() => {
+                if (code !== lang) trackEvent("language_switch", { language: code });
                 setLang(code);
                 setLangOpen(false);
               }}

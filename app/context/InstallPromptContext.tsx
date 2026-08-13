@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { trackEvent } from "@/lib/analytics";
 
 // Not in lib.dom.d.ts — the browser API this event belongs to
 // (beforeinstallprompt) is a Chromium/Android extension, never standardized.
@@ -42,6 +43,11 @@ export function InstallPromptProvider({ children }: { children: ReactNode }) {
     function handleAppInstalled() {
       setIsInstalled(true);
       setInstallEvent(null);
+      // Single source of truth for "install completed" — fires for every
+      // real install regardless of path (this app's own CTA, or the
+      // browser's native install affordance), so it's tracked once here
+      // rather than also at the CTA click site (see InstallAppView.tsx).
+      trackEvent("pwa_installed");
     }
 
     if (window.matchMedia("(display-mode: standalone)").matches) {

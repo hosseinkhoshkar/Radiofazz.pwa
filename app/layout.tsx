@@ -8,6 +8,7 @@ import InstallAppButton from "./components/nav/InstallAppButton";
 import MiniPlayer from "./components/MiniPlayer";
 import StreamStatusToast from "./components/StreamStatusToast";
 import ConsentBanner from "./components/ConsentBanner";
+import GoogleAnalytics from "./components/GoogleAnalytics";
 import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
 import GradientBlobs from "./components/effects/GradientBlobs";
 import ParticleNetwork from "./components/effects/ParticleNetwork";
@@ -16,6 +17,7 @@ import { ViewProvider } from "./context/ViewContext";
 import { LanguageProvider } from "./context/LanguageContext";
 import { InstallPromptProvider } from "./context/InstallPromptContext";
 import { NotificationsProvider } from "./context/NotificationsContext";
+import { ConsentProvider } from "./context/ConsentContext";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -120,9 +122,11 @@ export default function RootLayout({
         <ParticleNetwork />
         <LanguageProvider>
           <ViewProvider>
+          <ConsentProvider>
           <NotificationsProvider>
           <InstallPromptProvider>
             <PlayerProvider>
+              <GoogleAnalytics />
               <Sidebar />
               {/* No more pb-16 mobile reservation — that used to clear the
                   bottom tab bar's own h-16, which is gone now (replaced by
@@ -152,6 +156,7 @@ export default function RootLayout({
             </PlayerProvider>
           </InstallPromptProvider>
           </NotificationsProvider>
+          </ConsentProvider>
           </ViewProvider>
         </LanguageProvider>
       </body>

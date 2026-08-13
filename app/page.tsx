@@ -1,8 +1,9 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useRef, type TouchEvent, type WheelEvent } from "react";
+import { useEffect, useRef, type TouchEvent, type WheelEvent } from "react";
 import { useView, type View } from "./context/ViewContext";
+import { trackPageView } from "@/lib/analytics";
 import HomeView from "./components/views/HomeView";
 import AboutView from "./components/views/AboutView";
 import EventsView from "./components/views/EventsView";
@@ -53,6 +54,16 @@ export default function Home() {
   const wheelDeltaRef = useRef(0);
   const wheelResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touchStartYRef = useRef<number | null>(null);
+
+  // Virtual pageview per view switch (sidebar/tab click, scroll/swipe, or
+  // any other path — all of them funnel through this same `view` state, so
+  // one effect here covers every trigger). No real route change exists for
+  // GA4's own automatic pageview to hook into in this single-page app; see
+  // GoogleAnalytics.tsx for why that's disabled in favor of this. No-ops
+  // entirely pre-consent/pre-GA-load (see lib/analytics.ts).
+  useEffect(() => {
+    trackPageView(view);
+  }, [view]);
 
   function navigate(direction: 1 | -1, wrap: boolean) {
     if (lockedRef.current) return;

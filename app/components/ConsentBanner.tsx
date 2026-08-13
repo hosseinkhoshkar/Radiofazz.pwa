@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useView } from "../context/ViewContext";
 import { useLanguage } from "../context/LanguageContext";
-
-const STORAGE_KEY = "consent-dismissed";
+import { useConsent } from "../context/ConsentContext";
 
 // One-time, honest notice — this site has no tracking cookies or
 // third-party ads to gate behind a heavy preference manager, just the
@@ -17,20 +15,15 @@ const STORAGE_KEY = "consent-dismissed";
 // same pattern as StreamStatusToast, which keeps it clear of the
 // top-right Install/Language group and the mobile hamburger in both
 // corners without needing to coordinate positioning with either.
+// The accept button is also the sole trigger that lets GoogleAnalytics.tsx
+// load anything — see ConsentContext.tsx, which now owns the underlying
+// localStorage flag this banner used to keep entirely to itself.
 export default function ConsentBanner() {
   const { setView } = useView();
   const { t } = useLanguage();
   const prefersReducedMotion = useReducedMotion();
-  const [dismissed, setDismissed] = useState(true);
-
-  useEffect(() => {
-    setDismissed(localStorage.getItem(STORAGE_KEY) === "1");
-  }, []);
-
-  function dismiss() {
-    localStorage.setItem(STORAGE_KEY, "1");
-    setDismissed(true);
-  }
+  const { hasConsented, grantConsent } = useConsent();
+  const dismissed = hasConsented;
 
   return (
     <div
@@ -65,7 +58,7 @@ export default function ConsentBanner() {
 
             <button
               type="button"
-              onClick={dismiss}
+              onClick={grantConsent}
               className="shrink-0 rounded-full border border-[rgb(var(--accent-from-rgb)/50%)] bg-[rgb(var(--accent-from-rgb)/15%)] px-3 py-1.5 text-sm font-semibold text-[rgb(var(--accent-text-rgb))] transition-colors hover:bg-[rgb(var(--accent-from-rgb)/25%)]"
             >
               {t("consent.accept")}

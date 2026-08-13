@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "../../context/LanguageContext";
+import { trackEvent } from "@/lib/analytics";
 import type { Lang } from "@/lib/i18n/translations";
 
 const LANGS: { code: Lang; nativeName: string }[] = [
@@ -77,6 +78,7 @@ export default function LanguageSwitcher() {
                 role="option"
                 aria-selected={lang === code}
                 onClick={() => {
+                  if (code !== lang) trackEvent("language_switch", { language: code });
                   setLang(code);
                   setOpen(false);
                 }}

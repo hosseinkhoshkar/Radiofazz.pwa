@@ -2,6 +2,7 @@
 
 import { useLanguage } from "../../context/LanguageContext";
 import { useView } from "../../context/ViewContext";
+import { trackEvent } from "@/lib/analytics";
 
 // Rendered inside the fixed top-right group alongside LanguageSwitcher (see
 // layout.tsx) — same floating-pill treatment, same fixed wrapper owns the
@@ -17,7 +18,10 @@ export default function InstallAppButton() {
   return (
     <button
       type="button"
-      onClick={() => setView("install")}
+      onClick={() => {
+        trackEvent("install_nav_click");
+        setView("install");
+      }}
       aria-label={t("nav.installApp")}
       className="flex h-11 items-center justify-center gap-2 rounded-full border border-[rgb(var(--accent-from-rgb)/20%)] bg-background-elevated/80 px-3 text-sm font-semibold text-foreground/80 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-colors hover:text-[rgb(var(--accent-text-rgb))]"
     >

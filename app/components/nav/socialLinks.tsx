@@ -56,14 +56,17 @@ export interface SocialLinkEntry {
   // (its icon is a plain currentColor stroke shape, and this same icon
   // component is reused elsewhere expecting a single flat color).
   color: string;
+  // Stable identifier for analytics (see SocialIcon.tsx) — separate from
+  // labelKey since that's a translated, language-dependent string.
+  platform: string;
 }
 
 // Add more entries here as the brand's presence grows — every consumer
 // (sidebar, bottom nav, home card, SocialIcon) renders off this one array,
 // so a new platform is a one-line addition, not a redesign.
 export const socialLinks: SocialLinkEntry[] = [
-  { icon: FacebookIcon, url: "https://www.facebook.com/RadioFaaz/", labelKey: "nav.socialFacebookLabel", color: "#1877F2" },
-  { icon: InstagramIcon, url: "https://www.instagram.com/djmajid_official/", labelKey: "nav.socialInstagramLabel", color: "#E1306C" },
-  { icon: WhatsAppIcon, url: "https://wa.me/4917666119999", labelKey: "contact.whatsapp.cta", color: "#25D366" },
-  { icon: YouTubeIcon, labelKey: "nav.socialComingSoon", color: "#FF0000" },
+  { icon: FacebookIcon, url: "https://www.facebook.com/RadioFaaz/", labelKey: "nav.socialFacebookLabel", color: "#1877F2", platform: "facebook" },
+  { icon: InstagramIcon, url: "https://www.instagram.com/djmajid_official/", labelKey: "nav.socialInstagramLabel", color: "#E1306C", platform: "instagram" },
+  { icon: WhatsAppIcon, url: "https://wa.me/4917666119999", labelKey: "contact.whatsapp.cta", color: "#25D366", platform: "whatsapp" },
+  { icon: YouTubeIcon, labelKey: "nav.socialComingSoon", color: "#FF0000", platform: "youtube" },
 ];

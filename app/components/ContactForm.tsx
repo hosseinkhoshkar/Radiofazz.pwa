@@ -4,6 +4,7 @@ import emailjs from "@emailjs/browser";
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useLanguage } from "../context/LanguageContext";
 import { useView } from "../context/ViewContext";
+import { trackEvent } from "@/lib/analytics";
 import type { TranslationKey } from "@/lib/i18n/translations";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -110,6 +111,7 @@ export default function ContactForm() {
       );
       setStatus("success");
       setForm(initialForm);
+      trackEvent("contact_form_submit");
     } catch {
       setStatus("error");
     }
