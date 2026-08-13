@@ -75,9 +75,13 @@ export default function Home() {
 
   // Desktop wheel navigation — unchanged from the original feature: fires on
   // any accumulated scroll, no wrap-around. Desktop views never scroll
-  // internally, so there's no "edge" to gate this behind.
+  // internally, so there's no "edge" to gate this behind. Privacy Policy is
+  // the one exception: its own section list scrolls internally (see
+  // PrivacyView.tsx), so wheel input there must stay plain scrolling and
+  // never trigger navigation — reachable/leavable only via nav clicks.
   function handleWheel(event: WheelEvent<HTMLDivElement>) {
-    if (isMobile || targetIsScrollable(event.target) || lockedRef.current) return;
+    if (view === "privacy" || isMobile || targetIsScrollable(event.target) || lockedRef.current)
+      return;
 
     wheelDeltaRef.current += event.deltaY;
 
@@ -96,15 +100,16 @@ export default function Home() {
   }
 
   function handleTouchStart(event: TouchEvent<HTMLDivElement>) {
-    touchStartYRef.current = targetIsScrollable(event.target)
-      ? null
-      : (event.touches[0]?.clientY ?? null);
+    touchStartYRef.current =
+      view === "privacy" || targetIsScrollable(event.target)
+        ? null
+        : (event.touches[0]?.clientY ?? null);
   }
 
   function handleTouchEnd(event: TouchEvent<HTMLDivElement>) {
     const startY = touchStartYRef.current;
     touchStartYRef.current = null;
-    if (startY == null || lockedRef.current) return;
+    if (view === "privacy" || startY == null || lockedRef.current) return;
 
     const endY = event.changedTouches[0]?.clientY ?? startY;
     const delta = startY - endY;

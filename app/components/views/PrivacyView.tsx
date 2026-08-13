@@ -13,7 +13,9 @@ const SECTIONS: { titleKey: TranslationKey; bodyKey: TranslationKey }[] = [
 
 // Not in navItems.tsx on purpose — reached only via the small footer link in
 // Sidebar/MobileMenu (see PrivacyPolicyLink.tsx) and the Contact form/consent
-// banner links, not the primary nav or the swipe/scroll view order.
+// banner links, not the primary nav or the swipe/scroll view order. page.tsx
+// also explicitly disables the wheel/swipe nav handlers while this view is
+// active, so its own internal scroll below never fights view-navigation.
 // Same centered/no-scroll-desktop shell every other view uses (AboutView,
 // ContactView, ...), except the section list itself gets its own
 // overflow-y-auto: five real paragraphs is more text than this layout's
