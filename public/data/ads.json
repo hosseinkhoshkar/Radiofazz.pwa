@@ -1,8 +1,8 @@
 {
-  "sponsor-one": {
-    "image": "/ads/ad-placeholder-2.svg",
-    "advertiser": "Sponsor Two",
-    "link": "https://www.google.com"
+  "mediamarkt": {
+    "image": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Mediamarkt.png?utm_source=de.wikipedia.org&utm_campaign=index&utm_content=original",
+    "advertiser": "MediaMarkt",
+    "link": "hhttps://www.mediamarkt.de"
   }
 }
 
